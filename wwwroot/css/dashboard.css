@@ -1,0 +1,6 @@
+﻿.dashboard{padding-top:15px;}
+.dashboard > .row > nav{float:right;}
+.dashboard > .row > nav ul{list-style-type:none; white-space:nowrap;}
+.dashboard > .row > nav ul > li {display:inline-block; padding:0px 10px;}
+.dashboard > .section{clear:both;}
+.a{color:#ff6a00}

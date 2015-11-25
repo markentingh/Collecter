@@ -1,0 +1,33 @@
+﻿.templatetitle{float:left; padding:2px 0 0 5px; font-size:20px; color:#999999;}
+.savemsg{float:right; padding-right:10px;}
+.editor{
+    max-width:1000px; margin:0px auto; background-color:#ffffff; min-height:800px;
+    -webkit-box-shadow: 2px 2px 15px 0 rgba(0,0,0,0.1);
+    -moz-box-shadow: 2px 2px 15px 0 rgba(0,0,0,0.1);
+    box-shadow: 2px 2px 15px 0 rgba(0,0,0,0.1);
+}
+.mailbody{overflow:auto;}
+
+.tools{position:absolute; width:100%;}
+.tools .descript{width:500px;}
+.tools .modal{
+    position:relative; z-index:1000;
+    -webkit-box-shadow: 2px 2px 18px 1px rgba(0,0,0,0.2);
+    -moz-box-shadow: 2px 2px 18px 1px rgba(0,0,0,0.2);
+    box-shadow: 2px 2px 18px 1px rgba(0,0,0,0.2);
+}
+.tools > .block-list{width:600px; margin:50px auto 0 auto;}
+.tools > .block-fields{width:300px; margin:50px auto 0 auto;}
+
+.block{position:relative; overflow:auto;}
+.block.empty{box-sizing: border-box; border:2px dashed #dddddd; width:100%; height:100px; padding-top:25px; text-align:center;}
+.addblock, .editblock{display:inline-block; border-radius:50px; width:50px; height:50px; background-color:#999999; cursor:pointer; text-align:center;}
+.addblock:hover, .editblock:hover{background-color:#6bb08a;}
+.addblock > img, .editblock > img{padding-top:13px;}
+.closeblock{display:inline-block; border-radius:30px; width:32px; height:32px; background-color:#999999; cursor:pointer; text-align:center;}
+.closeblock:hover{background-color:#d50000;}
+.closeblock > img{padding-top:8px;}
+
+.select-box{position:absolute; z-index:500; background-color:rgba(0,0,0,0.1); box-sizing:border-box; border:2px dashed #999999; text-align:center;}
+.select-box .addblock, .select-box .editblock{position:relative; top:15px;}
+.select-box .closeblock{position:absolute; top:15px;}
