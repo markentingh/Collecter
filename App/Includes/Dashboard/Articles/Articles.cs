@@ -35,6 +35,9 @@ namespace Collector.Includes.Dashboard
                                 if(S.Request.Form["url"] != "")
                                 {
                                     //analyze an article
+                                    var serveArticles = new Services.Dashboard.Articles(S, S.Page.Url.paths);
+                                    var article = serveArticles.Analyze(S.Request.Form["Url"]);
+
                                 }
                                 //create new article from posted form
                                 //sqlDash = new SqlClasses.Dashboard(S);
