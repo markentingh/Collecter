@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNet.Diagnostics;
 
 namespace Collector.Utility.DOM
 {
@@ -81,7 +80,8 @@ namespace Collector.Utility.DOM
             public string text;
             public Dictionary<string, string> attribute;
             public Dictionary<string, string> style;
-            public List<DomElement> children;
+            public List<int> children;
+            public int parent;
         }
 
         private Core S;
@@ -126,13 +126,12 @@ namespace Collector.Utility.DOM
 
             //create array from HTML string using opening tag character
             string[] tags = curedHtm.Split('<');
-            string strTag, strText;
-            string[] arr;
-            DomElement parentElement = new DomElement();
-            bool addToParent = false;
+            var hierarchy = new List<string>();
+            string strTag;
+            int parentElement = -1;
             bool isClosingTag = false;
-            bool unusedTag = false;
-            parentElement.children = new List<DomElement>();
+            bool isSelfClosing = false;
+            bool isUnusedTag = false;
 
             //go through each tag in the array
             foreach (string tag in tags)
@@ -142,7 +141,8 @@ namespace Collector.Utility.DOM
                 //domTag.children = new List<DomElement>();
                 //domTag.style = new Dictionary<string, string>();
                 isClosingTag = false;
-                unusedTag = false;
+                isSelfClosing = false;
+                isUnusedTag = false;
 
                 //find closing tag character
                 s1 = tag.IndexOf(">");
@@ -157,13 +157,36 @@ namespace Collector.Utility.DOM
                         domTag.tagName = strTag.Substring(0, s2);
                         //get attributes from tag
                         domTag.attribute = GetAttributes(strTag);
+
+                        if (strTag.Substring(strTag.Length - 2, 1) == "/")
+                        {
+                            isSelfClosing = true;
+                        }
+
+                        //check if tag is self-closing even if it
+                        //doesn't include a forward-slash at the end
+                        switch (domTag.tagName.ToLower())
+                        {
+                            case "br":
+                            case "img":
+                            case "input":
+                            case "link":
+                            case "meta":
+                                isSelfClosing = true;
+                                break;
+                        }
+                        if(domTag.tagName.Substring(0,1) == "!")
+                        {
+                            //comments & doctype self-closing tags
+                            isSelfClosing = true;
+                        }
                     }
                     else
                     {
                         if(strTag.Substring(0,1) == "/") {
                             //found closing tag
-                            isClosingTag = true;
                             domTag.tagName = "#text";
+                            isClosingTag = true;
                         }
                     }
                     //extract text after end of tag
@@ -172,33 +195,63 @@ namespace Collector.Utility.DOM
                     //check if domTag is unusable
                     if(domTag.text.Trim() == "" && isClosingTag == true)
                     {
-                        unusedTag = true;
+                        isUnusedTag = true;
                     }
                 }
                 else
                 {
                     //no end of tag, extract all text
+                    domTag.tagName = "#text";
                     domTag.text = tag;
+                    isSelfClosing = true;
                 }
-                if(domTag.tagName == null) { unusedTag = true; }
-                if(unusedTag == false)
+                if(domTag.tagName == null) { isUnusedTag = true; }
+
+                
+
+                if (isUnusedTag == false)
                 {
                     //finally, add element to list
-                    if (addToParent == true)
+                    domTag.parent = parentElement;
+                    if(parentElement > -1)
                     {
-                        if(parentElement.children == null)
+                        DomElement parent = Elements[parentElement];
+                        if (parent.children == null)
                         {
-                            parentElement.children = new List<DomElement>();
+                            parent.children = new List<int>();
                         }
-                        parentElement.children.Add(domTag);
+                        parent.children.Add(Elements.Count);
+                        Elements[parentElement] = parent;
                     }
-                    else
+                    //make current tag the parent
+                    if (isSelfClosing == false && isClosingTag == false)
                     {
-                        Elements.Add(domTag);
-                        parentElement = domTag;
+                        parentElement = Elements.Count;
+                        hierarchy.Add(domTag.tagName);
+                    }
+
+                    //Console.WriteLine("Elements = " + Elements.Count + ", parent = " + domTag.parent + ", " + (domTag.tagName != null ? domTag.tagName : ""));
+                    Console.WriteLine(">>> " + string.Join(" > ", hierarchy.ToArray()));
+
+                    Elements.Add(domTag);  
+                }
+
+                if (isClosingTag == true)
+                {
+                    //go back one parent if this tag is a closing tag
+                    if (parentElement >= 0)
+                    {
+                        //Console.WriteLine(parentElement + " is done, go back to " + Elements[parentElement].parent);
+                        parentElement = Elements[parentElement].parent;
+                        hierarchy.RemoveAt(hierarchy.Count - 1);
                     }
                 }
 
+
+                if (parentElement == -1)
+                {
+
+                }
             }
         }
 

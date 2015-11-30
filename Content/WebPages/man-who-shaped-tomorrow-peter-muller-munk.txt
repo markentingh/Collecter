@@ -1,0 +1,1199 @@
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:fb="http://ogp.me/ns/fb#">
+
+<head>
+  <script type="text/javascript">var _sf_startpt=(new Date()).getTime()</script>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/media/static/assets/images/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="57x57" href="/media/static/assets/images/touch-icon-iphone.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="/media/static/assets/images/touch-icon-iphone.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="/media/static/assets/images/touch-icon-iphone-144.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="/media/static/assets/images/touch-icon-iphone-144.png" />
+
+  <title>The Man Who Shaped Tomorrow by Martin Filler | NYR Daily | The New York Review of Books</title>
+
+  
+    <link rel="stylesheet" href="//f.fontdeck.com/s/css/Y5LISEPuN4lJJ61tmeb14UEx/oY/www.nybooks.com/1127.css" type="text/css" />
+
+    <link rel="stylesheet" href="/media/static/assets/_assets/css/bootstrap-optimized.css" type="text/css" />
+
+    <link rel="stylesheet" href="/media/static/assets/_assets/css/overrides.css" type="text/css" />
+
+    
+  
+
+
+<style type="text/css">
+	#left-column, #right-column { }
+	#left-column {padding-top: 36px; }
+	#right-column { }
+	#sidebar-div-wrapper { margin: auto; }
+	#sidebar-div { padding: 0 10px; padding-top: 36px;}
+
+</style>
+
+    <link rel="stylesheet" href="/media/static/assets/_assets/css/print.css" type="text/css" media="print" />
+
+
+    <!--[if IE]><link rel="stylesheet" href="/media/static/assets/_assets/css/ie.css" type="text/css" media="screen" /><![endif]-->
+  
+  
+  
+  <script type="text/javascript" src="/media/static/assets/_assets/js/lib/jquery.js"></script>
+  
+        <script data-main="/media/static/assets/_assets/js/app-opt.js" src="/media/static/assets/_assets/js/require.js"></script>        
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+        <script src="/media/static/assets/_assets/js/lib/html5shiv.js"></script>
+        <![endif]-->
+    
+
+  
+
+  
+
+
+    
+    <script>
+      tdi_subTemplateID = "blog_base";
+    </script>  
+
+
+<meta property="og:url" content="http://www.nybooks.com/blogs/nyrblog/2015/nov/20/man-who-shaped-tomorrow-peter-muller-munk/" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="The Man Who Shaped Tomorrow by Martin Filler" />
+<meta property="og:description" content="“Silver to Steel: The Modern Designs of Peter Muller-Munk,” an illuminating exhibition at Pittsburgh’s Carnegie Museum of Art, traces Muller-Munk&#8217;s evolution from craftsman of precious objects to stylist of household appliances.
+" />
+
+
+    <meta property="og:image" content="http://assets.nybooks.com/media/img/blogimages/tea-horns-crop.jpg" />
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:url" content="http://www.nybooks.com/blogs/nyrblog/2015/nov/20/man-who-shaped-tomorrow-peter-muller-munk/"/>
+<meta name="twitter:title" content="The Man Who Shaped Tomorrow"/>
+<meta name="twitter:description" content="“Silver to Steel: The Modern Designs of Peter Muller-Munk,” an illuminating exhibition at Pittsburgh’s Carnegie Museum of Art, traces Muller-Munk&#8217;s evolution from craftsman of precious objects to stylist of household appliances.
+"/>
+<meta name="twitter:site" content="@nybooks"/>
+
+
+  
+
+
+<link rel="canonical" href="http://www.nybooks.com/blogs/nyrblog/2015/nov/20/man-who-shaped-tomorrow-peter-muller-munk/"/>
+
+
+  <script>
+    tdi_templateID = "base"; 
+  </script>
+  <script async>
+    (function() {
+  	  __mtm = [ '52af55a723f1b9ed790002bf', 'd36wtdrdo22bqa.cloudfront.net/mngr', 'tdi.mezzobit.com' ];
+  	  var s = document.createElement('script');
+  	  s.async = 1;
+  	  s.src = '//' + __mtm[1] + '/mtm.js';
+  	  var e = document.getElementsByTagName('script')[0];
+  	  (e.parentNode || document.body).insertBefore(s, e);
+	})();
+  </script>
+</head>
+
+<body class="context_nyrb context_nyrb page_blog">
+ <div id="fb-connect"></div>
+ 
+  <div id="wrapper">
+  <div class="account_toolbar">
+    <div class="container">
+      <div class="row">
+        <div class="span12">
+          <div class="primary">
+            <div class="log_in_register">
+              
+                
+                  <strong>Welcome</strong> (<a href="/account/signin/?next=/blogs/nyrblog/2015/nov/20/man-who-shaped-tomorrow-peter-muller-munk/">sign in</a> | <a href="https://subscribe.nybooks.info/ecom/nyb/app/live/web_user_maint?org=NYB&pagemode=a">sign up</a>)
+                
+                            
+            </div>
+          </div><!--.primary--> 
+          <div class="secondary">
+            
+            <div class="social">
+              <ul>
+                <li class="google">
+                  <a href="http://www.google.com/+nybooks">
+                    <i class="icon-google-plus"></i>
+                    <span class="text">Google+</span>
+                  </a>  
+                </li>
+                <li class="facebook">
+                  <a href="http://www.facebook.com/nybooks">
+                    <i class="icon-facebook"></i>
+                    <span class="text">Facebook</span>
+                  </a>  
+                </li>
+                <li class="twitter">
+                  <a href="http://twitter.com/nybooks">
+                    <i class="icon-twitter"></i>
+                    <span class="text">Twitter</span>
+                  </a>  
+                </li>
+                <li class="rss">
+                  <a href="/rss/">
+                    <i class="icon-rss"></i>
+                    <span class="text">RSS</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="divider"></div>
+            <div class="cart">
+              <a href="/catalog/cart/">Shopping cart (0 items)</a> 
+            </div>
+          </div><!--.secondary--> 
+        </div><!--.span12-->
+      </div><!--.row-->
+    </div><!--.container-->
+  </div><!--.account_toolbar-->  
+
+  
+  <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+          <div class="container-fluid">
+              <button id="header_menu_btn_search" type="button" class="btn btn-navbar" data-toggle="collapse" data-parent="#header_menus" data-target="#header_main_menu">
+                  <a href="#"><i class="icon-search icon-white"></i></a>
+              </button>
+              <button id="header_menu_btn_main" type="button" class="btn btn-navbar" data-toggle="collapse" data-parent="#header_menus" data-target="#header_search_menu">
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+              </button>
+              <a class="brand" href="/">
+                <!--
+                  12/01/14: Chrome Version 39.0.2171.71 not rendering full icon
+                            comment out span for now, and remove `hidden` class from
+                            image fallback.
+
+                  <span aria-hidden="true" class="icomoon icomoon-icon-NYRB"></span>
+                -->
+                <img class="windows_logo_fallback" src="/media/static/assets/_assets/img/icon/nyrb_inv.png" />
+              </a>
+              <div class="accordion" id="header_menus">
+                  <div class="accordion-group">
+                    <div id="header_main_menu" class="accordion-body collapse" style="height: 0;">
+                      <div class="rule"></div>
+                      <div class="accordion-inner phone_search">
+                        <form method="get" action="/search/">
+                          <div class="input-append">
+                            <input class="span3" id="search appendedInputButton" name="q" type="text" placeholder="Enter search keywords...">
+                            <input type="hidden" name="origin" value="magazine"/>
+                            <input type="submit" class="btn" type="button btn-small" value="Search" />               
+                          </div>
+                          <div class="advanced_search_link">
+                            <a href="/search/">Advanced Search</a>
+                          </div>
+                        </form>                        
+                      </div><!-- .accordion-inner -->
+                    </div><!-- #header_main_menu -->
+                  </div><!-- .accordion-group -->
+                  <div class="accordion-group">
+                    <div id="header_search_menu" class="accordion-body collapse" style="height: 0;">
+                      <div class="rule"></div>
+                      <div class="accordion-inner">
+                          <p class="navbar-text">
+                            
+                              
+                                <strong>Welcome</strong> (<a href="/account/signin/?next=/blogs/nyrblog/2015/nov/20/man-who-shaped-tomorrow-peter-muller-munk/">sign in</a> | <a href="https://subscribe.nybooks.info/ecom/nyb/app/live/web_user_maint?org=NYB&pagemode=a">sign up</a>)
+                              
+                                                                 
+                          </p>
+                          <ul class="nav" data-level="1">
+                              <li>
+                              <a href="/catalog/cart/">Shopping cart (0 items)</a>
+                              </li>
+                              
+    
+    
+	<li class="navsubscribe"><a class="navsubscribe_a" href="/subscriptions/order/" title="">Subscribe</a>
+		<ul data-level="2">
+			
+			<li ><a href="/subscriptions/order/" title="Subscribe to The New York Review">Start a Print Subscription</a></li>
+			
+			<li ><a href="/subscriptions/premium/" title="Start a Print Premium Subscription">Print Premium Subscription</a></li>
+			
+			<li ><a href="/subscriptions/gift/" title="Give a Gift">Give a Gift Subscription</a></li>
+			
+			<li ><a href="/renew/" title="Renew your Subscriptions">Renew a Subscription</a></li>
+			
+			<li ><a href="/subscriptions/online/" title="Subscribe to the Online Edition">Online Edition</a></li>
+			
+			<li ><a href="/subscriptions/digital-editions/" title="Subscribe to a Digital Edition">Digital Editions</a></li>
+			
+			<li ><a href="/institution/" title="Academic and Institutional Subscriptions">Academic/Institutional</a></li>
+			
+			<li ><a href="https://subscribe.nybooks.info/ecom/nyb/app/live/subcustserv?org=NYB&publ=NY&php=y" title="Subscriber Customer Service">Customer Service</a></li>
+			
+			<li ><a href="/subscriber-alert/" title="Subscriber Alert!">Subscriber Alert</a></li>
+			
+		</ul>
+	</li>
+	
+	
+    
+	<li class="navcurrent-issue"><a class="navcurrent-issue_a" href="/issues/current-issue/" title="Table of Contents">Current Issue</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navnyr-daily selected"><a class="navnyr-daily_a" href="/blogs/" title="">NYR Daily</a>
+		<ul data-level="2">
+			
+			<li class="selected"><a href="/blogs/nyrblog/" title="">NYR Daily</a></li>
+			
+			<li ><a href="/blogs/gallery/" title="">The Gallery</a></li>
+			
+			<li ><a href="/blogs/50-years/" title="">Rereadings</a></li>
+			
+		</ul>
+	</li>
+	
+	
+    
+	<li class="navcalendar"><a class="navcalendar_a" href="/events/" title="">Calendar</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navarchives"><a class="navarchives_a" href="/issues/" title="">Archives</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navclassifieds"><a class="navclassifieds_a" href="/classifieds/" title="">Classifieds</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navshop"><a class="navshop_a" href="/shop/" title="Shop">Shop</a>
+		<ul data-level="2">
+			
+			<li ><a href="/galleries/" title="">Illustrations</a></li>
+			
+		</ul>
+	</li>
+	
+	
+    
+	<li class="navnewsletters last"><a class="navnewsletters_a" href="/newsletter/magazine/" title="Sign Up for Our Newsletters">Newsletters</a>
+		
+			
+		
+	</li>
+	
+	
+
+    
+    
+	
+    
+	
+    
+	
+
+                              
+    
+
+                              <li>
+                                  <a href="http://www.nyrb.com" target="_blank">Books</a>
+                              </li>           
+                          </ul>
+                      </div><!-- .accordion-inner -->
+                    </div><!-- #header_search_menu -->
+                  </div><!-- .accordion-group -->
+                </div><!-- #header_menus.accordion -->
+          </div><!-- .navbar-inner -->
+      </div>
+  </div>
+  
+
+  <div class="container">
+    
+    <div class="row">
+      <div class="span12">
+        <header class="site">
+          
+          <h1 class="logo">
+            <a href="/">
+              <!--
+                12/01/14: Chrome Version 39.0.2171.71 not rendering full icon
+                          comment out span for now, and remove `hidden` class from
+                          image fallback.
+
+                <span aria-hidden="true" class="icomoon icomoon-icon-NYRB"></span>
+              -->
+              <img class="windows_logo_fallback" src="/media/static/assets/_assets/img/icon/NYRB.png" />
+            </a>
+          </h2>
+               
+          <div class="header_search">
+            <form method="get" action="/search/">
+              <div class="input-append">
+                <input class="span3" id="search appendedInputButton" name="q" type="text" placeholder="Enter search keywords...">
+                <input type="hidden" name="origin" value="magazine"/>
+                <button type="submit">
+                    <span class="add-on"><i class="icon-search"></i></span>
+                </button>                
+              </div>
+              <div class="advanced_search_link">
+                <a href="/search/">Advanced Search</a>
+              </div>
+            </form>
+          </div>
+          
+          <div class="desktop_nav">
+            <ul data-level="1">
+              
+    
+    
+	<li class="navsubscribe"><a class="navsubscribe_a" href="/subscriptions/order/" title="">Subscribe</a>
+		<ul data-level="2">
+			
+			<li ><a href="/subscriptions/order/" title="Subscribe to The New York Review">Start a Print Subscription</a></li>
+			
+			<li ><a href="/subscriptions/premium/" title="Start a Print Premium Subscription">Print Premium Subscription</a></li>
+			
+			<li ><a href="/subscriptions/gift/" title="Give a Gift">Give a Gift Subscription</a></li>
+			
+			<li ><a href="/renew/" title="Renew your Subscriptions">Renew a Subscription</a></li>
+			
+			<li ><a href="/subscriptions/online/" title="Subscribe to the Online Edition">Online Edition</a></li>
+			
+			<li ><a href="/subscriptions/digital-editions/" title="Subscribe to a Digital Edition">Digital Editions</a></li>
+			
+			<li ><a href="/institution/" title="Academic and Institutional Subscriptions">Academic/Institutional</a></li>
+			
+			<li ><a href="https://subscribe.nybooks.info/ecom/nyb/app/live/subcustserv?org=NYB&publ=NY&php=y" title="Subscriber Customer Service">Customer Service</a></li>
+			
+			<li ><a href="/subscriber-alert/" title="Subscriber Alert!">Subscriber Alert</a></li>
+			
+		</ul>
+	</li>
+	
+	
+    
+	<li class="navcurrent-issue"><a class="navcurrent-issue_a" href="/issues/current-issue/" title="Table of Contents">Current Issue</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navnyr-daily selected"><a class="navnyr-daily_a" href="/blogs/" title="">NYR Daily</a>
+		<ul data-level="2">
+			
+			<li class="selected"><a href="/blogs/nyrblog/" title="">NYR Daily</a></li>
+			
+			<li ><a href="/blogs/gallery/" title="">The Gallery</a></li>
+			
+			<li ><a href="/blogs/50-years/" title="">Rereadings</a></li>
+			
+		</ul>
+	</li>
+	
+	
+    
+	<li class="navcalendar"><a class="navcalendar_a" href="/events/" title="">Calendar</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navarchives"><a class="navarchives_a" href="/issues/" title="">Archives</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navclassifieds"><a class="navclassifieds_a" href="/classifieds/" title="">Classifieds</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navshop"><a class="navshop_a" href="/shop/" title="Shop">Shop</a>
+		<ul data-level="2">
+			
+			<li ><a href="/galleries/" title="">Illustrations</a></li>
+			
+		</ul>
+	</li>
+	
+	
+    
+	<li class="navnewsletters last"><a class="navnewsletters_a" href="/newsletter/magazine/" title="Sign Up for Our Newsletters">Newsletters</a>
+		
+			
+		
+	</li>
+	
+	
+
+    
+    
+	
+    
+	
+    
+	
+
+              
+    
+
+              <li class="books"><a class="" title="New York Review Books" href="http://www.nyrb.com" target="_blank"><img src="/media/static/assets/_assets/img/common/books.png" /></a></li>
+            </ul>
+          </div>
+            
+        </header>
+      </div>
+    </div>
+    
+    
+          
+	
+	
+        <div class="row">       
+            <header class="span12 blog_header">
+                <h2>
+                    <a href="/blogs/nyrblog/"><img class="nyr_daily_logo" src="/media/static/assets/_assets/img/icon/NYR_daily.png" /></a>
+                </h2>
+                <q></q>
+            </header>
+            <hr class="header_rule">
+        </div>      
+        <div id="blog-title" class="hidden">NYR Daily </div>
+	
+	
+
+    
+    <div class="row">
+    
+
+
+
+  
+
+  
+  
+
+    
+    
+      <div class="span8 blog_detail">
+        <article class="blog_post">
+
+        
+
+          <div class="row article_toolbar">
+            <span class="span5">
+    <ul class="tools">
+        <li>
+            <a href="/mail_friend/132/521155271/">Email</a>
+        </li>
+        <li class="visible-desktop">
+            <a href="?printpage=true" target="_blank">Print</a>
+        </li>
+        <li class="visible-desktop">
+            
+        </li>
+        
+    </ul>
+</span>
+<span class="span3">
+    
+    <ul class="social">
+        <li>
+			<a href="https://twitter.com/share" class="twitter-share-button" data-text="The Man Who Shaped Tomorrow by Martin Filler" data-via="nybooks" data-count="none">Tweet</a>
+			<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        </li>
+        <li class="facebook">
+            <div class="fb-share-button" data-href="http://www.nybooks.com/blogs/nyrblog/2015/nov/20/man-who-shaped-tomorrow-peter-muller-munk/" data-type="button"></div>
+        </li>
+    </ul>
+    
+</span>   
+          </div>
+
+          <header>
+
+            <h2>The Man Who Shaped Tomorrow</h2>
+            
+            <div class="author">
+
+<a href="/contributors/martin-filler-2/?tab=tab-blog">Martin Filler</a></div>
+            
+              
+            
+            
+
+            
+            
+
+          </header>
+
+          <section class="blog_post_body">
+            <div id="blog-image-3722" class="inline inline-type-blog-image inline-id-3722 inline-position-center">
+
+
+
+<figure class="landscape">
+	<a class="poppable" href="/media/img/blogimages/tea-horns-crop.jpg"><img src="/media/img/blogimages/tea-horns-crop_jpg_600x603_q85.jpg" alt="" /></a>
+	<figcaption>
+		<small>The Metropolitan Museum of Art/Art Resource, NY</small>
+		<div class="clearfix"></div>
+		Tea service with tray designed by Peter Muller-Munk, 1931
+	</figcaption>
+</figure>
+
+
+</div>
+<p>Among the dozen useful masterpieces chosen by the US Postal Service for its <a href="https://www.youtube.com/watch?v=mxQaFJkjgdA">2011 series of stamps</a> honoring American industrial design pioneers is the Normandie water pitcher (1935), a sleek chromium-plated vessel whose prow-like form echoes that of the then-new <a href="https://www.youtube.com/watch?v=AyxQQndVwuU">French ocean liner</a> for which it was named. This stunning work, manufactured by the Revere Copper and Brass company, evokes the glamour of interwar transatlantic travel with a sculptural purity worthy of Brancusi, and is rightly included in numerous design history books and museum collections. Yet until now the general public has known next to nothing about its creator, Peter Muller-Munk.
+</p>
+<p>That lapse is finally redressed by “Silver to Steel: The Modern Designs of Peter Muller-Munk,” an illuminating exhibition at Pittsburgh’s Carnegie Museum of Art. It vindicates the personal crusade of the Miami-based design historian Jewel Stern, an intrepid researcher of this overlooked figure and the co-curator of the show. 
+</p>
+<div id="blog-image-3716" class="inline inline-type-blog-image inline-id-3716 inline-position-right">
+
+
+
+<figure class="portrait">
+	<a class="poppable" href="/media/img/blogimages/normandie-pitcher_1.jpg"><img src="/media/img/blogimages/normandie-pitcher_1_jpg_250x1283_q85.jpg" alt="" /></a>
+	<figcaption>
+		<small>Carnegie Museum of Art</small>
+		<div class="clearfix"></div>
+		Normandie pitcher designed by Muller-Munk for Revere Copper and Brass, 1935
+	</figcaption>
+</figure>
+
+
+</div>
+<p>Stern is particularly interested in the transmission of modern design ideas from Europe to the United States, which in previous books she has revealed to be a far more complex and dispersed process than had been thought. Her diligence has paid off handsomely in this fascinating survey, and confirms the unjustly neglected Muller-Munk’s rightful place in the top tier with his much better known American contemporaries Donald Deskey, Henry Dreyfuss, <a href="http://www.nybooks.com/blogs/nyrblog/2013/nov/13/streamline-dreamer/">Norman Bel Geddes</a>, Raymond Loewy, and Walter Dorwin Teague. 
+</p>
+<p>Co-curated by Stern and the Carnegie’s Rachel Delphia (who together with Catherine Walworth wrote the informative catalog), “Silver to Steel” gathers some 125 pieces spanning Muller-Munk’s four-decade career. It traces his evolution from craftsman of precious objects to stylist of household appliances like refrigerators and vacuum cleaners, part of a broader midcentury shift in innovative American design from high-end exclusivity to mass-market practicality.
+</p>
+<p>Klaus-Peter Wilhelm Müller was born in Berlin in 1904, the son of upper-middle-class <em>Taufjuden</em> (baptized Jews) who converted to Protestantism. (He appended his mother’s maiden name, Munk, to the more commonplace Müller, and when he came to America dropped the umlaut.) Raised in a cultivated milieu, he nonetheless yearned to “do something with my hands,” and was apprenticed to the accomplished Berlin sculptor and silversmith Waldemar Raemisch. The eager student showed extraordinary aptitude for metalwork, and in 1926 immigrated to the economically booming United States.
+</p>
+<div id="blog-image-3721" class="inline inline-type-blog-image inline-id-3721 inline-position-center">
+
+
+
+<figure class="landscape">
+	<a class="poppable" href="/media/img/blogimages/peter-muller-munk.jpg"><img src="/media/img/blogimages/peter-muller-munk_jpg_600x931_q85.jpg" alt="" /></a>
+	<figcaption>
+		<small>PMMA archives</small>
+		<div class="clearfix"></div>
+		Peter Muller-Munk (center) reviewing designs for Westinghouse appliances, 1957
+	</figcaption>
+</figure>
+
+
+</div>
+<p>Confidently presenting himself at Tiffany <span class="amp">&amp;</span> Co. in New York, Muller-Munk was hired for the firm’s silver workshop on the spot, but grew bored with routine tasks and quit within a year. His father’s backing allowed him to open an atelier in Greenwich Village, where he designed and executed hand-wrought silver bowls, boxes, coffee services, and the like. <em>The New York Times</em> praised them as “highly individual and, while modern, not extreme or…bizarre,” while <em>The New Yorker</em> mentioned him in the same breath with the renowned Georg Jensen (nearly four decades his senior) as “two silversmiths worth remembering.” 
+</p>
+<p>Muller-Munk was always attuned to the latest trends in European metalwork. Stern tactfully notes the “uncanny resemblance” between his dramatic 1929 silver candelabra&#8212;with pairs of arms that flow upward and outward like Art Deco cascades&#8212;and the German architect Dominikus Böhm’s very similar and prominently published wall lamp of two years earlier. But Muller-Munk was never predictable, and moved with ease from a round, fluted silver bowl (circa 1928) akin to Josef Hoffmann’s designs for the Wiener Werkstätte, to graceful leaf-like shapes for a footed silver centerpiece (1929-1930) to a severely squared-off silver-plated tea service with tusk-like ivory handles (1931). 
+</p>
+<div id="blog-image-3723" class="inline inline-type-blog-image inline-id-3723 inline-position-right">
+
+
+
+<figure class="portrait">
+	<a class="poppable" href="/media/img/blogimages/waring-blendor-crop.jpg"><img src="/media/img/blogimages/waring-blendor-crop_jpg_250x1684_q85.jpg" alt="" /></a>
+	<figcaption>
+		<small>Brad Flowers/Private collection/Dallas Museum of Art</small>
+		<div class="clearfix"></div>
+		Waring Blendor, model B, designed by Peter Muller-Munk, 1937 
+
+	</figcaption>
+</figure>
+
+
+</div>
+<p>As the Great Depression deepened, he turned from exquisite luxury items to the emergent field of industrial design, which exploited up-to-date styling to make domestic appliances&#8212;necessary purchases in bad times no less than good&#8212;look efficient and desirable. A year after he married in 1934, Muller-Munk moved to Pittsburgh, where he joined the new industrial design faculty of the Carnegie Institute of Technology (now Carnegie Mellon University) and sought manufacturing clients for his own projects. He convinced school officials this was no conflict of interest but rather a necessary application of his didactic role. 
+</p>
+<p>Several of his designs&#8212;including chic cigarette lighters and a streamlined digital clock&#8212;reached the marketplace before the US entered World War II. But none became as ubiquitous as the Waring Blendor (1937), a food and drink mixer that tapped into the post-Prohibition craze for frothy mixed cocktails and ice cream sodas, as well as sauces found in fancy cookbooks. (The spelling of “blender” was altered to signify its proprietary status, and the gadget was named for Fred Waring, a popular choral-group leader who invested in its development and promoted it relentlessly.) 
+</p>
+<div id="blog-image-3713" class="inline inline-type-blog-image inline-id-3713 inline-position-center">
+
+
+
+<figure class="landscape">
+	<a class="poppable" href="/media/img/blogimages/westinghouse.jpg"><img src="/media/img/blogimages/westinghouse_jpg_600x599_q85.jpg" alt="" /></a>
+	<figcaption>
+		<small>Carnegie Library of Pittsburgh/Westinghouse Electric Corporation</small>
+		<div class="clearfix"></div>
+		Advertisement for a Muller-Munk kitchen ensemble, <em>Saturday Evening Post</em>, September 28, 1957
+	</figcaption>
+</figure>
+
+
+</div>
+<p>The original inventor’s prototype worked imperfectly, but Muller-Munk transformed the device into a marketable product. Its streamlined, circular chromium-plated base with four skyscraper-like setbacks and slightly flared transparent glass cylinder recalled a Moderne light fixture. This precursor of today’s Cuisinart became a huge success, and, built to last, it can still be found in many American kitchens.
+</p>
+<p>When peace came in 1945 he resigned his teaching post and founded Peter Muller-Munk Associates, whereupon his design career soared. The office’s extensive client list included Bell <span class="amp">&amp;</span> Howell (home movie cameras and projectors), Bissell (carpet sweepers), Silex (steam irons and coffee makers), and Westinghouse (<a href="https://www.youtube.com/watch?v=BVlqUxgvupo">refrigerators</a> and radios). 
+</p>
+<div id="blog-image-3712" class="inline inline-type-blog-image inline-id-3712 inline-position-right">
+
+
+
+<figure class="portrait">
+	<a class="poppable" href="/media/img/blogimages/wayne500-gas-pump.jpg"><img src="/media/img/blogimages/wayne500-gas-pump_jpg_250x1437_q85.jpg" alt="" /></a>
+	<figcaption>
+		<small>Tom Little/Carnegie Museum of Art</small>
+		<div class="clearfix"></div>
+		Peter Muller-Munk&#8217;s Wayne 500 series gasoline pump, 1950
+	</figcaption>
+</figure>
+
+
+</div>
+<p>Just as Depression-era manufacturers used streamlining to imply that their goods were cutting-edge developments (when the inner workings were often no different from earlier models), postwar companies employed an ever-changing array of colors to set their new models apart from the metallic finishes typical of 1930s and 1940s appliances. Muller-Munk’s “frosty blue” gas range for Caloric (1955), jewel-tone <a href="https://www.youtube.com/watch?v=6uttqaqZ68E">Lady Schick electric shavers</a> (1958), and Griswold turquoise or tangerine porcelain-enameled steel cookware (1962) all catered to the notion that household devices should be not merely functional but fashionable as well. 
+</p>
+<p>However, because Muller-Munk’s late-career efforts centered so strongly on appliances, his reputation fell victim to the same planned obsolescence that motivated his clients. The electrically operated machines he designed had limited lifespans, were superseded by newer models, and then discarded. The color wheel whirled around too, as the powder pink and mint green of the 1950s gave way to harvest gold and avocado at the end of the following decade.
+</p>
+<p>In contrast, low-tech objects may go out of fashion, but they remain useful even if consigned to the attic. Thus, unlike Russel Wright’s ceramic dinnerware or Charles and Ray Eames’s <a href="https://www.youtube.com/watch?v=IBLMoMhlAfM">molded plywood furniture</a>, which survived changing tastes and are now avidly sought, there are comparatively few Muller-Munk objects available to collectors. (A rare postwar exception is his 1956 Tricorne line of angular-shaped crystal table accessories for the Belgian glassmaking concern Val Saint Lambert.)
+</p>
+<p>Another factor in Muller-Munk’s posthumous eclipse was his early death at age sixty-two. His wife, who had long been in poor heath, committed suicide in 1967 and he, distraught, took his own life one month afterward. Stern’s touching account of this double tragedy&#8212;which displays the author’s human sympathies as much as her research skills&#8212;observes that friends of the couple “recalled the Muller-Munks saying that when one of them died the other would too.”
+</p>
+<div id="blog-image-3719" class="inline inline-type-blog-image inline-id-3719 inline-position-center">
+
+
+
+<figure class="landscape">
+	<a class="poppable" href="/media/img/blogimages/unisphere.jpg"><img src="/media/img/blogimages/unisphere_jpg_600x705_q85.jpg" alt="" /></a>
+	<figcaption>
+		<small>Rachel Delphia/Carnegie Museum of Art</small>
+		<div class="clearfix"></div>
+		Peter Muller-Munk&#8217;s Unisphere in Flushing Meadows Corona Park, New York
+	</figcaption>
+</figure>
+
+
+</div>
+<p>His last major commission was the symbolic centerpiece of the 1964-1965 New York World’s Fair—<a href="https://www.youtube.com/watch?v=SARurfS2SjE">the Unisphere</a>&#8212;a twelve-story-high, openwork stainless steel terrestrial globe that remains on its original site in Queens’s Flushing Meadows-Corona Park. It seems most ironic that the designer of such an enduring landmark of the New York cityscape, which is visible to millions of visitors to each year as they head into Manhattan from JFK airport, was forgotten for a half century after his death.
+</p>
+<p>The Unisphere depicts the Earth’s continents in topographically layered high relief, with longitude and latitude lines that act as a peripheral armature, surrounded by three halo-like orbital satellite rings that acknowledge the then-recent advent of the Space Age. Despite its 700,000-pound weight, what might have been a gravity-bound behemoth conveys an unexpected buoyancy, even jauntiness, thanks to its apparently delicate perch atop an inverted tripod and accurate replication of the earth’s 23.45-degree tilt from a perpendicular axis. When the ninety-six-jet fountain encircling its base (happily restored in 2010) <a href="https://www.youtube.com/watch?v=mwXqBGFu0HM">spritzes upward</a>, the cumulative effect is one of alchemical lightness, the uplifting quality that Peter Muller-Munk brought to his malleable and memorable metalwork. <br />
+<br />
+</p>
+<hr />
+<p><b><span class="dquo">&#8220;</span>Silver to Steel: The Modern Designs of Peter Muller-Munk&#8221; is on view at the <a href="http://www.cmoa.org/ExhibitionDetail.aspx?id=25161">Carnegie Museum of Art</a> through April 11, 2016. The catalog, by Rachel Delphia, Jewel Stern and Catherine Walworth, is published by <a href="http://www.randomhouse.de/book/Silver-to-Steel-The-Modern-Designs-of-Peter-Muller-Munk/Rachel-Delphia/e484512.rhd?pub=58500">Prestel</a>.</b>
+</p>
+          </section>
+
+          <footer>
+            <time pubdate>
+              November 20, 2015, 3:45 p.m.
+            </time>
+            <div class="clearfix"></div>
+          <div class="row article_toolbar">
+            <span class="span5">
+    <ul class="tools">
+        <li>
+            <a href="/mail_friend/132/521155271/">Email</a>
+        </li>
+        <li class="visible-desktop">
+            <a href="?printpage=true" target="_blank">Print</a>
+        </li>
+        <li class="visible-desktop">
+            
+        </li>
+        
+    </ul>
+</span>
+<span class="span3">
+    
+    <ul class="social">
+        <li>
+			<a href="https://twitter.com/share" class="twitter-share-button" data-text="The Man Who Shaped Tomorrow by Martin Filler" data-via="nybooks" data-count="none">Tweet</a>
+			<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        </li>
+        <li class="facebook">
+            <div class="fb-share-button" data-href="http://www.nybooks.com/blogs/nyrblog/2015/nov/20/man-who-shaped-tomorrow-peter-muller-munk/" data-type="button"></div>
+        </li>
+    </ul>
+    
+</span>   
+          </div>
+            
+            
+            
+              <div class="related_items clearfix">
+                  <hr>
+                  <h3 class="header">Related</h3>
+                  
+                  <div class="related_item">
+                      <figure>
+	<a href="/blogs/nyrblog/2013/nov/13/streamline-dreamer/"><img src="/media/img/blogimages/Gold-Automobile-6_jpg_300x200_crop_q85.jpg"></a>
+</figure>   
+<h4><a href="/blogs/nyrblog/2013/nov/13/streamline-dreamer/">Streamline Dreamer</a></h4>
+<div class="author"><a href="/blogs/nyrblog/2013/nov/13/streamline-dreamer/">
+
+Martin Filler</a></div>
+                  </div>
+                  
+                  <div class="related_item">
+                      
+<figure>
+	<a href="/articles/archives/2011/feb/24/mad-men-account/"><img src="/media/photo/2011/02/01/mendelsohn_1-022411___jpg_300x200_crop_q85.jpg"></a>
+</figure>
+
+<h4><a href="/articles/archives/2011/feb/24/mad-men-account/">The Mad Men Account</a></h4>
+<div class="author"><a href="/articles/archives/2011/feb/24/mad-men-account/">
+
+Daniel Mendelsohn</a></div>
+
+
+                  </div>
+                  
+                  <div class="related_item">
+                      <figure>
+	<a href="/blogs/nyrblog/2011/jan/21/when-modernism-entered-the-kitchen/"><img src="/media/img/blogimages/moma-frankfurt-kitchen-straight-window_jpg_300x200_crop_q85.jpg"></a>
+</figure>   
+<h4><a href="/blogs/nyrblog/2011/jan/21/when-modernism-entered-the-kitchen/">Modernism in the Kitchen</a></h4>
+<div class="author"><a href="/blogs/nyrblog/2011/jan/21/when-modernism-entered-the-kitchen/">
+
+Martin Filler</a></div>
+                  </div>
+                  
+              </div>
+            
+            
+          </footer>
+        </article>
+      </div>
+
+
+      
+
+    
+    
+
+  
+
+  
+  
+
+  
+    <div class="span4 sidebar">
+      <aside>
+        
+          <div class="sidebar_ad_1">
+              
+
+<div id="blog_page-1"></div>
+          </div>
+          
+
+<section class="current_issue">
+  <h3><a href="/blogs/"><img class="nyr_daily_logo sidebar" src="/media/static/assets/_assets/img/icon/NYR_daily.png" alt="NYR Daily" title="NYR Daily" /></a></h3>
+  
+  
+    <article>
+    
+      <figure>
+        <a href="/blogs/nyrblog/2015/nov/24/xi-china-illusion-of-change/"><img src="/media/img/blogimages/xin-jinping_jpg_63x63_crop_q85.jpg"></a>
+      </figure>        
+    
+      <h5><a href="/blogs/nyrblog/2015/nov/24/xi-china-illusion-of-change/">The New-Old China</a></h5>
+    
+      <div class="author"><a href="/blogs/nyrblog/2015/nov/24/xi-china-illusion-of-change/">
+
+Ian Johnson</a></div>
+    
+    </article>
+  
+    <article>
+    
+      <figure>
+        <a href="/blogs/nyrblog/2015/nov/18/yale-power-of-speech/"><img src="/media/img/blogimages/yale-student_jpg_63x63_crop_q85.jpg"></a>
+      </figure>        
+    
+      <h5><a href="/blogs/nyrblog/2015/nov/18/yale-power-of-speech/">Free Speech at Yale</a></h5>
+    
+      <div class="author"><a href="/blogs/nyrblog/2015/nov/18/yale-power-of-speech/">
+
+David Cole</a></div>
+    
+    </article>
+  
+    <article>
+    
+      <figure>
+        <a href="/blogs/nyrblog/2015/nov/17/burma-election-how-much-change/"><img src="/media/img/blogimages/aung-san-suu-kyi_jpg_63x63_crop_q85.jpg"></a>
+      </figure>        
+    
+      <h5><a href="/blogs/nyrblog/2015/nov/17/burma-election-how-much-change/">Change in Burma</a></h5>
+    
+      <div class="author"><a href="/blogs/nyrblog/2015/nov/17/burma-election-how-much-change/">
+
+Christian Caryl</a></div>
+    
+    </article>
+  
+    
+  
+    <article>
+    
+      <figure>
+        <a href="/blogs/gallery/2015/nov/25/parchment-beasts/"><img src="/media/img/blogimages/monkeys-making-parchment_jpg_63x63_crop_q85.jpg"></a>
+      </figure>        
+    
+      <h5><a href="/blogs/gallery/2015/nov/25/parchment-beasts/">Written on Beasts</a></h5>
+    
+      <div class="author"><a href="/blogs/gallery/2015/nov/25/parchment-beasts/">
+
+Bruce Holsinger</a></div>
+    
+    </article>
+  
+    <article>
+    
+      <figure>
+        <a href="/blogs/gallery/2015/nov/01/sophie-calle/"><img src="/media/img/blogimages/calle5_jpg_63x63_crop_q85.jpg"></a>
+      </figure>        
+    
+      <h5><a href="/blogs/gallery/2015/nov/01/sophie-calle/">The Art of Sophie Calle</a></h5>
+    
+      <div class="author"><a href="/blogs/gallery/2015/nov/01/sophie-calle/">
+
+Madeleine Schwartz</a></div>
+    
+    </article>
+  
+</section>
+
+          <div class="sidebar_ad_2">
+              
+
+<div id="blog_page-2"></div>
+          </div>
+          
+          
+<section class="current_issue">
+  <figure class="cover">        
+    <a href="/issues/current-issue/"><img src="/media/photo/2015/11/23/nyrb121715.png" width="235px"/></a>
+    <h4>From the Current Issue</h4>
+    <time pubdate>&mdash;&mdash; December 17 &mdash;&mdash;</time>
+  </figure>
+  
+      
+        <article>
+          
+          <figure>
+          <a href="/articles/archives/2015/dec/17/john-hope-franklin-race-meaning-america/">
+              <img src="/media/photo/2015/11/24/faust_1-121715_jpg_63x63_crop_q85.jpg" width="63" height="63" alt="John Hope Franklin: Race &#38; the Meaning of America" />
+          </a>
+        </figure>
+          
+          <h5><a href="/articles/archives/2015/dec/17/john-hope-franklin-race-meaning-america/">Race <span class="amp">&amp;</span> the Meaning of America</a></h5>
+          
+            <div class="author">
+              
+<a href="/contributors/drew-gilpin-faust/">Drew Gilpin Faust</a>
+            </div>
+          
+        </article>
+      
+  
+      
+        <article>
+          
+          <figure>
+          <a href="/articles/archives/2015/dec/17/refugees-and-new-war/">
+              <img src="/media/photo/2015/11/21/ignatieff_1-121715_jpg_63x63_crop_q85.jpg" width="63" height="63" alt="The Refugees &#38; the New War" />
+          </a>
+        </figure>
+          
+          <h5><a href="/articles/archives/2015/dec/17/refugees-and-new-war/">The Refugees <span class="amp">&amp;</span> the New War</a></h5>
+          
+            <div class="author">
+              
+<a href="/contributors/michael-ignatieff-2/">Michael Ignatieff</a>
+            </div>
+          
+        </article>
+      
+  
+      
+        <article>
+          
+          <figure>
+          <a href="/articles/archives/2015/dec/17/marilynne-robinson-mind-beautiful-miracle/">
+              <img src="/media/photo/2015/11/24/wills_1-121715_jpg_63x63_crop_q85.jpg" width="63" height="63" alt="The ‘Mind as a Beautiful Miracle’" />
+          </a>
+        </figure>
+          
+          <h5><a href="/articles/archives/2015/dec/17/marilynne-robinson-mind-beautiful-miracle/">The ‘Mind as a Beautiful Miracle’</a> <i class="icon-lock"></i></h5>
+          
+            <div class="author">
+              
+<a href="/contributors/wills-garry/">Garry Wills</a>
+            </div>
+          
+        </article>
+      
+  
+      
+        <article>
+          
+          <figure>
+          <a href="/articles/archives/2015/dec/17/reimagining-journalism-story-one-percent/">
+              <img src="/media/photo/2015/11/23/massing_1-121715_jpg_63x63_crop_q85.jpg" width="63" height="63" alt="Reimagining Journalism: The Story of the One Percent" />
+          </a>
+        </figure>
+          
+          <h5><a href="/articles/archives/2015/dec/17/reimagining-journalism-story-one-percent/">Reimagining Journalism</a></h5>
+          
+            <div class="author">
+              
+<a href="/contributors/michael-massing/">Michael Massing</a>
+            </div>
+          
+        </article>
+      
+  
+      
+        <article>
+          
+          <figure>
+          <a href="/articles/archives/2015/dec/17/robert-reich-challenging-oligarchy/">
+              <img src="/media/img/illustrations/reich_robert-121715_jpg_63x63_crop_q85.jpg" width="63" height="63" alt="Challenging the Oligarchy" />
+          </a>
+        </figure>
+          
+          <h5><a href="/articles/archives/2015/dec/17/robert-reich-challenging-oligarchy/">Challenging the Oligarchy</a></h5>
+          
+            <div class="author">
+              
+<a href="/contributors/paul-krugman/">Paul Krugman</a>
+            </div>
+          
+        </article>
+      
+  
+  <a href="/issues/current-issue/" class="read pull-right">More <i style="font-size:15px;" class="icon-double-angle-right"></i></a>
+</section>
+<div class="clearfix"></div>
+          
+          <div class="sidebar_ad_3">
+              
+<a href="/subscriptions/order/"><img src="/media/advertising/SubscriptionHoliday-2015-300x250.png" title="Subscribe to the New York Review" alt="Subscribe to the New York Review"/></a>
+          </div>
+          
+          <div class="sidebar_ad_3">
+          
+<div id="criteoscroller">
+   <iframe src='//cas.criteo.com/delivery/afr.php?zoneid=236962' framespacing='0' frameborder='no' scrolling='no' width='300' height='600'>
+   <a href='//cas.criteo.com/delivery/ck.php?cb=CACHEBUSTER' target='_blank'>
+   <img src='//cas.criteo.com/delivery/avw.php?zoneid=236962' border='0' alt='' />
+   </a>
+   </iframe>
+</div>
+<script type="text/javascript">
+jQuery(window).load(function() {var criteo_scrollingAd = jQuery('#criteoscroller');var criteo_adTop = criteo_scrollingAd.offset().top;
+    function fixDiv() {
+        var criteo_stoppingHeight = jQuery('.site_footer').offset().top;
+        if (jQuery(window).scrollTop() >= (criteo_stoppingHeight - 650))
+            criteo_scrollingAd.css({
+                'position': 'relative',
+                'top': (criteo_stoppingHeight - criteo_adTop - 650) + 'px'
+            });
+        else if (jQuery(window).scrollTop() >= (criteo_adTop - 10))
+            criteo_scrollingAd.css({
+                'position': 'fixed',
+                'top': '10px'
+            });
+        else
+            criteo_scrollingAd.css({
+                'position': 'static',
+                'top': 'auto'
+            });
+    }
+    jQuery(window).scroll(fixDiv);
+    fixDiv();
+});
+</script>
+          </div>
+        
+        
+      </aside>
+    </div><!--.span4.sideabar-->
+  
+
+  
+  
+
+
+
+
+    </div> 
+  </div><!--.container-->
+    
+    
+    
+    <footer class="site_footer">
+      <div class="container">
+        <div class="row">
+          <div class="span12">
+            <ul>
+            
+              
+                
+
+    
+    
+	<li class="navhome selected"><a class="navhome_a" href="/" title="">Home</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navcontact-us"><a class="navcontact-us_a" href="/contact/" title="">Contact Us</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navabout"><a class="navabout_a" href="/about/" title="">About</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navsubscribe"><a class="navsubscribe_a" href="/subscriptions/order/" title="">Subscribe</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navadvertise"><a class="navadvertise_a" href="/advertising/" title="">Advertise</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navuniversity-press-listing"><a class="navuniversity-press-listing_a" href="/upress/" title="New Titles from University Presses">University Press Listing</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navindependent-press-listing"><a class="navindependent-press-listing_a" href="/ipl/" title="Independent Press Listing">Independent Press Listing</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navcustomer-service"><a class="navcustomer-service_a" href="/customer-service/" title="Customer Service">Customer Service</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navhelpfaq"><a class="navhelpfaq_a" href="/about/faq/" title="Frequently Asked Questions">Help/FAQ</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navbooks"><a class="navbooks_a" href="/books/" title="">Books</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navterms-of-service"><a class="navterms-of-service_a" href="/about/terms-of-service/" title="">Terms of Service</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navfeeds"><a class="navfeeds_a" href="/rss/" title="">Feeds</a>
+		
+			
+		
+	</li>
+	
+	
+    
+	<li class="navnewsletters last"><a class="navnewsletters_a" href="/newsletter/magazine/" title="">Newsletters</a>
+		
+			
+		
+	</li>
+	
+	
+
+
+              
+            
+            </ul>
+          </div>
+        </div>
+      </div>
+      <p>&copy; 1963-2015 NYREV, Inc. All rights reserved.</p>
+    </footer> 
+    <!-- script src="/media/static/assets/_assets/js/lib/URI.js"></script -->
+    
+
+  
+</div>
+</body>
+
+</html>
+

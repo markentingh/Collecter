@@ -5,7 +5,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.StaticFiles;
-using Microsoft.AspNet.Session;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Collector
