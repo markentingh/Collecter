@@ -203,9 +203,9 @@ namespace Collector
             RegisterJSonce(file, myJs);
         }
 
-        public void RegisterJSFromFile(string name, string file)
+        public void RegisterJSFromFile(string file)
         {
-            RegisterJS(name, S.Server.OpenFile(file));
+            RegisterJS(file, S.Server.OpenFile(file));
         }
 
         public void RegisterCSS(string name, string css, bool overwrite = false)

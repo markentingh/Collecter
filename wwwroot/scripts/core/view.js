@@ -120,6 +120,7 @@ var S = {
 
             ready: function () {
                 S.events.doc.resize.trigger();
+                S.accordion.load();
             },
 
             click: {
@@ -517,6 +518,17 @@ var S = {
     lostSession: function () {
         alert('Your session has been lost. The page will now reload');
         location.reload();
+    },
+
+    accordion: {
+        load: function () {
+            $('.accordion > .title').off('click').on('click', S.accordion.toggle);
+        },
+
+        toggle: function () {
+            $(this).toggleClass('expanded');
+            $(this).parent().find('> .box').toggleClass('expanded');
+        }
     }
 }
 

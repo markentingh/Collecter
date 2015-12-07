@@ -1,0 +1,36 @@
+﻿<style type="text/css">
+    .dom-structure .tag{padding:5px 0px; white-space:nowrap;}
+    .dom-structure .tag:hover{background-color:#233234;}
+    .text-sorted .text{padding:5px 0px 70px 0px; white-space:normal; max-width:100%;}
+    .anchorlinks .link{padding:5px 0px;}
+    .raw-html > .box > .content {width:calc(100% - 20px); height:478px;}
+</style>
+<link type="text/css" rel="/scripts/ace/ace.css"/>
+
+<div class="accordion raw-html" onclick="S.analyzed.loadAce()">
+    <div class="title">Raw HTML</div>
+    <div class="box" style="overflow:hidden !important;">
+        <div class="content" id="rawhtml">{{raw-html}}</div>
+    </div>
+</div>
+
+<div class="accordion dom-structure">
+    <div class="title">DOM Structure</div>
+    <div class="box">
+        <div class="content">{{dom-structure}}</div>
+    </div>
+</div>
+
+<div class="accordion text-sorted">
+    <div class="title">Sorted Text (by length)</div>
+    <div class="box">
+        <div class="content">{{text-sorted}}</div>
+    </div>
+</div>
+
+<div class="accordion anchorlinks">
+    <div class="title">Anchor Links</div>
+    <div class="box">
+        <div class="content">{{anchorlinks}}</div>
+    </div>
+</div>

@@ -6,13 +6,13 @@
   "projectUrl": "http://www.github.com/Collector/Home",
 
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5001"
+    "web": "Microsoft.AspNet.Server.Kestrel"
   },
 
   "frameworks": {
     "dnxcore50": {
       "dependencies": {
-        "Microsoft.AspNet.IISPlatformHandler":  "1.0.0-rc1-final",
+        "Microsoft.AspNet.IISPlatformHandler": "1.0.0-rc1-final",
         "Microsoft.AspNet.Hosting": "1.0.0-rc1-final",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final",
         "Microsoft.AspNet.StaticFiles": "1.0.0-rc1-final",

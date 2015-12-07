@@ -4,3 +4,13 @@
 .dashboard > .row > nav ul > li {display:inline-block; padding:0px 10px;}
 .dashboard > .section{clear:both;}
 .a{color:#ff6a00}
+
+/* accordion //////////////////////////////////////////////////////////*/
+.accordion{padding-bottom:30px;}
+.accordion .title{padding:7px 15px; height:17px; background-color:#dbdbdb; border-bottom:1px solid #cfcfcf; font-size:17px; font-weight:bold; cursor:pointer; overflow:none;}
+.accordion .title.expanded{background-color:#75bad4; color:#004d87; border-bottom-color:#00e8e8;}
+.accordion .box{background-color:#222; color:#aaa; max-height:0px; transition: max-height 0.3s, padding 0.3s;}
+.accordion .box.expanded{padding:20px; max-height:500px; overflow:auto;}
+.accordion .box > .content{white-space:nowrap;}
+
+.accordion{padding-bottom:30px;}

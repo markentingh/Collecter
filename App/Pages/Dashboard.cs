@@ -39,7 +39,7 @@ namespace Collector.Pages
             //load website interface
             Includes.Interface iface = new Includes.Interface(S, scaffold);
 
-            return iface.Render(scaffold.Render(), "dashboard.css");
+            return iface.Render(scaffold.Render(), "dashboard.css", section.scriptFiles);
         }
     }
 }
