@@ -218,6 +218,7 @@ namespace Collector.Utility.DOM
                                 case "input":
                                 case "link":
                                 case "meta":
+                                case "hr":
                                     isSelfClosing = true;
                                     break;
                             }
@@ -258,9 +259,31 @@ namespace Collector.Utility.DOM
                                 //go back one parent if this tag is a closing tag
                                 if (parentElement >= 0)
                                 {
+                                    if(Elements[parentElement].tagName.ToLower() != domTag.tagName.Replace("/",""))
+                                    {
+                                        //not the same tag as the current parent tag, add missing closing tag
+                                        if(Elements[parentElement].parent >= 0)
+                                        {
+                                            if (Elements[Elements[parentElement].parent].tagName.ToLower() == domTag.tagName.Replace("/", ""))
+                                            {
+                                                //replace unknown closing tag with missing closing tag
+                                                domTag.tagName = "/" + Elements[Elements[parentElement].parent].tagName;
+                                            }
+                                            else
+                                            {
+                                                //skip this closing tag because it doesn't have an opening tag
+                                                Elements.RemoveAt(Elements.Count - 1);
+                                                x = xs = s1;
+                                                continue;
+                                            }
+                                        }
+                                    }
                                     parentElement = Elements[parentElement].parent;
-                                    hierarchy.RemoveAt(hierarchy.Count - 1);
-                                    hierarchyIndexes.RemoveAt(hierarchyIndexes.Count - 1);
+                                    if (hierarchy.Count > 0)
+                                    {
+                                        hierarchy.RemoveAt(hierarchy.Count - 1);
+                                        hierarchyIndexes.RemoveAt(hierarchyIndexes.Count - 1);
+                                    }
                                 }
                             }
                             x = xs = s1;
