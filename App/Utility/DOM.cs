@@ -196,7 +196,7 @@ namespace Collector.Utility.DOM
                             {
                                 //tag has attributes
                                 domTag.tagName = strTag.Substring(0, s3);
-                                domTag.attribute = GetAttributes(strTag.Substring(s3));
+                                domTag.attribute = GetAttributes(strTag);
                             }
 
                             //check if tag is script
@@ -350,10 +350,10 @@ namespace Collector.Utility.DOM
                 hierarchyIndexes.Add(parentElement);
             }
 
-            //if(domTag.tagName == "#text")
-            //{
-            //    Console.WriteLine(domTag.text + "\n");
-            //}
+            if(domTag.tagName == "#text")
+            {
+                //Console.WriteLine(domTag.text + "\n\n");
+            }
 
             domTag.index = Elements.Count;
             domTag.isSelfClosing = isSelfClosing;

@@ -56,11 +56,11 @@ namespace Collector.Includes.Dashboard
                                     }
                                     scaffold2.Data["dom-structure"] = "<div class=\"tag\">" + string.Join("</div><div class=\"tag\">", domStructure.ToArray()) + "</div>";
 
-                                    //create text
+                                    //create sorted text
                                     var textSorted = new List<string>();
                                     foreach (DomElement tag in article.tags.text)
                                     {
-                                        textSorted.Add(tag.text);
+                                        textSorted.Add(tag.text.Replace("<","&lt;").Replace(">","&gt;"));
                                     }
                                     scaffold2.Data["text-sorted"] = "<div class=\"text\">" + string.Join("</div><div class=\"text\">", textSorted.ToArray()) + "</div>";
 
@@ -71,7 +71,7 @@ namespace Collector.Includes.Dashboard
                                     {
                                         if (tag.attribute.ContainsKey("href"))
                                         {
-                                            anchorLinks.Add("a href=\"" + tag.attribute["href"] + "\" target=\"_blank\">" + tag.attribute["href"] + "</a>");
+                                            anchorLinks.Add("<a href=\"" + tag.attribute["href"] + "\" target=\"_blank\">" + tag.attribute["href"] + "</a>");
                                         }
                                         
                                     }
