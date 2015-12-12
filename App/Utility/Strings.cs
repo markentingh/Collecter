@@ -75,7 +75,7 @@ namespace Collector.Utility
             string newStr = myStr.ToString();
             for (int x = 0; x <= findList.Length - 1; x++)
             {
-                newStr = newStr.Replace(findList[x], replaceWith);
+                newStr = newStr.Replace(findList[x], replaceWith.Replace("{1}",findList[x].Substring(0,1)));
             }
             return newStr;
         }

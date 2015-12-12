@@ -527,7 +527,8 @@ var S = {
 
         toggle: function () {
             $(this).toggleClass('expanded');
-            $(this).parent().find('> .box').toggleClass('expanded');
+            var box = $(this).parent().find('> .box');
+            box.toggleClass('expanded');
         }
     }
 }

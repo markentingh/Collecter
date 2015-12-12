@@ -1,36 +1,75 @@
 ﻿<style type="text/css">
-    .dom-structure .tag{padding:5px 0px; white-space:nowrap;}
+    .article-title{font-size:25px;padding:10px 0 10px 0;}
+    .article-url{font-size:17px; padding:0 0 50px 0;}
+    .raw-html > .box > .contents {width:100%; height:460px;}
+    .dom-structure .tag{padding:5px 0; white-space:nowrap;}
     .dom-structure .tag:hover{background-color:#233234;}
-    .text-sorted .text{padding:5px 0px 70px 0px; white-space:normal; max-width:100%;}
-    .anchorlinks .link{padding:5px 0px;}
-    .raw-html > .box > .content {width:calc(100% - 20px); height:478px;}
+    .dom-structure .line-num{display:inline-block; width:40px; text-align:right; padding-right:20px; color:#16a8a8}
+    .tag-names .tag-name{display:inline-block; padding:7px; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px;}
+    .tag-names .tag-info{font-size:12px; color:#666;}
+    .text-sorted .text{padding:5px 0; white-space:normal; max-width:100%; margin-bottom:20px; border-bottom:1px solid #005F5F;}
+    .text-sorted .text:hover{background-color:#233234;}
+    .text-sorted .line-num{display:inline-block; width:40px; text-align:right; padding-right:20px; color:#16a8a8}
+    .text-sorted .raw{display:inline-block; width:calc(100% - 60px); text-align:left; cursor:pointer;}
+    .text-sorted .raw .text-info{overflow:hidden; max-height:0; transition: max-height 0.3s;}
+    .text-sorted .raw .text-info.expanded{max-height:100px; overflow: auto;}
+    .text-sorted .raw .text-info .contents{padding:20px;}
+    .text-sorted .raw .text-info .info{width:30%; float:left; padding:0 0 10px 0;}
+    .text-sorted .raw .text-info .info:nth-child(1n+2){width:70%;}
+    .text-sorted .raw .text-info .label{width:60px; vertical-align:top; text-align:right; display:inline-block; color:#ac0b60; font-weight:bold;}
+    .text-sorted .raw .text-info .data{width:calc(100% - 70px); padding-left:10px; display:inline-block; color:#d83a8d;}
+    .words-sorted .word{display:inline-block; width:calc(20% - 50px); padding:7px; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px; overflow:hidden; cursor:pointer;}
+    .words-sorted .word .word-info{overflow:hidden; max-height:0; transition: max-height 0.3s;}
+    .words-sorted .word .word-info.expanded{max-height:100px; overflow: auto;}
+    .words-sorted .word .word-info .contents{padding:20px 0;}
+    .words-sorted .word .word-info .info{padding-bottom:10px;}
+    .words-sorted .word .word-info .label{width:70px; text-align:right; display:inline-block;}
+    .words-sorted .word .word-info .data{width:calc(100% - 80px); padding-left:10px; display:inline-block;}
+    .anchorlinks .link{padding:5px 0;}
 </style>
 <link type="text/css" rel="/scripts/ace/ace.css"/>
+
+<div class="article-title">{{article-title}}</div>
+<div class="article-url"><a href="{{article-url}}" target="_blank">{{article-url}}</a></div>
 
 <div class="accordion raw-html" onclick="S.analyzed.loadAce()">
     <div class="title">Raw HTML</div>
     <div class="box" style="overflow:hidden !important;">
-        <div class="content" id="rawhtml">{{raw-html}}</div>
+        <div class="contents" id="rawhtml">{{raw-html}}</div>
     </div>
 </div>
 
 <div class="accordion dom-structure">
     <div class="title">DOM Structure</div>
     <div class="box">
-        <div class="content">{{dom-structure}}</div>
+        <div class="contents">{{dom-structure}}</div>
+    </div>
+</div>
+
+<div class="accordion tag-names">
+    <div class="title">Tag Names</div>
+    <div class="box">
+        <div class="contents">{{tag-names}}</div>
     </div>
 </div>
 
 <div class="accordion text-sorted">
     <div class="title">Sorted Text (by length)</div>
     <div class="box">
-        <div class="content">{{text-sorted}}</div>
+        <div class="contents">{{text-sorted}}</div>
+    </div>
+</div>
+
+<div class="accordion words-sorted">
+    <div class="title">Sorted Words (by importance)</div>
+    <div class="box">
+        <div class="contents">{{words-sorted}}</div>
     </div>
 </div>
 
 <div class="accordion anchorlinks">
     <div class="title">Anchor Links</div>
     <div class="box">
-        <div class="content">{{anchorlinks}}</div>
+        <div class="contents">{{anchorlinks}}</div>
     </div>
 </div>

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using Collector.Utility.DOM;
 
 namespace Collector.Includes.Dashboard
@@ -38,37 +37,84 @@ namespace Collector.Includes.Dashboard
                             {
                                 if(S.Request.Form["url"] != "")
                                 {
-                                    //analyze an article
+                                    //analyze an article ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                     var serveArticles = new Services.Dashboard.Articles(S, S.Page.Url.paths);
-                                    var article = serveArticles.Analyze(S.Request.Form["Url"]);
+                                    var url = S.Request.Form["Url"];
+                                    var article = serveArticles.Analyze(url);
 
-                                    //setup article analysis results /////////////////////////////////////////////////////////////////////////////////////////////////////
+                                    //setup article analysis results
                                     scaffold2 = new Scaffold(S, "/app/includes/dashboard/articles/analyzed.html", "", new string[] { "name", "id" });
+
+                                    scaffold2.Data["article-title"] = article.pageTitle;
+                                    scaffold2.Data["article-url"] = url;
 
                                     //create raw html Ace Editor
                                     scaffold2.Data["raw-html"] = article.rawHtml.Replace("<","&lt;").Replace(">","&gt;");
 
                                     //create dom structure
                                     var domStructure = new List<string>();
-                                    foreach(DomElement tag in article.tags.elements)
+                                    var i = -1;
+                                    foreach(DomElement tag in article.elements)
                                     {
-                                        domStructure.Add(string.Join(" > ", tag.hierarchyTags) + (tag.isClosing == false && tag.isSelfClosing == true ? " > " + tag.tagName : ""));
+                                        i++;
+                                        domStructure.Add("<div class=\"tag\"><div class=\"line-num\">" + i + "</div>" + string.Join(" > ", tag.hierarchyTags) + (tag.isClosing == false && tag.isSelfClosing == true ? " > " + tag.tagName : "") + "</div>");
                                     }
-                                    scaffold2.Data["dom-structure"] = "<div class=\"tag\">" + string.Join("</div><div class=\"tag\">", domStructure.ToArray()) + "</div>";
+                                    scaffold2.Data["dom-structure"] = string.Join("\n", domStructure.ToArray());
+
+                                    //create tag names
+                                    var tagNames = new List<string>();
+                                    i = 0;
+                                    foreach (var tagName in article.tagNames)
+                                    {
+                                        i++;
+                                        tagNames.Add("<div class=\"tag-name\">" + tagName.name + "<div class=\"tag-info\">(" + tagName.count + ")</div></div>");
+                                    }
+                                    scaffold2.Data["tag-names"] = string.Join("\n", tagNames.ToArray());
 
                                     //create sorted text
                                     var textSorted = new List<string>();
-                                    foreach (DomElement tag in article.tags.text)
+                                    foreach (var text in article.tags.text)
                                     {
-                                        textSorted.Add(tag.text.Replace("<","&lt;").Replace(">","&gt;"));
+                                        var tag = article.elements[text.index];
+                                        //get info about text
+                                        var info = 
+                                            "<div class=\"info\">" + 
+                                                "<div class=\"label\">Type:</div><div class=\"data\">" + text.type + "</div>" +
+                                            "</div>" +
+                                            "<div class=\"info\">" +
+                                                "<div class=\"label\">DOM:</div><div class=\"data\">" + string.Join(" > ", article.elements[text.index].hierarchyTags) + "</div>" +
+                                            "</div>";
+
+                                        textSorted.Add(
+                                            "<div class=\"text\">" + 
+                                                "<div class=\"line-num\">" + text.index + "</div>" + 
+                                                "<div class=\"raw\" onclick=\"$(this).find('.text-info').toggleClass('expanded')\">" + tag.text.Replace("<","&lt;").Replace(">","&gt;") +
+                                                    "<div class=\"text-info\"><div class=\"contents\">" + info + "</div></div>" +
+                                                "</div>" + 
+                                            "</div>");
                                     }
-                                    scaffold2.Data["text-sorted"] = "<div class=\"text\">" + string.Join("</div><div class=\"text\">", textSorted.ToArray()) + "</div>";
+                                    scaffold2.Data["text-sorted"] = string.Join("\n", textSorted.ToArray());
+
+                                    //create sorted words
+                                    var wordsSorted = new List<string>();
+                                    foreach (var word in article.words)
+                                    {
+                                        var info = "";
+                                        //get info about text
+                                        info += "<div class=\"info\"><div class=\"label\">Type:</div><div class=\"data\">" + word.type + "</div></div>";
+
+                                        wordsSorted.Add(
+                                            "<div class=\"word\" onclick=\"$(this).find('.word-info').toggleClass('expanded')\">" + 
+                                                word.word + "<div class=\"word-info\"><div class=\"contents\">" + info + "</div></div>" +
+                                            "</div>");
+                                    }
+                                    scaffold2.Data["words-sorted"] = string.Join("\n", wordsSorted.ToArray());
 
                                     //create anchor links
                                     var anchorLinks = new List<string>();
-                                    string href = "";
-                                    foreach (DomElement tag in article.tags.anchorLinks)
+                                    foreach (var anchor in article.tags.anchorLinks)
                                     {
+                                        var tag = article.elements[anchor];
                                         if (tag.attribute.ContainsKey("href"))
                                         {
                                             anchorLinks.Add("<a href=\"" + tag.attribute["href"] + "\" target=\"_blank\">" + tag.attribute["href"] + "</a>");

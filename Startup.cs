@@ -33,6 +33,7 @@ namespace Collector
             //exception handling
             var errOptions = new ErrorPageOptions();
             errOptions.SourceCodeLineCount = 10;
+            app.UseDeveloperExceptionPage();
 
 
             //use session (3 hour timeout)
