@@ -51,7 +51,7 @@ namespace Collector.Includes.Dashboard
                                     //create raw html Ace Editor
                                     scaffold2.Data["raw-html"] = article.rawHtml.Replace("<","&lt;").Replace(">","&gt;");
 
-                                    //create dom structure
+                                    //create dom structure ///////////////////////////////////////////////////////
                                     var domStructure = new List<string>();
                                     var i = -1;
                                     foreach(DomElement tag in article.elements)
@@ -61,7 +61,7 @@ namespace Collector.Includes.Dashboard
                                     }
                                     scaffold2.Data["dom-structure"] = string.Join("\n", domStructure.ToArray());
 
-                                    //create tag names
+                                    //create tag names ///////////////////////////////////////////////////////
                                     var tagNames = new List<string>();
                                     i = 0;
                                     foreach (var tagName in article.tagNames)
@@ -71,7 +71,7 @@ namespace Collector.Includes.Dashboard
                                     }
                                     scaffold2.Data["tag-names"] = string.Join("\n", tagNames.ToArray());
 
-                                    //create sorted text
+                                    //create sorted text ///////////////////////////////////////////////////////
                                     var textSorted = new List<string>();
                                     foreach (var text in article.tags.text)
                                     {
@@ -89,13 +89,13 @@ namespace Collector.Includes.Dashboard
                                             "<div class=\"text\">" + 
                                                 "<div class=\"line-num\">" + text.index + "</div>" + 
                                                 "<div class=\"raw\" onclick=\"$(this).find('.text-info').toggleClass('expanded')\">" + tag.text.Replace("<","&lt;").Replace(">","&gt;") +
-                                                    "<div class=\"text-info\"><div class=\"contents\">" + info + "</div></div>" +
+                                                    "<div class=\"text-info \"><div class=\"contents\">" + info + "</div></div>" +
                                                 "</div>" + 
                                             "</div>");
                                     }
                                     scaffold2.Data["text-sorted"] = string.Join("\n", textSorted.ToArray());
 
-                                    //create sorted words
+                                    //create sorted words ///////////////////////////////////////////////////////
                                     var wordsSorted = new List<string>();
                                     foreach (var word in article.words)
                                     {
@@ -110,7 +110,16 @@ namespace Collector.Includes.Dashboard
                                     }
                                     scaffold2.Data["words-sorted"] = string.Join("\n", wordsSorted.ToArray());
 
-                                    //create anchor links
+                                    //create article ///////////////////////////////////////////////////////
+                                    var body = new List<string>();
+                                    foreach (var bod in article.body)
+                                    {
+                                        body.Add(article.elements[bod].text);
+                                        
+                                    }
+                                    scaffold2.Data["article"] = "<span>" + string.Join("</span><span>", body.ToArray()) + "</span>";
+
+                                    //create anchor links ///////////////////////////////////////////////////////
                                     var anchorLinks = new List<string>();
                                     foreach (var anchor in article.tags.anchorLinks)
                                     {

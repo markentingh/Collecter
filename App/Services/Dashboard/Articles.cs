@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO;
 using Collector.Utility.DOM;
-
 namespace Collector.Services.Dashboard
 {
     public class Articles : Service
@@ -92,6 +91,12 @@ namespace Collector.Services.Dashboard
             public int textLength;
         }
 
+        public struct AnalyzedElementCount
+        {
+            public int index;
+            public int count;
+        }
+
         public struct PossibleTextType
         {
             public enumTextType type;
@@ -153,25 +158,27 @@ namespace Collector.Services.Dashboard
             //first, download url
             string htm = "";
 
-            if (1 == 0) //!!! offline debug only !!!
+            if (url.IndexOf("local") == 0) //!!! offline debug only !!!
             {
+                htm = File.ReadAllText(S.Server.MapPath("/content/webpages/" + url.Replace("local ","") + ".txt"));
+            }
+            else
+            { 
                 try
                 {
                     using (var http = new HttpClient())
                     {
                         Task<string> response = http.GetStringAsync(url);
                         htm = response.Result;
+                        File.WriteAllText(S.Server.MapPath("/content/webpages/new.txt"), htm);
                     }
                 }
                 catch (System.Exception ex)
                 {
                     //open local file instead
-                    htm = File.ReadAllText(S.Server.MapPath("/content/webpages/man-who-shaped-tomorrow-peter-muller-munk.txt"));
+                    return new AnalyzedArticle();
                 }
             }
-
-            //!!! offline debug only !!!
-            htm = File.ReadAllText(S.Server.MapPath("/content/webpages/man-who-shaped-tomorrow-peter-muller-munk.txt"));
 
             //save raw html
             analyzed.rawHtml = htm;
@@ -279,6 +286,7 @@ namespace Collector.Services.Dashboard
             AnalyzedWord word;
             AnalyzedWordInText wordIn;
             var index = 0;
+            var i = -1;
             var wordIndex = 0;
             var words = new List<AnalyzedWord>();
             foreach (DomElement element in textOrdered)
@@ -327,8 +335,8 @@ namespace Collector.Services.Dashboard
 
                 //check all words for patterns to determine
                 //what type of text is in this element
+                i = -1;
                 var sortedAllWords = allWords.OrderBy(a => a.count * -1).ToList();
-                var i = -1;
                 var len = wordsInText.Count;
                 var possibleTypes = new int[textTypesCount+1];
                 int w_nouns = 0, w_verbs = 0, w_adj = 0, w_pronouns = 0;
@@ -457,6 +465,20 @@ namespace Collector.Services.Dashboard
                         {
                             found = true;
                         }
+                        if(t.type != enumTextType.script)
+                        {
+                            //script type takes presidence over other types
+                            if(e < sortedPossTypes.Count - 1)
+                            {
+                                if(sortedPossTypes[e+1].type == enumTextType.script)
+                                {
+                                    if(sortedPossTypes[e + 1].count >= 5)
+                                    {
+                                        found = false;
+                                    }
+                                }
+                            }
+                        }
 
                     }
                     if(found == true)
@@ -500,17 +522,84 @@ namespace Collector.Services.Dashboard
                 analyzed.tags.text.Add(newText);
             }
             analyzed.words = words;
-            //end: analyze sorted text /////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //end: analyze sorted text
+
+            //find article body from sorted text /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
             //find relavant article body
-            foreach(var a in analyzed.tags.text)
+            var pIndexes = new List<AnalyzedElementCount>();
+            i = 0;
+            foreach (var a in analyzed.tags.text)
             {
+                
                 if(a.type == enumTextType.mainArticle)
                 {
+                    //find most relevant parent indexes shared by all article text elements
+                    i++;
+
+                    //limit to large article text
+                    if (a.words.Count < 20 && i > 2) { i--;  break; }
+
+                    //limit to top 3 article text
+                    if (i > 3) { i--;  break; } 
+
+                    foreach (int indx in parsed.Elements[a.index].hierarchyIndexes)
+                    {
+                        var parindex = pIndexes.FindIndex(p => p.index == indx);
+                        if (parindex >= 0)
+                        {
+                            //update count for a parent index
+                            var p = pIndexes[parindex];
+                            p.count++;
+                            pIndexes[parindex] = p;
+                        }
+                        else
+                        {
+                            //add new parent index
+                            var p = new AnalyzedElementCount();
+                            p.index = indx;
+                            p.count = 1;
+                            pIndexes.Add(p);
+                        }
+                    }
+                }
+            }
+            var sortedArticleParents = pIndexes.OrderBy(p => p.index).OrderBy(p => p.count * -1).ToList();
+
+            //determine best parent element that contains the entire article
+            var bodyText = new List<int>();
+            for(var x = sortedArticleParents.Count - 1; x >= 0; x--)
+            {
+                if(sortedArticleParents[x].count >= i)
+                {
+                    //all elements are a part of this parent element
+                    //get a list of text elements that are a part of the 
+                    //parent element
+                    int parentId = sortedArticleParents[x].index;
+                    for (var y = parentId + 1; y < parsed.Elements.Count; y++)
+                    {
+                        var elem = parsed.Elements[y];
+                        if (elem.tagName == "#text")
+                        {
+                            if (elem.hierarchyIndexes.Contains(parentId))
+                            {
+                                //element is text & is part of parent index
+                                bodyText.Add(elem.index);
+                            }
+                            else
+                            {
+                                //no longer part of parent id
+                                break;
+                            }
+                        }
+
+                    }
 
                 }
             }
-
+            analyzed.body = bodyText;
 
             //setup analyzed headers
             var headers = new List<int>();
