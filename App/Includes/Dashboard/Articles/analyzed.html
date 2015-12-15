@@ -1,4 +1,5 @@
 ﻿<style type="text/css">
+    .rendered iframe{width:100%; height:450px;}
     .article-title{font-size:25px;padding:10px 0 10px 0;}
     .article-url{font-size:17px; padding:0 0 50px 0;}
     .article .contents span{display:block; padding:10px 0px;}
@@ -33,6 +34,20 @@
 <div class="article-title">{{article-title}}</div>
 <div class="article-url"><a href="{{article-url}}" target="_blank">{{article-url}}</a></div>
 
+<div class="accordion article">
+    <div class="title">Article</div>
+    <div class="box">
+        <div class="contents">{{article}}</div>
+    </div>
+</div>
+
+<div class="accordion rendered">
+    <div class="title">Rendered</div>
+    <div class="box" style="overflow:hidden !important;">
+        <div class="contents"><iframe frameborder="0" scrolling="auto" src="{{rendered-url}}"></iframe></div>
+    </div>
+</div>
+
 <div class="accordion raw-html" onclick="S.analyzed.loadAce()">
     <div class="title">Raw HTML</div>
     <div class="box" style="overflow:hidden !important;">
@@ -65,13 +80,6 @@
     <div class="title">Sorted Words (by importance)</div>
     <div class="box">
         <div class="contents">{{words-sorted}}</div>
-    </div>
-</div>
-
-<div class="accordion article">
-    <div class="title">Article</div>
-    <div class="box">
-        <div class="contents">{{article}}</div>
     </div>
 </div>
 

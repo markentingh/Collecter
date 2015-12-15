@@ -46,9 +46,12 @@ namespace Collector.Includes.Dashboard
                                     scaffold2 = new Scaffold(S, "/app/includes/dashboard/articles/analyzed.html", "", new string[] { "name", "id" });
 
                                     scaffold2.Data["article-title"] = article.pageTitle;
-                                    scaffold2.Data["article-url"] = url;
+                                    scaffold2.Data["article-url"] = article.url;
 
-                                    //create raw html Ace Editor
+                                    //create rendered web page ///////////////////////////////////////////////////
+                                    scaffold2.Data["rendered-url"] = article.url;
+
+                                    //create raw html Ace Editor ///////////////////////////////////////////////////
                                     scaffold2.Data["raw-html"] = article.rawHtml.Replace("<","&lt;").Replace(">","&gt;");
 
                                     //create dom structure ///////////////////////////////////////////////////////

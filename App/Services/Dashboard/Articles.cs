@@ -154,13 +154,15 @@ namespace Collector.Services.Dashboard
             analyzed.tags.text = new List<AnalyzedText>();
             analyzed.author = new AnalyzedAuthor();
             analyzed.body = new List<int>();
+            analyzed.url = url;
 
             //first, download url
             string htm = "";
 
             if (url.IndexOf("local") == 0) //!!! offline debug only !!!
             {
-                htm = File.ReadAllText(S.Server.MapPath("/content/webpages/" + url.Replace("local ","") + ".txt"));
+                htm = File.ReadAllText(S.Server.MapPath("/wwwroot/tests/" + url.Replace("local ","") + ".html"));
+                analyzed.url = "/tests/" + url.Replace("local ", "") + ".html";
             }
             else
             { 
@@ -170,7 +172,7 @@ namespace Collector.Services.Dashboard
                     {
                         Task<string> response = http.GetStringAsync(url);
                         htm = response.Result;
-                        File.WriteAllText(S.Server.MapPath("/content/webpages/new.txt"), htm);
+                        File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
                     }
                 }
                 catch (System.Exception ex)
@@ -487,12 +489,6 @@ namespace Collector.Services.Dashboard
                         break;
                     }
                 }
-
-                //add main article text to body list
-                if(newText.type == enumTextType.mainArticle)
-                {
-                    analyzed.body.Add(newText.index);
-                }
                 
 
                 //add words to global words
@@ -525,10 +521,6 @@ namespace Collector.Services.Dashboard
             //end: analyze sorted text
 
             //find article body from sorted text /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-            //find relavant article body
             var pIndexes = new List<AnalyzedElementCount>();
             i = 0;
             foreach (var a in analyzed.tags.text)
@@ -570,7 +562,15 @@ namespace Collector.Services.Dashboard
 
             //determine best parent element that contains the entire article
             var bodyText = new List<int>();
-            for(var x = sortedArticleParents.Count - 1; x >= 0; x--)
+            var uselessText = new[] {
+                enumTextType.advertisement,
+                enumTextType.comment,
+                enumTextType.copyright,
+                enumTextType.script,
+                enumTextType.style,
+                enumTextType.useless
+            };
+            for (var x = sortedArticleParents.Count - 1; x >= 0; x--)
             {
                 if(sortedArticleParents[x].count >= i)
                 {
@@ -578,6 +578,7 @@ namespace Collector.Services.Dashboard
                     //get a list of text elements that are a part of the 
                     //parent element
                     int parentId = sortedArticleParents[x].index;
+                    var isFound = false;
                     for (var y = parentId + 1; y < parsed.Elements.Count; y++)
                     {
                         var elem = parsed.Elements[y];
@@ -586,17 +587,24 @@ namespace Collector.Services.Dashboard
                             if (elem.hierarchyIndexes.Contains(parentId))
                             {
                                 //element is text & is part of parent index
-                                bodyText.Add(elem.index);
+                                //check if text type is article
+                                var textTag = analyzed.tags.text.Find(p => p.index == y);
+                                if(!uselessText.Contains(textTag.type))
+                                {
+                                    bodyText.Add(elem.index);
+                                }
+                                
                             }
                             else
                             {
                                 //no longer part of parent id
+                                isFound = true;
                                 break;
                             }
                         }
 
                     }
-
+                    if(isFound == true) { break; }
                 }
             }
             analyzed.body = bodyText;
