@@ -143,6 +143,22 @@ namespace Collector.Services.Dashboard
 
         private int textTypesCount = 13;
 
+        private string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", ";", ":", "[", "]", "{", "}", "”", "“" };
+
+        private string[] scriptSeparators = new string[] { "{", "}", ";", "$", "=", "(", ")" };
+
+        private string[] dateTriggers = new string[] {
+            "published","written","posted",
+            "january","february","march","april","may","june",
+            "july","august","september","october","november","december" };
+
+        private string[] badTags = new string[]  {
+            "applet", "area", "audio", "canvas", "dialog", "small",
+            "embed", "footer", "iframe", "input", "label", "nav",
+            "object", "option", "s", "script", "style", "textarea",
+            "video" };
+        private string[] badClasses = new string[] { "aside", "sidebar", "advert", "menu" };
+
         public Articles(Core CollectorCore, string[] paths):base(CollectorCore, paths)
         {
         }
@@ -298,9 +314,7 @@ namespace Collector.Services.Dashboard
                 var newText = new AnalyzedText();
                 newText.index = element.index;
                 //separate all words & symbols with a space
-                textblock = S.Util.Str.replaceAll(element.text, " {1} ",
-                    new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", ";", ":", "[", "]", "{", "}", "”", "“" }
-                    ).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ");
+                textblock = S.Util.Str.replaceAll(element.text, " {1} ", wordSeparators).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ");
                 texts = textblock.Split(' ');
                 for (var x = 0; x < texts.Length; x++)
                 {
@@ -341,13 +355,12 @@ namespace Collector.Services.Dashboard
                 var sortedAllWords = allWords.OrderBy(a => a.count * -1).ToList();
                 var len = wordsInText.Count;
                 var possibleTypes = new int[textTypesCount+1];
-                int w_nouns = 0, w_verbs = 0, w_adj = 0, w_pronouns = 0;
 
                 foreach (AnalyzedWordInText aword in wordsInText)
                 {
                     i++;
                     var w = aword.word.ToLower();
-                    if (w == "{" || w == "}" || w == ";" || w == "$" || w == "=" || w == "(" || w == ")")
+                    if (scriptSeparators.Contains(w))
                     {
                         if (parsed.Elements[element.index - 1].tagName == "script")
                         {
@@ -372,9 +385,7 @@ namespace Collector.Services.Dashboard
                     {
                         possibleTypes[(int)enumTextType.copyright] += 1;
                     }
-                    else if (w == "published" || w == "written" || w == "posted" ||
-                        w == "january" || w == "february" || w == "march" || w == "april" || w == "may" || w == "june" ||
-                        w == "july" || w == "august" || w == "september" || w == "october" || w == "november" || w == "december")
+                    else if (dateTriggers.Contains(w))
                     {
                         if (len < 20)
                         {
@@ -570,6 +581,12 @@ namespace Collector.Services.Dashboard
                 enumTextType.style,
                 enumTextType.useless
             };
+
+            int parentId;
+            var isFound = false;
+            var isBad = false;
+            DomElement hElem;
+
             for (var x = sortedArticleParents.Count - 1; x >= 0; x--)
             {
                 if(sortedArticleParents[x].count >= i)
@@ -577,36 +594,61 @@ namespace Collector.Services.Dashboard
                     //all elements are a part of this parent element
                     //get a list of text elements that are a part of the 
                     //parent element
-                    int parentId = sortedArticleParents[x].index;
-                    var isFound = false;
+                    parentId = sortedArticleParents[x].index;
+                    isFound = false;
+                    isBad = false;
                     for (var y = parentId + 1; y < parsed.Elements.Count; y++)
                     {
                         var elem = parsed.Elements[y];
-                        if (elem.tagName == "#text")
+                        
+                        if (elem.hierarchyIndexes.Contains(parentId))
                         {
-                            if (elem.hierarchyIndexes.Contains(parentId))
+                            if (elem.tagName == "#text")
                             {
                                 //element is text & is part of parent index
                                 //check if text type is article
                                 var textTag = analyzed.tags.text.Find(p => p.index == y);
                                 if(!uselessText.Contains(textTag.type))
                                 {
-                                    bodyText.Add(elem.index);
+
+                                    //check for any text from the article that does not belong,
+                                    //such as advertisements, side-bars, photo credits, widgets
+                                    isBad = false;
+
+                                    for(var z = elem.hierarchyIndexes.Length - 1; z >= 0; z--)
+                                    {
+                                        hElem = analyzed.elements[elem.hierarchyIndexes[z]];
+                                        if(hElem.index == parentId) { break; }
+                                        
+                                        //check for bad tag names
+                                        if(badTags.Contains(hElem.tagName)) { isBad = true; }
+
+                                        //check classes for bad element indicators within class names
+                                        if (hElem.className.Count > 0)
+                                        {
+                                            if (hElem.className.Where(c => badClasses.Contains(c)).Count() > 0) { isBad = true; }
+                                        }
+                                    }
+
+                                    if(isBad == false)
+                                    {
+                                        //finally, add text to article
+                                        bodyText.Add(elem.index);
+                                    }
                                 }
-                                
-                            }
-                            else
-                            {
-                                //no longer part of parent id
-                                isFound = true;
-                                break;
                             }
                         }
-
+                        else
+                        {
+                            //no longer part of parent id
+                            isFound = true;
+                            break;
+                        }
                     }
                     if(isFound == true) { break; }
                 }
             }
+           
             analyzed.body = bodyText;
 
             //setup analyzed headers

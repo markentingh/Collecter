@@ -1,21 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Collector.Utility.DOM
 {
     public struct DomElement
     {
-        public int index;
-        public int parent;
-        public string tagName;
         public bool isSelfClosing;
         public bool isClosing;
+        public int index;
+        public int parent;
+        public int[] hierarchyIndexes;
+        public string tagName;
         public string text;
+        public string id;
+        public string[] hierarchyTags;
+        public List<string> className;
+        public List<int> children;
         public Dictionary<string, string> attribute;
         public Dictionary<string, string> style;
-        public List<int> children;
-        public string[] hierarchyTags;
-        public int[] hierarchyIndexes;
     }
 
     public class Element
@@ -197,6 +198,29 @@ namespace Collector.Utility.DOM
                                 //tag has attributes
                                 domTag.tagName = strTag.Substring(0, s3);
                                 domTag.attribute = GetAttributes(strTag);
+                                domTag.style = new Dictionary<string, string>();
+
+                                //set up class name list
+                                if (domTag.attribute.ContainsKey("class")){
+                                    domTag.className = new List<string>(domTag.attribute["class"].Split(' '));
+                                }
+                                else { domTag.className = new List<string>(); }
+
+                                //set up style dictionary
+                                if (domTag.attribute.ContainsKey("style"))
+                                {
+                                    var domStyle = new List<string>(domTag.attribute["style"].Split(';'));
+                                    foreach (string keyval in domStyle)
+                                    {
+                                        var styleKeyVal = keyval.Trim().Split(new char[] {':'}, 2);
+                                        if(styleKeyVal.Length == 2)
+                                        {
+                                            domTag.style.Add(styleKeyVal[0].Trim(), styleKeyVal[1].Trim());
+                                        }
+                                    }
+                                    
+                                }
+
                             }
 
                             //check if tag is script
