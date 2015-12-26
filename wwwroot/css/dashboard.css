@@ -16,3 +16,5 @@
 .accordion .box a:visited{color:#d83a8d;}
 .accordion .box a:hover{color:#ff49a9;}
 .accordion .box a:active{color:#ff49a9;}
+.accordion .menu{width:100%; max-height:0px; overflow:hidden; transition: max-height 0.3s;}
+.accordion .menu.expanded{max-height:500px; overflow:hidden;}

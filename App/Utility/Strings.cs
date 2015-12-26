@@ -153,6 +153,11 @@ namespace Collector.Utility
             //return Regex.Replace(html, "\\s{2,}", " ").Replace("> <", "><");
         }
 
+        public string HtmlDecode(string html)
+        {
+            return html.Replace("&nbsp;", " ");
+        }
+
         public object RemoveHtmlFromString(string str, bool includeBR = false)
         {
             string RegExStr = "<[^>]*>";

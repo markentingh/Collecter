@@ -39,30 +39,30 @@ a.dark.red:active{color:#ff0000; text-decoration:none;}
 
 /* inputs */
 input[type="text"], input[type="password"], input[type="list"], select, textarea{
-    width:calc(100% - 20px); background-color:#ffffff; padding:4px 10px; font-size:16px; color:#1c323c; border:1px solid #dddddd; border-radius:4px;
+    width:100%; background-color:#ffffff; padding:4px 10px; font-size:16px; color:#1c323c; border:1px solid #dddddd; border-radius:4px; box-sizing:border-box;
 }
 
 /* buttons */
-input[type="button"], input[type="submit"], a.button{
+input[type="button"], input[type="submit"], .button{
     display:inline-block; border:1px solid #cccccc; padding: 8px 20px; cursor:pointer; font-weight:bold; color:#666666; font-size:13px;
     background-image:-webkit-linear-gradient(#fcfcfc, #eee); background-image:linear-gradient(#fcfcfc, #eee); border-radius:4px;
 }
-input[type="button"]:hover, input[type="submit"]:hover, a.button:hover {
+input[type="button"]:hover, input[type="submit"]:hover, .button:hover {
     color:#0270a1; -webkit-box-shadow: 0 0 5px 0 rgba(0,113,166,0.4); -moz-box-shadow: 0 0 5px 0 rgba(0,113,166,0.4); box-shadow: 0 0 5px 0 rgba(0,113,166,0.4);
 }
 a.button:hover, a.button:active{text-decoration:none;}
 
-input[type="button"].green, input[type="submit"].green, a.button.green {
+input[type="button"].green, input[type="submit"].green, .button.green {
     background-image:-webkit-linear-gradient(#b7d3a4, #62a065); background-image:linear-gradient(#b7d3a4, #62a065); color:#ffffff; border-color:#5a8a5c;
 }
-input[type="button"].green:hover, input[type="submit"].green:hover, a.button.green:hover {
+input[type="button"].green:hover, input[type="submit"].green:hover, .button.green:hover {
     background-image:-webkit-linear-gradient(#a4d782, #40a145); background-image:linear-gradient(#a4d782, #40a145);
 }
 
-input[type="button"].blue, input[type="submit"].blue, a.button.blue {
+input[type="button"].blue, input[type="submit"].blue, .button.blue {
     background-image:-webkit-linear-gradient(#7dc2e0, #3991b7); background-image:linear-gradient(#7dc2e0, #3991b7); color:#ffffff; border-color:#2d82a7;
 }
-input[type="button"].blue:hover, input[type="submit"].blue:hover, a.button.blue:hover {
+input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:hover {
     background-image:-webkit-linear-gradient(#46b7e8, #0083bb); background-image:linear-gradient(#46b7e8, #0083bb);
 }
 
@@ -88,14 +88,18 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, a.button.blue:
 
 /* grid */
 .row{width:100%; overflow:auto;}
+.row.space{padding:10px;}
+.row.top{padding-top:10px;}
 .row.bottom{padding-bottom:10px;}
 .row:hover .hover-only{display:block;}
 .row .column{ padding:4px 10px; float:left; width:calc(100% - 20px);}
 .row .column.title{padding-top:15px;font-weight: bold; font-size: 14px;}
 .row .column.field{}
 .row .column.btn{padding:15px 10px 10px 10px;}
-.row .column.space{padding:50px 10px;}
+.row .column.space{padding:0 15px 0 0; float:left; width:auto;}
 .row .column.center{text-align:center;}
+.row .column.label{padding:5px 5px 0 0; float:left; white-space:nowrap; width:auto; min-width:75px; text-align:right;}
+.row .column.input{padding:0 15px 0 0;float:left; width:auto; }
 
 .spreadsheet > .row:nth-child(2n+1){background-color:#eeeeee;}
 .spreadsheet > .row:nth-child(2n+2){background-color:#e8e8e8;}

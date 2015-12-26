@@ -21,8 +21,10 @@
     .text-sorted .raw .text-info .label{width:60px; vertical-align:top; text-align:right; display:inline-block; color:#ac0b60; font-weight:bold;}
     .text-sorted .raw .text-info .data{width:calc(100% - 70px); padding-left:10px; display:inline-block; color:#d83a8d;}
     .words-sorted .word{display:inline-block; width:calc(20% - 50px); padding:7px; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px; overflow:hidden; cursor:pointer;}
+    .words-sorted .word.expanded{background-color:#015b5b;}
+    .words-sorted .word.common{background-color:#4a0f0d;}
     .words-sorted .word .word-info{overflow:hidden; max-height:0; transition: max-height 0.3s;}
-    .words-sorted .word .word-info.expanded{max-height:100px; overflow: auto;}
+    .words-sorted .word .word-info.expanded{background-color:#015b5b;}
     .words-sorted .word .word-info .contents{padding:20px 0;}
     .words-sorted .word .word-info .info{padding-bottom:10px;}
     .words-sorted .word .word-info .label{width:70px; text-align:right; display:inline-block;}
@@ -81,7 +83,43 @@
     <div class="box">
         <div class="contents">{{words-sorted}}</div>
     </div>
+    <div class="menu">
+        <div class="row space">
+            <div class="column">
+                <input type="text" id="txtselectedwords" style="width:100%;" />
+            </div>
+        </div>
+        <div class="row space">
+            <div class="column input">
+                <select id="lstwordpart">
+                    <option value="1">Verb</option>
+                    <option value="2">Adverb</option>
+                    <option value="3">Noun</option>
+                    <option value="4">Pronoun</option>
+                    <option value="5">Adjective</option>
+                    <option value="6">Article</option>
+                    <option value="7">Preposition</option>
+                    <option value="8">Conjunction</option>
+                    <option value="9">Interjection</option>
+                    <option value="10">Punctuation</option>
+                </select>
+            </div>
+            <div class="column input">
+                <select id="lstwordtype">
+                    <option value="add">New Subject</option>
+                    <option value="common">Common Word</option>
+                </select>
+            </div>
+            <div class="column label">category:</div>
+            <div class="column input">
+                <input type="text" style="width:200px;" />
+            </div>
+            <div class="column label fade">e.g. science > nano technology &nbsp;</div>
+            <div class="column input"><div class="button" id="btnsaveselectedwords">Save Selected</div></div>
+        </div>
+    </div>
 </div>
+
 
 <div class="accordion anchorlinks">
     <div class="title">Anchor Links</div>

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace Collector.Utility.DOM
 {
@@ -108,6 +109,7 @@ namespace Collector.Utility.DOM
             bool isClosingTag = false;
             bool isSelfClosing = false;
             bool isInScript = false;
+            bool isComment = false;
             bool foundTag = false;
             int s1, s2, s3, xs = -1;
             int parentElement = -1;
@@ -116,6 +118,7 @@ namespace Collector.Utility.DOM
             var hierarchyIndexes = new List<int>();
             var domTag = new DomElement();
             var textTag = new DomElement();
+            var tagNameChars = new string[] { "/", "!" };
 
             for (var x = 0; x < htm.Length; x++)
             {
@@ -140,6 +143,7 @@ namespace Collector.Utility.DOM
 
                 isClosingTag = false;
                 isSelfClosing = false;
+                isComment = false;
                 foundTag = false;
                 if(isInScript == true)
                 {
@@ -160,13 +164,29 @@ namespace Collector.Utility.DOM
                 }
                 if(schar[0] == '<')
                 {
-                    if (S.Util.Str.OnlyAlphabet(schar[1].ToString(), new string[] { "/", "!" }))
+                    if (S.Util.Str.OnlyAlphabet(schar[1].ToString(), tagNameChars))
                     {
                         //found HTML tag
                         s1 = htm.IndexOf(">", x + 2);
                         s2 = htm.IndexOf("<", x + 2);
                         if(s1 >= 0)
                         {
+                            //check for comment
+                            if(htm.Substring(x + 1, 3) == "!--")
+                            {
+                                s1 = htm.IndexOf("-->", x + 1);
+                                if(s1 < 0) {
+                                    s1 = htm.Length - 1;
+                                }
+                                else
+                                {
+                                    s1 += 2;
+                                }
+                                s2 = -1;
+                                isSelfClosing = true;
+                                isComment = true;
+                            }
+
                             //check for broken tag
                             if (s2 < s1 && s2 >= 0) { continue; }
 
@@ -179,49 +199,56 @@ namespace Collector.Utility.DOM
                             if (str1 == "/"){ isSelfClosing = true; }
 
                             //check for attributes
-                            s3 = strTag.IndexOf(" ");
-                            if(s3 < 0)
+                            if (isComment == true)
                             {
-                                //tag has no attributes
-                                if(isSelfClosing)
+                                domTag.tagName = "!--";
+                                domTag.text = strTag.Substring(3, strTag.Length - 5);
+                            }
+                            else
+                            { 
+                                s3 = strTag.IndexOf(" ");
+                                if(s3 < 0)
                                 {
-                                    domTag.tagName = strTag.Substring(0, strTag.Length-2);
+                                    //tag has no attributes
+                                    if(isSelfClosing)
+                                    {
+                                        domTag.tagName = strTag.Substring(0, strTag.Length-2);
+                                    }
+                                    else
+                                    {
+                                        //tag has no attributes & no forward-slash
+                                        domTag.tagName = strTag;
+                                    }
                                 }
                                 else
                                 {
-                                    //tag has no attributes & no forward-slash
-                                    domTag.tagName = strTag;
-                                }
-                            }
-                            else
-                            {
-                                //tag has attributes
-                                domTag.tagName = strTag.Substring(0, s3);
-                                domTag.attribute = GetAttributes(strTag);
-                                domTag.style = new Dictionary<string, string>();
+                                    //tag has attributes
+                                    domTag.tagName = strTag.Substring(0, s3);
+                                    domTag.attribute = GetAttributes(strTag);
+                                    domTag.style = new Dictionary<string, string>();
 
-                                //set up class name list
-                                if (domTag.attribute.ContainsKey("class")){
-                                    domTag.className = new List<string>(domTag.attribute["class"].Split(' '));
-                                }
-                                else { domTag.className = new List<string>(); }
+                                    //set up class name list
+                                    if (domTag.attribute.ContainsKey("class")){
+                                        domTag.className = new List<string>(domTag.attribute["class"].Split(' '));
+                                    }
+                                    else { domTag.className = new List<string>(); }
 
-                                //set up style dictionary
-                                if (domTag.attribute.ContainsKey("style"))
-                                {
-                                    var domStyle = new List<string>(domTag.attribute["style"].Split(';'));
-                                    foreach (string keyval in domStyle)
+                                    //set up style dictionary
+                                    if (domTag.attribute.ContainsKey("style"))
                                     {
-                                        var styleKeyVal = keyval.Trim().Split(new char[] {':'}, 2);
-                                        if(styleKeyVal.Length == 2)
+                                        var domStyle = new List<string>(domTag.attribute["style"].Split(';'));
+                                        foreach (string keyval in domStyle)
                                         {
-                                            domTag.style.Add(styleKeyVal[0].Trim(), styleKeyVal[1].Trim());
+                                            var styleKeyVal = keyval.Trim().Split(new char[] {':'}, 2);
+                                            if(styleKeyVal.Length == 2)
+                                            {
+                                                domTag.style.Add(styleKeyVal[0].Trim(), styleKeyVal[1].Trim());
+                                            }
                                         }
                                     }
-                                    
                                 }
-
                             }
+                            
 
                             //check if tag is script
                             if(isInScript == true)
@@ -311,7 +338,6 @@ namespace Collector.Utility.DOM
                                 }
                             }
                             x = xs = s1;
-                            //Console.WriteLine(string.Join(" > ", hierarchy.ToArray()) + (isClosingTag || isSelfClosing ? " : " + domTag.tagName : "") + "\n");
                         }
                     }
                 }
@@ -395,11 +421,6 @@ namespace Collector.Utility.DOM
                 parentElement = Elements.Count;
                 hierarchy.Add(domTag.tagName);
                 hierarchyIndexes.Add(parentElement);
-            }
-
-            if(domTag.tagName == "#text")
-            {
-                //Console.WriteLine(domTag.text + "\n\n");
             }
 
             domTag.index = Elements.Count;

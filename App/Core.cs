@@ -85,7 +85,7 @@ namespace Collector
 
             //detect request type & host type
             if (type == "service") { isWebService = true; }
-            if (Request.Host.Value.IndexOf("localhost") >= 0 || Request.Host.Value.IndexOf("192.168.") >= 0) { isLocal = true; }
+            isLocal = Server.isLocal;
         }
 
         public void Unload()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace Collector.Utility
@@ -25,6 +26,16 @@ namespace Collector.Utility
         public string WriteObjectAsString(object obj)
         {
             return JsonConvert.SerializeObject(obj);
+        }
+
+        public void SaveToFile(object obj, string file)
+        {
+            File.WriteAllText(file, WriteObjectAsString(obj));
+        }
+
+        public object OpenFromFile(Type objType, string file)
+        {
+            return ReadObject(File.ReadAllText(file), objType);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,12 +19,12 @@ namespace Collector
             services.AddSession();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseIISPlatformHandler();
 
             //load application-wide memory store
-            Server server = new Server();
+            Server server = new Server(app, env);
 
             //handle static files
             var options = new StaticFileOptions {ContentTypeProvider = new FileExtensionContentTypeProvider()};

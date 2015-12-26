@@ -1,14 +1,17 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO;
 using Collector.Utility.DOM;
+
 namespace Collector.Services.Dashboard
 {
     public class Articles : Service
     {
 
+        #region "Article Structure"
         public struct AnalyzedArticle
         {
             public string rawHtml;
@@ -63,7 +66,6 @@ namespace Collector.Services.Dashboard
             public string word;
             public AnalyzedWord[] relations;
             public int index;
-            public int wordIndex;
         }
 
         public struct AnalyzedImage
@@ -103,6 +105,16 @@ namespace Collector.Services.Dashboard
             public int count;
         }
 
+        public struct ArticleSubject
+        {
+            public int id;
+            public int parentId;
+            public string title;
+            public enumWordType type;
+            public string[] breadcrumb;
+            public int[] hierarchy;
+        }
+
         public enum enumTextType
         {
             mainArticle = 0,
@@ -124,15 +136,16 @@ namespace Collector.Services.Dashboard
         public enum enumWordType
         {
             none = 0,
-            person = 1,
-            place = 2,
-            thing = 3,
-            verb = 4,
+            verb = 1,
+            adverb = 2,
+            noun = 3,
+            pronoun = 4,
             adjective = 5,
-            preposition = 6,
-            conjunction = 7,
-            interjection = 8,
-            punctuation = 9
+            article = 6,
+            preposition = 7,
+            conjunction = 8,
+            interjection = 9,
+            punctuation = 10
         }
 
         public enum enumAuthorSex
@@ -143,7 +156,11 @@ namespace Collector.Services.Dashboard
 
         private int textTypesCount = 13;
 
-        private string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", ";", ":", "[", "]", "{", "}", "”", "“" };
+        #endregion
+
+        #region "Dictionaries"
+
+        private string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", "&nbsp;", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_" };
 
         private string[] scriptSeparators = new string[] { "{", "}", ";", "$", "=", "(", ")" };
 
@@ -157,12 +174,28 @@ namespace Collector.Services.Dashboard
             "embed", "footer", "iframe", "input", "label", "nav",
             "object", "option", "s", "script", "style", "textarea",
             "video" };
-        private string[] badClasses = new string[] { "aside", "sidebar", "advert", "menu" };
+
+        private string[] badArticleTags = new string[]  {
+            "applet", "area", "audio", "canvas", "dialog", "small",
+            "embed", "footer", "iframe", "input", "label", "nav",
+            "object", "option", "s", "script", "style", "textarea",
+            "video", "form", "figure", "figcaption" };
+
+        private string[] badClasses = new string[] { "aside", "sidebar", "advert", "menu", "comment", "tag", "keyword" };
+
+        private string[] badPhotoCredits = new string[] { "photo", "courtesy", "by", "copyright" };
+
+        private string[] badMenu = new string[] { "previous", "next", "post", "posts", "entry", "entries", "article", "articles", "more", "back", "go", "view", "about", "home", "blog" };
+
+        private string[] badChars = new string[] { "|", ":", "{", "}", "[", "]" };
+
+        #endregion
 
         public Articles(Core CollectorCore, string[] paths):base(CollectorCore, paths)
         {
         }
 
+        #region "Analyze Article"
         public AnalyzedArticle Analyze(string url)
         {
             AnalyzedArticle analyzed = new AnalyzedArticle();
@@ -194,7 +227,8 @@ namespace Collector.Services.Dashboard
                 catch (System.Exception ex)
                 {
                     //open local file instead
-                    return new AnalyzedArticle();
+                    htm = File.ReadAllText(S.Server.MapPath("/wwwroot/tests/1.html"));
+                    analyzed.url = "/tests/1.html";
                 }
             }
 
@@ -202,7 +236,7 @@ namespace Collector.Services.Dashboard
             analyzed.rawHtml = htm;
 
             //remove spaces, line breaks, & tabs
-            htm = htm.Replace("\n", "").Replace("\r","").Replace("  ", " ").Replace("  ", " ").Replace("	","");
+            htm = htm.Replace("\n", "").Replace("\r","").Replace("  ", " ").Replace("  ", " ").Replace("	","").Replace(" "," ");
 
             //separate tags into hierarchy of objects
             var parsed = new Parser(S, htm);
@@ -212,6 +246,7 @@ namespace Collector.Services.Dashboard
             var textElements = new List<DomElement>();
             var anchorElements = new List<DomElement>();
             var headerElements = new List<DomElement>();
+            var imgElements = new List<DomElement>();
             var parentIndexes = new List<AnalyzedParentIndex>();
             DomElement traverseElement;
 
@@ -252,7 +287,6 @@ namespace Collector.Services.Dashboard
                             }
                             else { break; }
                         } while (traverseElement.parent > -1);
-
                         break;
                     case "a":
                         //sort anchor links
@@ -266,6 +300,9 @@ namespace Collector.Services.Dashboard
                         {
                             analyzed.pageTitle = parsed.Elements[element.index + 1].text.Trim();
                         }
+                        break;
+                    case "img":
+                        imgElements.Add(element);
                         break;
                 }
 
@@ -298,6 +335,22 @@ namespace Collector.Services.Dashboard
             analyzed.elements = parsed.Elements;
             analyzed.tagNames = tagNamesOrdered;
 
+            //setup analyzed headers
+            var headers = new List<int>();
+            foreach (DomElement header in headersOrdered)
+            {
+                headers.Add(header.index);
+            }
+            analyzed.tags.headers = headers;
+
+            //setup analyzed links
+            var anchors = new List<int>();
+            foreach (DomElement anchor in anchorElements)
+            {
+                anchors.Add(anchor.index);
+            }
+            analyzed.tags.anchorLinks = anchors;
+
             //analyze sorted text /////////////////////////////////////////////////////////////////////////////////////////////////////////
             var textblock = "";
             string[] texts;
@@ -305,11 +358,11 @@ namespace Collector.Services.Dashboard
             AnalyzedWordInText wordIn;
             var index = 0;
             var i = -1;
-            var wordIndex = 0;
+            var allWords = new List<AnalyzedWord>();
             var words = new List<AnalyzedWord>();
             foreach (DomElement element in textOrdered)
             {
-                var allWords = new List<AnalyzedWord>();
+                
                 var wordsInText = new List<AnalyzedWordInText>();
                 var newText = new AnalyzedText();
                 newText.index = element.index;
@@ -331,7 +384,6 @@ namespace Collector.Services.Dashboard
                         var w = allWords[index];
                         w.count++;
                         allWords[index] = w;
-                        wordIndex = index;
                     }
                     else
                     {
@@ -339,12 +391,10 @@ namespace Collector.Services.Dashboard
                         word = new AnalyzedWord();
                         word.word = texts[x];
                         word.count = 1;
-                        wordIndex = allWords.Count;
                         allWords.Add(word);
                     }
 
                     //set reference to analyzed word
-                    wordIn.wordIndex = wordIndex;
                     wordsInText.Add(wordIn);
                 }
                 newText.words = wordsInText;
@@ -501,34 +551,9 @@ namespace Collector.Services.Dashboard
                     }
                 }
                 
-
-                //add words to global words
-                if(newText.type != enumTextType.script && newText.type != enumTextType.useless)
-                {
-                    foreach(AnalyzedWord aword in sortedAllWords)
-                    {
-                        index = words.FindIndex(w => w.word == aword.word);
-                        if (index >= 0)
-                        {
-                            //incriment word count
-                            var w = words[index];
-                            w.count++;
-                            words[index] = w;
-                        }
-                        else
-                        {
-                            //add new word to list
-                            word = aword;
-                            word.count = 1;
-                            words.Add(word);
-                        }
-                    }
-                }
-                
                 //add text to analyzed results
                 analyzed.tags.text.Add(newText);
             }
-            analyzed.words = words;
             //end: analyze sorted text
 
             //find article body from sorted text /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -585,6 +610,8 @@ namespace Collector.Services.Dashboard
             int parentId;
             var isFound = false;
             var isBad = false;
+            var badIndexes = new List<int>();
+            string[] articleText;
             DomElement hElem;
 
             for (var x = sortedArticleParents.Count - 1; x >= 0; x--)
@@ -603,6 +630,7 @@ namespace Collector.Services.Dashboard
                         
                         if (elem.hierarchyIndexes.Contains(parentId))
                         {
+                            if(elem.hierarchyIndexes.Where(ind => badIndexes.Contains(ind)).Count() > 0) { continue; }
                             if (elem.tagName == "#text")
                             {
                                 //element is text & is part of parent index
@@ -610,13 +638,16 @@ namespace Collector.Services.Dashboard
                                 var textTag = analyzed.tags.text.Find(p => p.index == y);
                                 if(!uselessText.Contains(textTag.type))
                                 {
-
+                                    articleText = S.Util.Str.replaceAll(elem.text.ToLower(), " {1} ", wordSeparators).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Split(' ').Select(t => t.Trim()).Where(t => t.Length > 0 && t != "&").ToArray();
+                                    
+                                    
                                     //check for any text from the article that does not belong,
                                     //such as advertisements, side-bars, photo credits, widgets
                                     isBad = false;
 
                                     for(var z = elem.hierarchyIndexes.Length - 1; z >= 0; z--)
                                     {
+                                        //search down the hierarchy DOM tree
                                         hElem = analyzed.elements[elem.hierarchyIndexes[z]];
                                         if(hElem.index == parentId) { break; }
                                         
@@ -630,12 +661,62 @@ namespace Collector.Services.Dashboard
                                         }
                                     }
 
+                                    if(articleText.Length <= 20)
+                                    {
+                                        if (articleText.Where(t => badPhotoCredits.Contains(t)).Count() >= 2)
+                                        {
+                                            //photo credits
+                                            isBad = true;
+                                        }
+                                    }
+                                    if(articleText.Length <= 7)
+                                    {
+                                        if(articleText.Where(t => badMenu.Contains(t)).Count() >= 1)
+                                        {
+                                            //menu
+                                            isBad = true;
+                                        }
+                                    }
+
+                                    if(articleText.Length <= 3)
+                                    {
+                                        if(articleText.Where(t => badChars.Contains(t)).Count() >= 1)
+                                        {
+                                            //bad characters
+                                            isBad = true;
+                                        }
+                                    }
+
                                     if(isBad == false)
                                     {
                                         //finally, add text to article
                                         bodyText.Add(elem.index);
+
+                                        //clean up text in element
+                                        elem.text = S.Util.Str.HtmlDecode(elem.text);
                                     }
                                 }
+                            }
+                            else
+                            {
+                                //element is not text, 
+                                //determine if element contains bad content
+                                if (elem.className.Where(c => badClasses.Where(bc => c.IndexOf(bc) >= 0).Count() > 0).Count() > 0)
+                                {
+                                    badIndexes.Add(elem.index);
+                                }
+                                else if (elem.attribute.ContainsKey("id"))
+                                {
+                                    if (badClasses.Where(bc => elem.attribute["id"].IndexOf(bc) >= 0).Count() > 0)
+                                    {
+                                        badIndexes.Add(elem.index);
+                                    }
+                                }
+                                else if (badArticleTags.Contains(elem.tagName))
+                                {
+                                    badIndexes.Add(elem.index);
+                                }
+
                             }
                         }
                         else
@@ -651,24 +732,100 @@ namespace Collector.Services.Dashboard
            
             analyzed.body = bodyText;
 
-            //setup analyzed headers
-            var headers = new List<int>();
-            foreach(DomElement header in headersOrdered)
+            //analyze all words from article body //////////////////////////////////////////////////////////////////
+            var text = "";
+            var commonWords = GetCommonWords();
+            allWords = new List<AnalyzedWord>();
+            for (var x = 0; x < analyzed.body.Count; x++)
             {
-                headers.Add(header.index);
+                text += analyzed.elements[analyzed.body[x]].text + " ";
             }
-            analyzed.tags.headers = headers;
-
-            //setup analyzed links
-            var anchors = new List<int>();
-            foreach (DomElement anchor in anchorElements)
+            textblock = S.Util.Str.replaceAll(S.Util.Str.HtmlDecode(text.ToLower()), " {1} ", wordSeparators).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ");
+            texts = textblock.Split(' ');
+            for (var x = 0; x < texts.Length; x++)
             {
-                anchors.Add(anchor.index);
-            }
-            analyzed.tags.anchorLinks = anchors;
+                if (texts[x].Trim() == "") { continue; }
 
+                //add word to all words list
+                index = allWords.FindIndex(w => w.word == texts[x]);
+                if (index >= 0)
+                {
+                    //incriment word count
+                    var w = allWords[index];
+                    w.count++;
+                    allWords[index] = w;
+                }
+                else
+                {
+                    //add new word to list
+                    word = new AnalyzedWord();
+                    word.word = texts[x];
+                    word.count = 1;
+                    word.importance = 1;
+                    if (commonWords.Contains(texts[x].Trim().ToLower())){
+                        word.importance = 0;
+                    }
+                    allWords.Add(word);
+                }
+            }
+
+
+            analyzed.words = allWords.OrderByDescending(w => w.word.Length).OrderByDescending(w => w.importance).ToList();
+            
             return analyzed;
         }
+        #endregion
 
+        #region "Subjects"
+        public void AddSubject(string subject, string grammertype, string hierarchy)
+        {
+            int parentId = 0;
+            if(hierarchy != "")
+            {
+                var hier = hierarchy.Replace(" > ", ">").Replace("> ", ">").Replace(" >", ">").Split('>');
+                var parentTitle = "";
+                if (hier.Length > 0) { parentTitle = hier[hier.Length - 1]; }
+                var reader = S.Sql.ExecuteReader("EXEC GetSubject @title='" + "" + "', @breadcrumb='" + "" + "'");
+                //if(reader.R)
+            }
+        }
+
+        public List<ArticleSubject> GetSubjects(string[] subject)
+        {
+            var subjects = new List<ArticleSubject>();
+
+            return subjects;
+        }
+
+        public void AddCommonWord(string wordlist)
+        {
+            var commonWords = GetCommonWords();
+            if(wordlist == ",") { if (!commonWords.Contains(",")) { commonWords.Add(","); } }
+            var words = wordlist.Split(',');
+            foreach (string word in words)
+            {
+                var w = word.Trim().ToLower();
+                if (w == "") { continue; }
+                if (!commonWords.Contains(w)) { commonWords.Add(w); }
+            }
+
+            S.Server.Cache["commonwords"] = commonWords;
+            S.Util.Serializer.SaveToFile(commonWords, S.Server.MapPath("/content/commonwords.json"));
+        }
+
+        public List<string> GetCommonWords()
+        {
+            var commonWords = new List<string>();
+            if (S.Server.Cache.ContainsKey("commonwords"))
+            {
+                commonWords = (List<string>)S.Server.Cache["commonwords"];
+            }
+            else if (File.Exists(S.Server.MapPath("/content/commonwords.json")))
+            {
+                commonWords = (List<string>)S.Util.Serializer.OpenFromFile(typeof(List<string>), S.Server.MapPath("/content/commonwords.json"));
+            }
+            return commonWords;
+        }
+        #endregion
     }
 }

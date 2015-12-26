@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Collector.Utility.DOM;
+
 
 namespace Collector.Includes.Dashboard
 {
@@ -41,6 +43,7 @@ namespace Collector.Includes.Dashboard
                                     var serveArticles = new Services.Dashboard.Articles(S, S.Page.Url.paths);
                                     var url = S.Request.Form["Url"];
                                     var article = serveArticles.Analyze(url);
+                                    var info = "";
 
                                     //setup article analysis results
                                     scaffold2 = new Scaffold(S, "/app/includes/dashboard/articles/analyzed.html", "", new string[] { "name", "id" });
@@ -78,36 +81,48 @@ namespace Collector.Includes.Dashboard
                                     var textSorted = new List<string>();
                                     foreach (var text in article.tags.text)
                                     {
-                                        var tag = article.elements[text.index];
-                                        //get info about text
-                                        var info = 
-                                            "<div class=\"info\">" + 
-                                                "<div class=\"label\">Type:</div><div class=\"data\">" + text.type + "</div>" +
-                                            "</div>" +
-                                            "<div class=\"info\">" +
-                                                "<div class=\"label\">DOM:</div><div class=\"data\">" + string.Join(" > ", article.elements[text.index].hierarchyTags) + "</div>" +
-                                            "</div>";
+                                        switch (text.type)
+                                        {
+                                            case Services.Dashboard.Articles.enumTextType.script:
+                                            case Services.Dashboard.Articles.enumTextType.style:
+                                                break;
+                                            default:
+                                                var tag = article.elements[text.index];
+                                                //get info about text
+                                                info =
+                                                    "<div class=\"info\">" +
+                                                        "<div class=\"label\">Type:</div><div class=\"data\">" + text.type + "</div>" +
+                                                    "</div>" +
+                                                    "<div class=\"info\">" +
+                                                        "<div class=\"label\">DOM:</div><div class=\"data\">" + string.Join(" > ", article.elements[text.index].hierarchyTags) + "</div>" +
+                                                    "</div>";
 
-                                        textSorted.Add(
-                                            "<div class=\"text\">" + 
-                                                "<div class=\"line-num\">" + text.index + "</div>" + 
-                                                "<div class=\"raw\" onclick=\"$(this).find('.text-info').toggleClass('expanded')\">" + tag.text.Replace("<","&lt;").Replace(">","&gt;") +
-                                                    "<div class=\"text-info \"><div class=\"contents\">" + info + "</div></div>" +
-                                                "</div>" + 
-                                            "</div>");
+                                                textSorted.Add(
+                                                    "<div class=\"text\">" +
+                                                        "<div class=\"line-num\">" + text.index + "</div>" +
+                                                        "<div class=\"raw\" onclick=\"$(this).find('.text-info').toggleClass('expanded')\">" + tag.text.Replace("<", "&lt;").Replace(">", "&gt;") +
+                                                            "<div class=\"text-info \"><div class=\"contents\">" + info + "</div></div>" +
+                                                        "</div>" +
+                                                    "</div>");
+                                                break;
+                                        }
+                                        
                                     }
                                     scaffold2.Data["text-sorted"] = string.Join("\n", textSorted.ToArray());
 
                                     //create sorted words ///////////////////////////////////////////////////////
                                     var wordsSorted = new List<string>();
+                                    var commonWords = serveArticles.GetCommonWords();
+                                    var wordType = "";
                                     foreach (var word in article.words)
                                     {
-                                        var info = "";
+                                        wordType = "";
+                                        if (commonWords.Contains(word.word.ToLower().Trim())){ wordType = "common"; }
                                         //get info about text
-                                        info += "<div class=\"info\"><div class=\"label\">Type:</div><div class=\"data\">" + word.type + "</div></div>";
+                                        info = "<div class=\"info\"><div class=\"label\">Type:</div><div class=\"data\">" + word.type + "</div></div>";
 
                                         wordsSorted.Add(
-                                            "<div class=\"word\" onclick=\"$(this).find('.word-info').toggleClass('expanded')\">" + 
+                                            "<div class=\"word " + wordType + "\">" + 
                                                 word.word + "<div class=\"word-info\"><div class=\"contents\">" + info + "</div></div>" +
                                             "</div>");
                                     }
