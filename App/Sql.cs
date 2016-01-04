@@ -236,6 +236,11 @@ namespace Collector
             if (str == "") { return new DateTime(); }
             return DateTime.Parse(str);
         }
+
+        public string ConvertDateTime(DateTime date)
+        {
+            return "'" + date.ToString() + "'";
+        }
     }
 
     public class SqlMethods

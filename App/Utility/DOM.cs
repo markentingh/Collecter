@@ -199,6 +199,7 @@ namespace Collector.Utility.DOM
                             if (str1 == "/"){ isSelfClosing = true; }
 
                             //check for attributes
+                            domTag.className = new List<string>();
                             if (isComment == true)
                             {
                                 domTag.tagName = "!--";
@@ -212,18 +213,18 @@ namespace Collector.Utility.DOM
                                     //tag has no attributes
                                     if(isSelfClosing)
                                     {
-                                        domTag.tagName = strTag.Substring(0, strTag.Length-2);
+                                        domTag.tagName = strTag.Substring(0, strTag.Length-2).ToLower();
                                     }
                                     else
                                     {
                                         //tag has no attributes & no forward-slash
-                                        domTag.tagName = strTag;
+                                        domTag.tagName = strTag.ToLower();
                                     }
                                 }
                                 else
                                 {
                                     //tag has attributes
-                                    domTag.tagName = strTag.Substring(0, s3);
+                                    domTag.tagName = strTag.Substring(0, s3).ToLower();
                                     domTag.attribute = GetAttributes(strTag);
                                     domTag.style = new Dictionary<string, string>();
 
@@ -255,14 +256,14 @@ namespace Collector.Utility.DOM
                             {
                                 isInScript = false;
                             }
-                            else if(domTag.tagName.ToLower() == "script" && isSelfClosing == false)
+                            else if(domTag.tagName == "script" && isSelfClosing == false)
                             {
                                 isInScript = true;
                             }
 
                             //check if tag is self-closing even if it
                             //doesn't include a forward-slash at the end
-                            switch (domTag.tagName.ToLower())
+                            switch (domTag.tagName)
                             {
                                 case "br":
                                 case "img":
@@ -310,12 +311,12 @@ namespace Collector.Utility.DOM
                                 //go back one parent if this tag is a closing tag
                                 if (parentElement >= 0)
                                 {
-                                    if(Elements[parentElement].tagName.ToLower() != domTag.tagName.Replace("/",""))
+                                    if(Elements[parentElement].tagName != domTag.tagName.Replace("/",""))
                                     {
                                         //not the same tag as the current parent tag, add missing closing tag
                                         if(Elements[parentElement].parent >= 0)
                                         {
-                                            if (Elements[Elements[parentElement].parent].tagName.ToLower() == domTag.tagName.Replace("/", ""))
+                                            if (Elements[Elements[parentElement].parent].tagName == domTag.tagName.Replace("/", ""))
                                             {
                                                 //replace unknown closing tag with missing closing tag
                                                 domTag.tagName = "/" + Elements[Elements[parentElement].parent].tagName;
@@ -363,6 +364,7 @@ namespace Collector.Utility.DOM
             {
                 for (var x = s1; x < tag.Length; x++)
                 {
+                    if(x >= tag.Length - 3) { break; }
                     //look for attribute name
                     s2 = tag.IndexOf("=", x);
                     s3 = tag.IndexOf(" ", x);
@@ -373,9 +375,9 @@ namespace Collector.Utility.DOM
                     if (s3 < s2 && s3 < s4 && s3 < s5)
                     {
                         //found a space first, then equal sign (=), then quotes
-                        attrName = tag.Substring(s3 + 1, s2 - (s3 + 1));
+                        attrName = tag.Substring(s3 + 1, s2 - (s3 + 1)).ToLower();
                         //find type of quotes to use
-                        if (s4 < s5)
+                        if (s4 < s5 && s4 < tag.Length)
                         {
                             //use double quotes
                             arr = tag.Substring(s4 + 1).Replace("\\\"","{{q}}").Split('"');
@@ -385,7 +387,7 @@ namespace Collector.Utility.DOM
                                 attrs.Add(attrName, str2);
                             }
                             x = s4 + str2.Length + 1;
-                        }else
+                        }else if(s5 < tag.Length)
                         {
                             //use single quotes
                             arr = tag.Substring(s5 + 1).Replace("\\'", "{{q}}").Split('\'');

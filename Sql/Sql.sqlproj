@@ -60,6 +60,8 @@
     <Folder Include="Tables" />
     <Folder Include="Stored Procedures" />
     <Folder Include="Sequences" />
+    <Folder Include="Indexes" />
+    <Folder Include="Functions" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Tables\Users.sql" />
@@ -70,6 +72,37 @@
     <Build Include="Sequences\SequenceFeeds.sql" />
     <Build Include="Sequences\SequenceArticles.sql" />
     <Build Include="Tables\Subjects.sql" />
+    <Build Include="Indexes\IndexSubjectsHierarchy.sql" />
+    <Build Include="Stored Procedures\AddSubject.sql" />
+    <Build Include="Indexes\IndexSubjectsBreadcrumb.sql" />
+    <Build Include="Sequences\SequenceSubects.sql" />
+    <Build Include="Stored Procedures\GetSubject.sql" />
+    <Build Include="Tables\Words.sql" />
+    <Build Include="Stored Procedures\AddWord.sql" />
+    <Build Include="Functions\SplitArray.sql" />
+    <Build Include="Stored Procedures\GetWords.sql" />
+    <Build Include="Stored Procedures\AddArticle.sql" />
+    <Build Include="Tables\ArticleWords.sql" />
+    <Build Include="Indexes\IndexArticleWords.sql" />
+    <Build Include="Tables\ArticleStatistics.sql" />
+    <Build Include="Tables\ArticleSubjects.sql" />
+    <Build Include="Indexes\IndexArticleSubjects.sql" />
+    <Build Include="Stored Procedures\AddArticleSubject.sql" />
+    <Build Include="Stored Procedures\RemoveArticleSubjects.sql" />
+    <Build Include="Stored Procedures\ArticleExists.sql" />
+    <Build Include="Indexes\IndexArticleUrl.sql" />
+    <Build Include="Stored Procedures\GetArticleByUrl.sql" />
+    <Build Include="Stored Procedures\CleanArticle.sql" />
+    <Build Include="Stored Procedures\RemoveArticleWords.sql" />
+    <Build Include="Indexes\IndexWords.sql" />
+    <Build Include="Sequences\SequenceWords.sql" />
+    <Build Include="Stored Procedures\AddArticleWord.sql" />
+    <Build Include="Indexes\IndexArticleWordsByArticle.sql" />
+    <Build Include="Stored Procedures\GetSubjects.sql" />
+    <Build Include="Stored Procedures\RemoveArticle.sql" />
+    <Build Include="Tables\ArticleDates.sql" />
+    <Build Include="Stored Procedures\AddArticleDate.sql" />
+    <Build Include="Stored Procedures\GetArticles.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

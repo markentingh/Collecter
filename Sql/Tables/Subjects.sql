@@ -6,5 +6,5 @@
     [score] INT NULL, 
     [title] NVARCHAR(50) NULL, 
     [hierarchy] NVARCHAR(50) NULL, 
-    [breadcrumb] NVARCHAR(MAX) NULL
+    [breadcrumb] NVARCHAR(500) NULL
 )

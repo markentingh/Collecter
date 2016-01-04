@@ -12,7 +12,12 @@ AS
 			SET @create = 0
 		END ELSE BEGIN
 			/* get hierarchy indexes */
-			SELECT @hierarchy = (hierarchy + '>' + CONVERT(nvarchar(10),@parentId)) FROM Subjects WHERE subjectId=@parentId
+			SELECT @hierarchy = hierarchy FROM Subjects WHERE subjectId=@parentId
+			if @hierarchy <> '' BEGIN
+			 SET @hierarchy = @hierarchy  + '>' + CONVERT(nvarchar(10),@parentId)
+			END ELSE BEGIN
+			 SET @hierarchy =  CONVERT(nvarchar(10),@parentId)
+			END
 		END
 	END ELSE BEGIN
 		IF (SELECT COUNT(*) FROM Subjects WHERE parentId=0 AND title=@title) > 0 BEGIN

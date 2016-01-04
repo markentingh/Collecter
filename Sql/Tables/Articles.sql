@@ -2,16 +2,17 @@
 (
 	[articleId] INT NOT NULL PRIMARY KEY, 
     [feedId] INT NULL, 
-    [subjectId] INT NULL, 
-    [domain] NVARCHAR(50) NULL, 
-    [url] NVARCHAR(250) NULL, 
-    [title] NVARCHAR(100) NULL, 
-    [keywords] NVARCHAR(250) NULL, 
-    [summary] NVARCHAR(250) NULL, 
-    [body] NVARCHAR(MAX) NULL, 
+	[subjects] int NULL,
     [images] INT NULL, 
     [datecreated] DATETIME NULL, 
     [datepublished] DATETIME NULL, 
     [relavance] SMALLINT NULL, 
-    [importance] SMALLINT NULL
+    [importance] SMALLINT NULL, 
+    [fiction] SMALLINT NULL, 
+    [domain] NVARCHAR(50) NULL, 
+    [url] NVARCHAR(250) NULL, 
+    [title] NVARCHAR(250) NULL, 
+    [summary] NVARCHAR(250) NULL, 
+    [active] BIT NULL DEFAULT 0, 
+    [deleted] BIT NULL DEFAULT 0
 )

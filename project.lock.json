@@ -1536,6 +1536,24 @@
           "lib/DNXCore50/System.Text.Encoding.Extensions.dll": {}
         }
       },
+      "System.Text.Encodings.Web/4.0.0-rc2-23623": {
+        "type": "package",
+        "dependencies": {
+          "System.Diagnostics.Debug": "4.0.0",
+          "System.IO": "4.0.0",
+          "System.Reflection": "4.0.0",
+          "System.Resources.ResourceManager": "4.0.0",
+          "System.Runtime": "4.0.0",
+          "System.Runtime.Extensions": "4.0.0",
+          "System.Threading": "4.0.0"
+        },
+        "compile": {
+          "lib/dotnet5.1/System.Text.Encodings.Web.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.1/System.Text.Encodings.Web.dll": {}
+        }
+      },
       "System.Text.RegularExpressions/4.0.11-beta-23516": {
         "type": "package",
         "dependencies": {
@@ -3571,6 +3589,24 @@
         },
         "runtime": {
           "lib/DNXCore50/System.Text.Encoding.Extensions.dll": {}
+        }
+      },
+      "System.Text.Encodings.Web/4.0.0-rc2-23623": {
+        "type": "package",
+        "dependencies": {
+          "System.Diagnostics.Debug": "4.0.0",
+          "System.IO": "4.0.0",
+          "System.Reflection": "4.0.0",
+          "System.Resources.ResourceManager": "4.0.0",
+          "System.Runtime": "4.0.0",
+          "System.Runtime.Extensions": "4.0.0",
+          "System.Threading": "4.0.0"
+        },
+        "compile": {
+          "lib/dotnet5.1/System.Text.Encodings.Web.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.1/System.Text.Encodings.Web.dll": {}
         }
       },
       "System.Text.RegularExpressions/4.0.11-beta-23516": {
@@ -5621,6 +5657,24 @@
         },
         "runtime": {
           "lib/DNXCore50/System.Text.Encoding.Extensions.dll": {}
+        }
+      },
+      "System.Text.Encodings.Web/4.0.0-rc2-23623": {
+        "type": "package",
+        "dependencies": {
+          "System.Diagnostics.Debug": "4.0.0",
+          "System.IO": "4.0.0",
+          "System.Reflection": "4.0.0",
+          "System.Resources.ResourceManager": "4.0.0",
+          "System.Runtime": "4.0.0",
+          "System.Runtime.Extensions": "4.0.0",
+          "System.Threading": "4.0.0"
+        },
+        "compile": {
+          "lib/dotnet5.1/System.Text.Encodings.Web.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet5.1/System.Text.Encodings.Web.dll": {}
         }
       },
       "System.Text.RegularExpressions/4.0.11-beta-23516": {
@@ -8858,6 +8912,17 @@
         "System.Text.Encoding.Extensions.nuspec"
       ]
     },
+    "System.Text.Encodings.Web/4.0.0-rc2-23623": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "vY5D71tcMYT9x1hIzrb35Kv2hrXjlz2AlJ112BtJST0GVFwPZ/swIMN+/qcxCcPAt/ntNlW7oK6aBqL3dmKZXA==",
+      "files": [
+        "lib/dotnet5.1/System.Text.Encodings.Web.dll",
+        "System.Text.Encodings.Web.4.0.0-rc2-23623.nupkg",
+        "System.Text.Encodings.Web.4.0.0-rc2-23623.nupkg.sha512",
+        "System.Text.Encodings.Web.nuspec"
+      ]
+    },
     "System.Text.RegularExpressions/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
@@ -9254,6 +9319,7 @@
       "Microsoft.Extensions.Configuration >= 1.0.0-rc1-final",
       "Microsoft.Extensions.OptionsModel >= 1.0.0-rc1-final",
       "Microsoft.Extensions.Caching.Memory >= 1.0.0-rc1-final",
+      "System.Text.Encodings.Web >= 4.0.0-rc2-23623",
       "System.Console >= 4.0.0-beta-23019",
       "System.Runtime >= 4.0.21-beta-23225",
       "System.Runtime.Extensions >= 4.0.11-beta-23225",

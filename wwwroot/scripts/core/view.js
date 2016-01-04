@@ -529,6 +529,11 @@ var S = {
             $(this).toggleClass('expanded');
             var box = $(this).parent().find('> .box, > .menu');
             box.toggleClass('expanded');
+            if (box.hasClass('expanded')) {
+                $('html, body').animate({
+                    scrollTop: $(this).offset().top
+                }, 700);
+            }
         }
     }
 }

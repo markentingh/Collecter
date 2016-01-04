@@ -10,10 +10,10 @@
 .accordion .title{padding:7px 15px; height:17px; background-color:#dbdbdb; border-bottom:1px solid #cfcfcf; font-size:17px; font-weight:bold; cursor:pointer; overflow:none;}
 .accordion .title.expanded{background-color:#75bad4; color:#004d87; border-bottom-color:#00e8e8;}
 .accordion .box{background-color:#222; color:#aaa; max-height:0px; transition: max-height 0.3s, padding 0.3s;}
-.accordion .box.expanded{padding:20px; max-height:500px; overflow:auto;}
+.accordion .box.expanded{padding:20px; max-height:800px; overflow:auto;}
 .accordion .box > .content{white-space:nowrap;}
-.accordion .box a:link{color:#d83a8d;}
-.accordion .box a:visited{color:#d83a8d;}
+.accordion .box a:link{color:#d83a8d !important;}
+.accordion .box a:visited{color:#d83a8d !important;}
 .accordion .box a:hover{color:#ff49a9;}
 .accordion .box a:active{color:#ff49a9;}
 .accordion .menu{width:100%; max-height:0px; overflow:hidden; transition: max-height 0.3s;}

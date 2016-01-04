@@ -18,9 +18,9 @@ namespace Collector.Utility
             return JsonConvert.DeserializeObject(str, objType, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
         }
 
-        public byte[] WriteObject(object obj)
+        public byte[] WriteObject(object obj, Formatting formatting = Formatting.Indented)
         {
-            return S.Util.Str.GetBytes(JsonConvert.SerializeObject(obj));
+            return S.Util.Str.GetBytes(JsonConvert.SerializeObject(obj, formatting, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
         }
 
         public string WriteObjectAsString(object obj)
