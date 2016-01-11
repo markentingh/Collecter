@@ -275,43 +275,41 @@ namespace Collector.Includes.Dashboard
                         }
                         scaffold.Data["tag-names"] = string.Join("\n", tagNames.ToArray());
 
-                        //create sorted text ///////////////////////////////////////////////////////
-                        var textSorted = new List<string>();
-                        foreach (var text in article.tags.text)
+                        //create sentences ///////////////////////////////////////////////////////
+
+                        i = 0;
+                        var classes = "";
+                        var sentences = new List<string>();
+                        var se = "";
+                        foreach (string sentence in article.sentences)
                         {
-                            switch (text.type)
+                            i++;
+                            se = sentence.ToLower();
+                            classes = "";
+                            if (article.words.Where(w => w.id > 0)
+                                .Where(w => 
+                                se.IndexOf(w.word + " ") >= 0 || se.IndexOf(w.word + ".") >= 0 || se.IndexOf(w.word + ",") >= 0 ||
+                                se.IndexOf(w.word + ":") >= 0 || se.IndexOf(w.word + ";") >= 0 || se.IndexOf(w.word + "]") >= 0 || 
+                                se.IndexOf(w.word + ")") >= 0 || se.IndexOf(w.word + "\"") >= 0 || se.IndexOf(w.word + "'") >= 0
+                                ).Count() > 0)
                             {
-                                case Services.Dashboard.Articles.enumTextType.script:
-                                case Services.Dashboard.Articles.enumTextType.style:
-                                    break;
-                                default:
-                                    var tag = article.elements[text.index];
-                                    //get info about text
-                                    info =
-                                        "<div class=\"info\">" +
-                                            "<div class=\"label\">Type:</div><div class=\"data\">" + text.type + "</div>" +
-                                        "</div>" +
-                                        "<div class=\"info\">" +
-                                            "<div class=\"label\">DOM:</div><div class=\"data\">" + string.Join(" > ", article.elements[text.index].hierarchyTags) + "</div>" +
-                                        "</div>";
-
-                                    textSorted.Add(
-                                        "<div class=\"text\">" +
-                                            "<div class=\"line-num\">" + text.index + "</div>" +
-                                            "<div class=\"raw\" onclick=\"$(this).find('.text-info').toggleClass('expanded')\">" + tag.text.Replace("<", "&lt;").Replace(">", "&gt;") +
-                                                "<div class=\"text-info \"><div class=\"contents\">" + info + "</div></div>" +
-                                            "</div>" +
-                                        "</div>");
-                                    break;
+                                classes = " special";
                             }
-
+                            sentences.Add(
+                                "<div class=\"text" + classes + "\">" +
+                                    "<div class=\"line-num\">" + i + "</div>" +
+                                    "<div class=\"raw\" onclick=\"$(this).find('.text-info').toggleClass('expanded')\">" + sentence +
+                                    "</div>" +
+                                "</div>");
                         }
-                        scaffold.Data["text-sorted"] = string.Join("\n", textSorted.ToArray());
+                        scaffold.Data["sentence-count"] = String.Format("{0:N0}", article.sentences.Count); 
+                        scaffold.Data["sentences"] = string.Join("\n", sentences.ToArray());
 
                         //create sorted words ///////////////////////////////////////////////////////
                         var wordsSorted = new List<string>();
                         var commonWords = serveArticles.GetCommonWords();
                         var wordType = "";
+                        var totalWords = 0;
                         i = 0;
                         foreach (var word in article.words)
                         {
@@ -353,12 +351,15 @@ namespace Collector.Includes.Dashboard
                             }
                             if (word.id > 0) { wordType += " database"; }
 
+                            totalWords += word.count;
+
                             wordsSorted.Add(
                                 "<div class=\"word" + wordType + "\">" +
                                     "<div class=\"word-info\">" + word.count + "</div>" +
                                     "<div class=\"value\">" + (word.importance == 10 ? S.Util.Str.Capitalize(word.word) : word.word) + "</div>" +
                                 "</div>");
                         }
+                        scaffold.Data["word-count"] = String.Format("{0:N0}", totalWords);
                         scaffold.Data["words-sorted"] = string.Join("\n", wordsSorted.ToArray());
 
                         //create subjects ///////////////////////////////////////////////////////
@@ -387,6 +388,7 @@ namespace Collector.Includes.Dashboard
                         {
                             phrases.Add("<div class=\"phrase\"><div class=\"value\">" + phrase.phrase + "</div></div>");
                         }
+                        scaffold.Data["phrase-count"] = article.phrases.Count().ToString();
                         scaffold.Data["phrases"] = string.Join("\n", phrases.ToArray());
 
                         //create anchor links ///////////////////////////////////////////////////////

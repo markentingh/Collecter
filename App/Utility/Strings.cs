@@ -176,19 +176,25 @@ namespace Collector.Utility
                 var character = "";
                 do
                 {
-                    s = htm.IndexOf("&#");
+                    s = htm.IndexOf("&#", s2);
                     if(s >= 0)
                     {
                         s2 = htm.IndexOf(";", s + 1);
                         if(s2 > 0)
                         {
-                            str = htm.Substring(s, (s2 + 1) - s);
-                            character = Char.ConvertFromUtf32(int.Parse(str.Replace("&#","").Replace(";","")));
-                            htm = htm.Replace(str, character);
+                            try
+                            {
+                                str = htm.Substring(s, (s2 + 1) - s);
+                                character = Char.ConvertFromUtf32(int.Parse(str.Replace("&#", "").Replace(";", "")));
+                                htm = htm.Replace(str, character);
+                                i = 0;
+                            }
+                            catch(Exception ex) { }
+                            
                         }
                     }
                     i++;
-                } while (s >= 0 && i < 200);
+                } while (s >= 0 && i < 3);
             }
             return htm;
         }
@@ -230,6 +236,14 @@ namespace Collector.Utility
                 return str.Substring(0, max) + trail;
             }
             return str;
+        }
+
+        public string RemoveApostrophe(string word)
+        {
+            var w = word
+                .Replace("'s", "").Replace("’s", "").Replace("'t","{{t}}").Replace("’t", "{{t}}")
+                .Replace("'","").Replace("’", "").Replace("{{t}}", "'t");
+            return w;
         }
 
         #endregion
@@ -528,13 +542,20 @@ namespace Collector.Utility
             return true;
         }
 
-        public bool CheckChar(string character, bool allowAlpha = true, bool allowNumbers = true, string[] allowList = null)
+        public bool CheckChar(string character, bool allowAlpha = true, bool allowNumbers = true, string[] allowList = null, bool capitalizedOnly = false)
         {
             if (allowAlpha == true)
             {
                 if (Asc(character) >= Asc("a") & Asc(character) <= Asc("z"))
                 {
-                    return true;
+                    if(capitalizedOnly == false)
+                    {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                    
                 }
 
                 if (Asc(character) >= Asc("A") & Asc(character) <= Asc("Z"))

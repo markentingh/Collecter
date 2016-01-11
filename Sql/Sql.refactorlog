@@ -140,4 +140,25 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="articleId" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="478651ef-eb0d-4ca0-8bba-93858de84ed2" ChangeDateTime="01/09/2016 18:45:07">
+    <Property Name="ElementName" Value="[dbo].[ArticleSentences].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[ArticleSentences]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="articleId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="b265715b-53f8-4d41-9fff-1d723b1e8f3f" ChangeDateTime="01/09/2016 19:07:27">
+    <Property Name="ElementName" Value="[dbo].[Topics].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Topics]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="topicId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="02e17c18-c64f-450f-8f6b-74c38e18d449" ChangeDateTime="01/09/2016 19:13:02">
+    <Property Name="ElementName" Value="[dbo].[TopicArticles].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[TopicArticles]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="topicId" />
+  </Operation>
 </Operations>

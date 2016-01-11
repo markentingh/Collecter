@@ -29,6 +29,7 @@ namespace Collector.Services.Dashboard
             public string title;
             public List<int> body;
             public List<DomElement> bodyElements;
+            public List<string> sentences;
             public string summary;
             public AnalyzedAuthor author;
             public DateTime publishDate;
@@ -64,6 +65,14 @@ namespace Collector.Services.Dashboard
             public int count;
             public int importance;
             public enumWordType type;
+            public bool apostrophe;
+        }
+
+        public struct AnalyzedPhrase
+        {
+            public string phrase;
+            public int[] words;
+            public int count;
         }
 
         public struct AnalyzedWordInText
@@ -108,12 +117,6 @@ namespace Collector.Services.Dashboard
         {
             public enumTextType type;
             public int count;
-        }
-
-        public struct AnalyzedPhrase
-        {
-            public string phrase;
-            public int[] words;
         }
 
         public struct ArticleSubject
@@ -183,6 +186,7 @@ namespace Collector.Services.Dashboard
         #region "Dictionaries"
 
         private string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", "&nbsp;", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
+        private string[] sentenceSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
 
         private string[] scriptSeparators = new string[] { "{", "}", ";", "$", "=", "(", ")" };
 
@@ -191,6 +195,8 @@ namespace Collector.Services.Dashboard
             "january","february","march","april","may","june",
             "july","august","september","october","november","december" };
 
+        private string[] nonSentenceTags = new string[] { "h1", "h2", "h3", "h4", "h5", "h6", "title" };
+
         private string[] badTags = new string[]  {
             "applet", "area", "audio", "canvas", "dialog", "small",
             "embed", "footer", "iframe", "input", "label", "nav",
@@ -198,14 +204,20 @@ namespace Collector.Services.Dashboard
             "video" };
 
         private string[] badArticleTags = new string[]  {
-            "applet", "area", "audio", "canvas", "dialog", "small",
+            "applet", "area", "audio", "canvas", "dialog", "small", "nav",
             "embed", "footer", "iframe", "input", "label", "nav", "header", "head",
             "object", "option", "s", "script", "style", "title", "textarea",
             "video", "form", "figure", "figcaption","noscript" };
 
         private string[] badAttributes = new string[] { "id" };
 
-        private string[] badClasses = new string[] { "aside", "sidebar", "advert", "menu", "comment", "tag", "keyword", "nav", "logo", "link", "search", "form", "topic", "feature", "filter", "categor", "bread", "credit", "foot", "disqus", "callout" };
+        private string[] badClasses = new string[] {
+            "head", "social", "side", "advert", "menu", "comment", "tag", "keyword",
+            "nav", "logo", "list", "link", "search", "form", "topic", "feature",
+            "filter", "categor", "bread", "credit", "foot", "disqus", "callout",
+            "graphic", "image", "photo", "addthis", "tool", "separat",
+            "related", "ad-", "item", "return", "mobile", "home", "about", "hidden",
+            "semantic"}; 
 
         private string[] badPhotoCredits = new string[] { "photo", "courtesy", "by", "copyright" };
 
@@ -214,6 +226,8 @@ namespace Collector.Services.Dashboard
         private string[] badTrailing = new string[] { "additional", "resources", "notes", "comment" };
 
         private string[] badChars = new string[] { "|", ":", "{", "}", "[", "]" };
+
+        private string[] domainSuffixes = new string[] { "com", "net", "org", "biz" };
 
         #endregion
 
@@ -431,7 +445,6 @@ namespace Collector.Services.Dashboard
             analyzed.tags.anchorLinks = anchors;
 
             //analyze sorted text /////////////////////////////////////////////////////////////////////////////////////////////////////////
-            var textblock = "";
             string[] texts;
             AnalyzedWord word;
             AnalyzedWordInText wordIn;
@@ -446,8 +459,7 @@ namespace Collector.Services.Dashboard
                 var newText = new AnalyzedText();
                 newText.index = element.index;
                 //separate all words & symbols with a space
-                textblock = S.Util.Str.replaceAll(element.text, " {1} ", wordSeparators).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ");
-                texts = textblock.Split(' ');
+                texts = S.Util.Str.replaceAll(element.text, " {1} ", wordSeparators).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Split(' ');
                 for (var x = 0; x < texts.Length; x++)
                 {
                     if(texts[x].Trim() == "") { continue; }
@@ -772,12 +784,15 @@ namespace Collector.Services.Dashboard
                                 if(elem.attribute != null) { 
                                     if (elem.attribute.ContainsKey("id"))
                                     {
-                                        //if (badClasses.Where(bc => elem.attribute["id"].ToLower().IndexOf(bc) >= 0).Count() > 0)
-                                        if(elem.attribute["id"] != ""){
+                                        if (badClasses.Where(bc => elem.attribute["id"].ToLower().IndexOf(bc) >= 0).Count() > 0)
+                                        {
                                             badIndexes.Add(elem.index);
                                         }
+                                        //if(elem.attribute["id"] != ""){
+                                        //    badIndexes.Add(elem.index);
+                                        //}
+                                        }
                                     }
-                                }
 
                                 if (badArticleTags.Contains(elem.tagName))
                                 {
@@ -811,32 +826,209 @@ namespace Collector.Services.Dashboard
             var charSymbol4 = 96;
             var charSymbol5 = 123;
             int character;
+            var txt1 = "";
+            var txt2 = "";
+            var txt3 = "";
+            int sentenceStart = 0;
+            int sentenceEnd = 0;
+            bool foundSentence = false;
+            var sentence = "";
+            var sentences = new List<string>();
             bool isName = true;
+            DomElement domText;
             var domainName = analyzed.domain.Split('.')[0].ToLower();
             var commonWords = GetCommonWords();
             allWords = new List<AnalyzedWord>();
+
+            //build article text
             for (var x = 0; x < analyzed.body.Count; x++)
             {
-                txt = analyzed.elements[analyzed.body[x]].text.Trim();
-                if(txt.Substring(txt.Length - 1, 1) != ".") { txt += "."; }
+                domText = analyzed.elements[analyzed.body[x]];
+                if(domText.hierarchyTags.Where(h => nonSentenceTags.Contains(h)).Count() > 0)
+                {
+                    continue;
+                }
+                txt = domText.text.Trim();
                 text += txt + " ";
             }
-            textblock = S.Util.Str.replaceAll(S.Util.Str.HtmlDecode(text), " {1} ", wordSeparators).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ");
-            texts = textblock.Split(' ');
+
+            //separate text into sentences
+            texts = S.Util.Str.replaceAll(
+                S.Util.Str.HtmlDecode(
+                    text.Replace("&nbsp;",""))
+                    .Replace("... ","{{p3}}").Replace(".. ", ". ").Replace(".. ", ". ").Replace("{{p3}}", "... ")
+                , "=+={1}=+=", sentenceSeparators)
+                .Replace("=+==+=", "=+=").Replace("=+==+=","=+=")
+                .Split(new string[] { "=+=" }, StringSplitOptions.RemoveEmptyEntries).Where(p => p.Trim() != "").ToArray();
             for (var x = 0; x < texts.Length; x++)
             {
+                txt = texts[x].ToLower().Trim();
+                if (txt == "") { continue; }
+
+                //find end of sentence
+                if (txt == ".")
+                {
+                    foundSentence = true;
+                    //is period actually used for the end of a sentence 
+                    //or is it used for an acronym or abbreviation instead?
+                    if (texts.Length > x + 3)
+                    {
+                        //look ahead for a period
+                        txt1 = texts[x + 1].Trim();
+                        if(txt1 == "") { txt1 = " "; }
+                        if (texts[x + 2].Trim() == ".")
+                        {
+                            if(txt1.IndexOf(" ") < 0)
+                            {
+                                //part of an abbreviation or acronym
+                                foundSentence = false;
+                            }
+                            txt2 = texts[x + 3];
+                            if(txt2.Length > 3)
+                            {
+                                //look ahead for website URLs
+                                if (domainSuffixes.Contains(txt2.Substring(0, 3)) == true)
+                                {
+                                    txt3 = txt2.Substring(3, 1);
+                                    if (S.Util.Str.CheckChar(txt3, true) == false)
+                                    {
+                                        //found a website URL, it is not an acronym like I had thought
+                                        foundSentence = true;
+                                    }
+                                }
+                            }
+                            
+                        }
+                        else if (S.Util.Str.CheckChar(txt1.Substring(0, 1), true, false, null, true) == true)
+                        {
+                            //look ahead for a capital letter
+                        }
+                        //text is a potential sentence part
+                        if (x >= 2)
+                        {
+                            if (texts[x - 1].Trim() == ".")
+                            {
+                                foundSentence = false;
+                            }
+                        }
+                        if(x < texts.Length - 2)
+                        {
+                            txt2 = texts[x + 1].Trim();
+                            if(txt2.IndexOf("com") == 0)
+                            {
+                                if(1 == 1)
+                                {
+
+                                }
+                            }
+                            if (txt2.Length > 3)
+                            {
+                                //look for website URLs
+                                if (domainSuffixes.Contains(txt2.Substring(0, 3)) == true)
+                                {
+                                    txt3 = txt2.Substring(3, 1);
+                                    if (S.Util.Str.CheckChar(txt3, true) == false)
+                                    {
+                                        //found a website URL
+                                        foundSentence = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (txt == "!" || txt == "?" || txt == ":")
+                {
+                    foundSentence = true;
+                }
+                
+
+                if(foundSentence == true)
+                {
+                    //look for quotes
+                    if(texts.Length - 1 > x)
+                    {
+                        txt1 = texts[x + 1].Trim();
+                        if(txt1 != "")
+                        {
+                            txt2 = txt1.Substring(0, 1);
+                            if (txt2 == "\"" || txt2 == ",")
+                            {
+                                foundSentence = false;
+                            }
+                        }
+                        
+                    }
+                }
+
+
+                if (foundSentence == true)
+                {
+                    for (int z = sentenceStart; z <= x; z++)
+                    {
+                        sentence += texts[z];
+                    }
+                    //check sentence length
+                    if (sentence.Length > 4) {
+                        txt = sentence.Trim();
+                        txt1 = txt.Substring(0, 1);
+                        txt2 = txt.Substring(txt.Length - 1, 1);
+                        if(badChars.Contains(txt1) == true)
+                        {
+                            txt = txt.Substring(1);
+                        }
+                        if (badChars.Contains(txt2) == true)
+                        {
+                            if (txt2 != ":")
+                            {
+                                txt = txt.Substring(0, txt.Length - 1);
+                            }
+                        }
+                        sentences.Add(txt);
+                        sentenceStart = x + 1;
+                    }
+                    foundSentence = false;
+                    sentence = "";
+                    
+                }
+            }
+            analyzed.sentences = sentences;
+
+
+            // analyze all words in article & get phrases, too
+            var phrases = new List<AnalyzedPhrase>();
+            var phrasewords = new List<string>();
+            List<string[]> phrasesFound;
+            List<string> phraseCreated;
+            var dbphrases = GetPhrases();
+            int bufferedUnknownPhrase = 0;
+            int bufferedPhrase = 0;
+            bool isUnknownPhraseBuffered = false;
+            bool isPhraseBuffered = false;
+            text = "";
+            for (var x = 0; x < analyzed.body.Count; x++)
+            {
+                domText = analyzed.elements[analyzed.body[x]];
+                txt = domText.text.Trim();
+                text += txt + " ";
+            }
+            texts = S.Util.Str.replaceAll(S.Util.Str.HtmlDecode(text), " {1} ", wordSeparators)
+                .Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Split(' ');
+            for (var x = 0; x < texts.Length; x++)
+            {
+                txt = texts[x].ToLower().Trim();
+                if (txt == "") { continue; }
+
                 texts[x] = texts[x].Trim();
-                if (texts[x] == "") { continue; }
 
                 //add word to all words list
-                txt = texts[x].ToLower().Trim();
                 index = allWords.FindIndex(w => w.word == txt);
                 if (index >= 0)
                 {
                     //incriment word count
-                    var w = allWords[index];
-                    w.count+=1;
-                    allWords[index] = w;
+                    word = allWords[index];
+                    word.count+=1;
+                    allWords[index] = word;
                 }
                 else
                 {
@@ -845,6 +1037,11 @@ namespace Collector.Services.Dashboard
                     word.word = txt;
                     word.count = 1;
                     word.importance = 5;
+                    if(txt.Contains("'s") == true || txt.Contains("’s") == true || txt.IndexOf("'") == txt.Length - 1 || txt.IndexOf("’") == txt.Length - 1)
+                    {
+                        word.word = S.Util.Str.RemoveApostrophe(word.word);
+                        word.apostrophe = true;
+                    }
 
                     //figure out importance of word
                     if (commonWords.Contains(txt)){
@@ -880,23 +1077,23 @@ namespace Collector.Services.Dashboard
                             if(isName == true)
                             {
                                 word.importance = 10;
-                                if (txt.IndexOf("'s") > 0 || txt.IndexOf("'") == txt.Length - 1)
+                                if (txt.IndexOf("'") > 0 || txt.IndexOf("’") > 0)
                                 {
                                     //word contains an apostrophe
-                                    txt = txt.Replace("'s", "").Replace("'", "");
-                                    index = allWords.FindIndex(w => w.word == txt);
-                                    if (index < 0)
-                                    {
-                                        word.word = txt;
-                                    }
-                                    else
-                                    {
-                                        //skip name (it already exists)
-                                        var w = allWords[index];
-                                        w.count+=1;
-                                        allWords[index] = w;
-                                        continue;
-                                    }
+                                    txt = S.Util.Str.RemoveApostrophe(txt);
+                                }
+                                index = allWords.FindIndex(w => w.word == txt);
+                                if (index < 0)
+                                {
+                                    word.word = txt;
+                                }
+                                else
+                                {
+                                    //skip name (it already exists)
+                                    var w = allWords[index];
+                                    w.count+=1;
+                                    allWords[index] = w;
+                                    continue;
                                 }
                             } 
                         }
@@ -934,67 +1131,113 @@ namespace Collector.Services.Dashboard
 
                     allWords.Add(word);
                 }
-            }
-
-            //find phrases /////////////////////////////////////////////////////////////////////////////////////////////////////
-            var phrases = new List<AnalyzedPhrase>();
-            var phrasewords = new List<string>();
-
-            //guess unknown phrases based on capitalized words
-            for(int x = 0; x < allWords.Count(); x++)
-            {
-                if(allWords[x].importance == 10)
+                //find phrases /////////////////////////////////////////////////////////////////////////////////////////////////////
+                //guess unknown phrases based on capitalized words
+                if(isUnknownPhraseBuffered == false)
                 {
-                    phrasewords.Add(allWords[x].word);
-                }
-                else
-                {
-                    if(phrasewords.Count > 0) {
-                        if(phrasewords.Count > 1)
+                    if (word.importance == 10 && word.apostrophe == false)
+                    {
+                        phrasewords.Add(word.word);
+                        bufferedUnknownPhrase += 1;
+                    }
+                    else
+                    {
+                        if(word.apostrophe == true)
+                        {
+                            phrasewords.Add(word.word);
+                            bufferedUnknownPhrase += 1;
+                        }
+                        if (phrasewords.Count > 1)
                         {
                             var newphrase = new AnalyzedPhrase();
-                            newphrase.phrase = string.Join(" ", phrasewords);
-                            phrases.Add(newphrase);
+                            newphrase.phrase = S.Util.Str.RemoveApostrophe(string.Join(" ", phrasewords));
+                            newphrase.count = 1;
+                            index = phrases.FindIndex(p => p.phrase == newphrase.phrase);
+                            if (index >= 0)
+                            {
+                                //phrase already exists
+                                newphrase = phrases[index];
+                                newphrase.count++;
+                                phrases[index] = newphrase;
+                            }
+                            else
+                            {
+                                //add new phrase
+                                phrases.Add(newphrase);
+                            }
+                            isUnknownPhraseBuffered = true;
+                        }
+                        else
+                        {
+                            bufferedUnknownPhrase = 0;
+                            isUnknownPhraseBuffered = false;
                         }
                         phrasewords = new List<string>();
                     }
                 }
-            }
+                
 
-            //find phrases from phrases database
-            List<string[]> phrasesFound;
-            List<string> phraseCreated;
-            var dbphrases = GetPhrases();
-            for (int x = 0; x < allWords.Count(); x++)
-            {
-                phrasesFound = dbphrases.Where(p => p[0] == allWords[x].word).ToList();
-                if(phrasesFound.Count > 0)
+                //find phrases from phrases.json
+                if(isPhraseBuffered == false)
                 {
-                    phraseCreated = new List<string>();
-                    foreach (var phraseFound in phrasesFound)
+                    phrasesFound = dbphrases.Where(p => p[0] == word.word).ToList();
+                    if (phrasesFound.Count > 0)
                     {
-                        var e = 0;
-                        isBad = false;
-                        foreach (var p in phraseFound)
+                        phraseCreated = new List<string>();
+                        foreach (var phraseFound in phrasesFound)
                         {
-                            if (p.IndexOf(allWords[x + e].word) != 0 && allWords[x + e].word.IndexOf(p) != 0)
+                            var e = 0;
+                            isBad = false;
+                            foreach (var p in phraseFound)
                             {
-                                isBad = true;
-                                break;
+                                txt1 = texts[x + e].Trim().ToLower();
+                                if (p.IndexOf(txt1) != 0 && txt1.IndexOf(p) != 0)
+                                {
+                                    isBad = true;
+                                    break;
+                                }
+                                phraseCreated.Add(p); // p or txt1
+                                bufferedPhrase += 1;
+                                e++;
                             }
-                            phraseCreated.Add(allWords[x + e].word);
-                            e++;
-                        }
-                        if (isBad == false)
-                        {
-                            var newphrase = new AnalyzedPhrase();
-                            newphrase.phrase = string.Join(" ", phraseCreated);
-                            phrases.Add(newphrase);
-                            x = x + e - 1;
+                            if (isBad == false)
+                            {
+                                var newphrase = new AnalyzedPhrase();
+                                newphrase.phrase = string.Join(" ", phraseCreated);
+                                newphrase.count = 1;
+                                index = phrases.FindIndex(p => p.phrase == newphrase.phrase);
+                                if (index >= 0)
+                                {
+                                    //phrase already exists
+                                    newphrase = phrases[index];
+                                    newphrase.count++;
+                                    phrases[index] = newphrase;
+                                }
+                                else
+                                {
+                                    //add new phrase
+                                    phrases.Add(newphrase);
+                                }
+                                isPhraseBuffered = true;
+                            }
                         }
                     }
                 }
-            }
+
+                if (isPhraseBuffered == true)
+                {
+                    if (bufferedPhrase > 0) { bufferedPhrase--; }
+                    if (bufferedPhrase == 0) { isPhraseBuffered = false; }
+                }
+
+                if (isUnknownPhraseBuffered == true)
+                {
+                    if (bufferedUnknownPhrase > 0) { bufferedUnknownPhrase--; }
+                    if (bufferedUnknownPhrase == 0) { isUnknownPhraseBuffered = false; }
+                }
+
+
+            }// END: analyze all words
 
             analyzed.phrases = phrases;
 
@@ -1269,37 +1512,45 @@ namespace Collector.Services.Dashboard
 
         public void SaveArticleToFile(AnalyzedArticle article)
         {
-            var letter = article.domain.Substring(0, 1);
-            var path = S.Server.MapPath("/content/articles/" + letter + "/" + article.domain + "/");
-            //create folder for domain
-            if (!Directory.Exists(path))
+            if(article.domain.Length > 0)
             {
-                Directory.CreateDirectory(path);
-            }
+                var letter = article.domain.Substring(0, 1);
+                var path = S.Server.MapPath("/content/articles/" + letter + "/" + article.domain + "/");
+                //create folder for domain
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
 
-            //save raw html to file
-            File.WriteAllText(path + article.id + ".html", article.rawHtml);
+                //save raw html to file
+                if (File.Exists(path + article.id + ".html") == false)
+                {
+                    File.WriteAllText(path + article.id + ".html", article.rawHtml);
+                }
 
-            //save (stripped) article object to file
-            var newArticle = new AnalyzedArticle();
-            var bodyElements = new List<DomElement>();
-            foreach (int x in article.body)
-            {
-                bodyElements.Add(article.elements[x]);
+
+                //save (stripped) article object to file
+                var newArticle = new AnalyzedArticle();
+                var bodyElements = new List<DomElement>();
+                foreach (int x in article.body)
+                {
+                    bodyElements.Add(article.elements[x]);
+                }
+                newArticle.id = article.id;
+                newArticle.pageTitle = article.pageTitle;
+                newArticle.title = article.title;
+                newArticle.summary = article.summary;
+                newArticle.url = article.url;
+                newArticle.domain = article.domain;
+                newArticle.author = article.author;
+                newArticle.publishDate = article.publishDate;
+                newArticle.phrases = article.phrases;
+                newArticle.words = article.words;
+                newArticle.people = article.people;
+                newArticle.bodyElements = bodyElements;
+                //S.Util.Serializer.SaveToFile(newArticle, path + article.id + ".json");
             }
-            newArticle.id = article.id;
-            newArticle.pageTitle = article.pageTitle;
-            newArticle.title = article.title;
-            newArticle.summary = article.summary;
-            newArticle.url = article.url;
-            newArticle.domain = article.domain;
-            newArticle.author = article.author;
-            newArticle.publishDate = article.publishDate;
-            newArticle.phrases = article.phrases;
-            newArticle.words = article.words;
-            newArticle.people = article.people;
-            newArticle.bodyElements = bodyElements;
-            S.Util.Serializer.SaveToFile(newArticle, path + article.id + ".json");
+            
         }
 
         public AnalyzedArticle OpenArticleFromFile(string file)
@@ -1420,6 +1671,13 @@ namespace Collector.Services.Dashboard
                 commonWords = (List<string>)S.Util.Serializer.OpenFromFile(typeof(List<string>), S.Server.MapPath("/content/commonwords.json"));
             }
             return commonWords;
+        }
+        #endregion
+
+        #region "Article Sentences"
+        public void AddArticleSentence(int articleId, int index, string sentence)
+        {
+            S.Sql.ExecuteNonQuery("EXEC AddArticleSentence @articleId=" + articleId + ", @index=" + index + ", @sentence='" + S.Sql.Encode(sentence) + "'");
         }
         #endregion
 
