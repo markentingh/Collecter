@@ -37,7 +37,7 @@
 
             switch (type) {
                 case "subject":
-                    S.ajax.post('/api/Dashboard/Articles/AddSubject', { words: words, grammartype: grammartype, hierarchy: hierarchy, score: score }, function () { alert('subject(s) added'); });
+                    S.ajax.post('/api/Dashboard/Subjects/AddSubject', { words: words, grammartype: grammartype, hierarchy: hierarchy, score: score }, function () { alert('subject(s) added'); });
                     break;
                 case "common":
                     S.ajax.post('/api/Dashboard/Articles/AddCommonWord', { word: words }, function () { alert('common word(s) added'); });

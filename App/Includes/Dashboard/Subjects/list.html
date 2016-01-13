@@ -1,0 +1,74 @@
+﻿<style type="text/css">
+    .form-addsubjects{padding-bottom:20px;}
+
+    .subjects{padding-top:50px;}
+    .subject {
+        float: left;
+        width: 25%;
+        text-align: left;
+        padding: 15px 25px;
+        font-size: 22px;
+        box-sizing: border-box;
+    }
+    
+    .subject a:link { color: #ddd !important; }
+    .subject a:visited { color: #ddd !important; }
+    .subject a:hover { color: #ddd !important; }
+    .subject a:active { color: #ddd !important; }
+
+    .subjects .box-list{overflow:hidden;}
+    .subjects .selection{max-height:0; overflow:hidden;}
+    .subjects .selection .label{float:left; font-size: 22px; color:#00d5b5;}
+    .subjects .selection .option{float:right;}
+    .subjects.selected .box:hover{background-color:#26444a; }
+</style>
+<div class="form-addsubjects" style="display:none;">
+    <div class="row space">
+        <div class="column">
+            Add a comma-delimited list of words to the database
+        </div>
+    </div>
+    <div class="row">
+        <div class="column">
+            <input type="text" id="txtselectedwords" style="width:100%;" />
+        </div>
+    </div>
+    <div class="row space">
+        <div class="column input">
+            <select id="lstwordpart">
+                <option value="1">Verb</option>
+                <option value="2">Adverb</option>
+                <option value="3">Noun</option>
+                <option value="4">Pronoun</option>
+                <option value="5">Adjective</option>
+                <option value="6">Article</option>
+                <option value="7">Preposition</option>
+                <option value="8">Conjunction</option>
+                <option value="9">Interjection</option>
+                <option value="10">Punctuation</option>
+            </select>
+        </div>
+        <div class="column input">
+            <select id="lstwordtype">
+                <option value="subject">New Subject</option>
+                <option value="common">Common Word</option>
+                <option value="phrase">Phrase</option>
+                <option value="word">Key Word</option>
+            </select>
+        </div>
+        <div class="column label">category:</div>
+        <div class="column input">
+            <input type="text" id="txtwordcategory" style="width:200px;" />
+        </div>
+        <div class="column label">score:</div>
+        <div class="column input">
+            <input type="text" id="txtwordscore" style="width:40px;" value="1" />
+        </div>
+        <div class="column input"><div class="button green" id="btnsaveselectedwords">Save Selected</div></div>
+        <div class="column input"><div class="button" id="btncancelselectedwords">Cancel</div></div>
+    </div>
+</div>
+
+<div class="subjects-list">
+    {{content}}
+</div>

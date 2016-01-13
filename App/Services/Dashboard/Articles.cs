@@ -185,7 +185,7 @@ namespace Collector.Services.Dashboard
 
         #region "Dictionaries"
 
-        private string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", "&nbsp;", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
+        private string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
         private string[] sentenceSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
 
         private string[] scriptSeparators = new string[] { "{", "}", ";", "$", "=", "(", ")" };
@@ -731,7 +731,7 @@ namespace Collector.Services.Dashboard
                                             isBad = true;
                                         }
                                     }
-                                    if(articleText.Length <= 7)
+                                    if(articleText.Length <= 7 && isBad != true)
                                     {
                                         if(articleText.Where(t => badMenu.Contains(t)).Count() >= 1)
                                         {
@@ -745,7 +745,7 @@ namespace Collector.Services.Dashboard
                                         }
                                     }
 
-                                    if(articleText.Length <= 3)
+                                    if(articleText.Length <= 3 && isBad != true)
                                     {
                                         if(articleText.Where(t => badChars.Contains(t)).Count() >= 1)
                                         {
@@ -830,7 +830,6 @@ namespace Collector.Services.Dashboard
             var txt2 = "";
             var txt3 = "";
             int sentenceStart = 0;
-            int sentenceEnd = 0;
             bool foundSentence = false;
             var sentence = "";
             var sentences = new List<string>();
@@ -1018,6 +1017,13 @@ namespace Collector.Services.Dashboard
             {
                 txt = texts[x].ToLower().Trim();
                 if (txt == "") { continue; }
+                if(txt.Length == 1)
+                {
+                    if (S.Util.Str.CheckChar(txt, true, true, wordSeparators) == false)
+                    {
+                        continue;
+                    }
+                }
 
                 texts[x] = texts[x].Trim();
 
@@ -1037,11 +1043,15 @@ namespace Collector.Services.Dashboard
                     word.word = txt;
                     word.count = 1;
                     word.importance = 5;
-                    if(txt.Contains("'s") == true || txt.Contains("’s") == true || txt.IndexOf("'") == txt.Length - 1 || txt.IndexOf("’") == txt.Length - 1)
+                    if(txt.Length > 2)
                     {
-                        word.word = S.Util.Str.RemoveApostrophe(word.word);
-                        word.apostrophe = true;
+                        if (txt.Contains("'s") == true || txt.Contains("’s") == true || txt.IndexOf("'") == txt.Length - 1 || txt.IndexOf("’") == txt.Length - 1)
+                        {
+                            word.word = S.Util.Str.RemoveApostrophe(word.word);
+                            word.apostrophe = true;
+                        }
                     }
+                    
 
                     //figure out importance of word
                     if (commonWords.Contains(txt)){
@@ -1560,46 +1570,6 @@ namespace Collector.Services.Dashboard
                 return (AnalyzedArticle)S.Util.Serializer.OpenFromFile(typeof(AnalyzedArticle), S.Server.MapPath(file));
             }
             return new AnalyzedArticle();
-        }
-        #endregion
-
-        #region "Subjects"
-        public void AddSubject(string subjectList, int grammartype, string hierarchy, int score)
-        {
-            int parentId = 0;
-            var subjects = subjectList.Replace(" , ", ",").Replace(", ", ",").Replace(" ,", ",").Split(',');
-            var hier = new string[] { };
-            if (hierarchy != "")
-            {
-                hier = hierarchy.Replace(" > ", ">").Replace("> ", ">").Replace(" >", ">").Split('>');
-                var parentTitle = "";
-                var parentBreadcrumb = "";
-                if (hier.Length > 0) {
-                    var parentHier = hier.ToList();
-                    parentTitle = hier[hier.Length - 1];
-                    parentHier.RemoveAt(parentHier.Count - 1);
-                    parentBreadcrumb = string.Join(">", parentHier);
-                }
-                var reader = new SqlReader();
-                reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetSubject @title='" + parentTitle + "', @breadcrumb='" + parentBreadcrumb + "'"));
-                if(reader.Rows.Count > 0)
-                {
-                    reader.Read();
-                    parentId = reader.GetInt("subjectid");
-                    parentBreadcrumb = reader.Get("breadcrumb");
-                }
-            }
-            foreach (string subject in subjects)
-            {
-                S.Sql.ExecuteNonQuery("EXEC AddSubject @parentid=" + parentId + ", @grammartype=" + grammartype + ", @score=" + score + ", @title='" + subject + "', @breadcrumb='" + string.Join(">",hier) + "'");
-            }
-        }
-
-        public List<ArticleSubject> GetSubjects(string[] subject)
-        {
-            var subjects = new List<ArticleSubject>();
-
-            return subjects;
         }
         #endregion
 

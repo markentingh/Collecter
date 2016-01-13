@@ -31,7 +31,7 @@ namespace Collector.Includes.Dashboard
                 {
                     case "create":
                         if (S.Request.ContentType != null)
-                        {
+                        { 
                             if (S.Request.Form.Count > 0)
                             {
                                 if (S.Request.Form["url"] != "")
@@ -39,7 +39,7 @@ namespace Collector.Includes.Dashboard
                                     scaffold = LoadAnalyzedArticle();
                                 }
                             }
-                        }
+                        } 
                         if(scaffold == null) { scaffold = LoadCreateArticleForm(); }
 
                         //render form
@@ -50,7 +50,6 @@ namespace Collector.Includes.Dashboard
                         //load article editor
                         if(S.Page.Url.paths.Length > 3)
                         {
-                            
                             //get article from sql
                             sqlDash = new SqlClasses.Dashboard(S);
                             reader = sqlDash.GetArticle(int.Parse(S.Page.Url.paths[3]));

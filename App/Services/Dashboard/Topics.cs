@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Collector.Services.Dashboard
+﻿namespace Collector.Services.Dashboard
 {
     public class Topics : Service
     {

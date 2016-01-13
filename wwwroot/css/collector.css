@@ -67,7 +67,7 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:h
 }
 
 /* interface */
-.interface > header{width:100%; background-color:#ffffff; color:#444444; padding:10px 0; overflow:auto; clear:both; position:relative;}
+.interface > header{width:100%; background-color:#2095C1; color:#fff; padding:10px 0; overflow:auto; clear:both; position:relative;}
 .interface > header .logo{float:left; white-space:nowrap;}
 .interface > header .logo > img{display:inline; position:relative; top:2px; padding:0 10px 0 0;}
 .interface > header .logo > div{display:inline; font-size:20px; }
@@ -75,11 +75,17 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:h
 .interface > header nav ul{list-style-type:none; white-space:nowrap; padding-top:5px;}
 .interface > header nav ul > li {display:inline-block; padding:0 10px; font-size:14px;}
 .interface > header nav ul > li a:hover{text-decoration:underline;}
+.interface > header a:link{color:#fff;}
+.interface > header a:visited{color:#fff;}
+.interface > header a:hover{color:#fff;}
+.interface > header a:active{color:#fff;}
 
 .content{display:block; max-width:1024px; margin:0 auto; padding:0 20px;}
 
 /* box */
-.box{background-color:#eeeeee; border-radius:5px; box-sizing:border-box; border:1px solid #bbbbbb; overflow:hidden;}
+.box.small, .box.medium, .box.large, .box.center{
+    background-color:#eeeeee; border-radius:5px; box-sizing:border-box; border:1px solid #bbbbbb; overflow:hidden;
+}
 .box > .title{padding:7px 15px; font-size:15px; font-weight:bold; background-color:#bbbbbb; color:#ffffff;}
 .box.small{max-width:300px;}
 .box.medium{max-width:600px;}

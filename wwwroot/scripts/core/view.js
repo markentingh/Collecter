@@ -340,6 +340,7 @@ var S = {
                 $(document.body).removeClass('wait');
                 S.window.changed = true;
                 S.events.images.load();
+                S.accordion.load();
             },
 
             error: function (status, err) {
@@ -425,7 +426,7 @@ var S = {
                 dataType: "json",
                 url: url,
                 contentType: "text/plain; charset=utf-8",
-                success: function (d) { S.ajax.runQueue(); S.events.ajax.complete(d); callback(d); },
+                success: function (d) { S.ajax.runQueue(); callback(d); S.events.ajax.complete(d); },
                 error: function (xhr, status, err) { S.events.ajax.error(status, err); S.ajax.runQueue(); }
             }
             S.ajax.queue.push(options);
