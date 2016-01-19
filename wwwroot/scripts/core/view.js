@@ -444,6 +444,7 @@ var S = {
 
         callback: {
             inject: function (data) {
+                console.log(data);
                 if (data.type == 'Collector.Inject') {
                     //load new content from web service
                     var elem = $(data.d.element);

@@ -1,4 +1,4 @@
-﻿namespace Collector.Services.Dashboard
+﻿namespace Collector.Services
 {
     public class Topics : Service
     {

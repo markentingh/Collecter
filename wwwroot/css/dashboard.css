@@ -11,7 +11,7 @@
 .accordion > .title:hover{background-color:#acdae4; color:#0066a9; }
 .accordion > .title.expanded{background-color:#75bad4; color:#004476;}
 .accordion > .title.expanded:hover{background-color:#00b1ca;}
-.accordion > .title.hide{max-height:0; border-bottom-color:#4d4d4d; padding:0 15px;}
+.accordion > .title.hide{max-height:0; border-bottom-width:0; padding:0 15px;}
 .accordion > .box{background-color:#222; color:#aaa; max-height:0px; transition: max-height 0.3s, padding 0.3s; box-sizing:border-box; overflow:hidden;}
 .accordion > .box.expanded{padding:20px; max-height:800px; overflow:auto;}
 .accordion > .box > .content{white-space:nowrap;}
@@ -19,9 +19,21 @@
 .accordion > .box a:visited{color:#d83a8d;}
 .accordion > .box a:hover{color:#ff49a9;}
 .accordion > .box a:active{color:#ff49a9;}
-.accordion > .box .button{background-color:#29a091 !important; color:#fff !important; border-color:#30b7a6 !important; 
+
+.accordion > .box .button{background-color:#9a9a9a !important; color:#fff !important; border-color:#9a9a9a !important; 
+                          background-image:-webkit-linear-gradient(#9a9a9a, #727272); background-image:linear-gradient(#9a9a9a, #727272);}
+.accordion > .box .button:hover{background-color:#b9b9b9 !important; color:#fff !important; border-color:#b9b9b9 !important; 
+                          background-image:-webkit-linear-gradient(#b9b9b9, #8d8d8d); background-image:linear-gradient(#b9b9b9, #8d8d8d);}
+
+.accordion > .box .button.blue{background-color:#66abc8 !important; color:#fff !important; border-color:#66abc8 !important; 
+                          background-image:-webkit-linear-gradient(#66abc8, #3380a1); background-image:linear-gradient(#66abc8, #3380a1);}
+.accordion > .box .button.blue:hover{background-color:#79c4e4 !important; color:#fff !important; border-color:#79c4e4 !important; 
+                          background-image:-webkit-linear-gradient(#79c4e4, #138bbf); background-image:linear-gradient(#79c4e4, #138bbf);}
+
+.accordion > .box .button.green{background-color:#29a091 !important; color:#fff !important; border-color:#30b7a6 !important; 
                           background-image:-webkit-linear-gradient(#30b7a6, #198376); background-image:linear-gradient(#30b7a6, #198376);}
-.accordion > .box .button:hover{background-color:#29a091 !important; color:#fff !important; border-color:#05d8bd !important; 
+.accordion > .box .button.green:hover{background-color:#29a091 !important; color:#fff !important; border-color:#05d8bd !important; 
                           background-image:-webkit-linear-gradient(#05d8bd, #0c9c8a); background-image:linear-gradient(#05d8bd, #0c9c8a);}
+
 .accordion > .menu{width:100%; max-height:0px; overflow:hidden; transition: max-height 0.3s;}
 .accordion > .menu.expanded{max-height:500px; overflow:hidden;}

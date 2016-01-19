@@ -5,7 +5,7 @@ using System.Linq;
 using Collector.Utility.DOM;
 
 
-namespace Collector.Includes.Dashboard
+namespace Collector.Includes
 {
     public class Articles : Include
     {
@@ -87,7 +87,7 @@ namespace Collector.Includes.Dashboard
                 {
                     //get article list from web service
                     scaffold = new Scaffold(S, "/app/includes/dashboard/articles/list.html", "", new string[] { "content" });
-                    Services.Dashboard.Articles articles = new Services.Dashboard.Articles(S, S.Page.Url.paths);
+                    Services.Articles articles = new Services.Articles(S, S.Page.Url.paths);
                     reader = articles.GetArticles(1, 50);
                     if (reader.Rows.Count > 0)
                     {
@@ -122,7 +122,7 @@ namespace Collector.Includes.Dashboard
                     if (S.Request.Form["url"] != "")
                     {
                         //analyze an article ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        var serveArticles = new Services.Dashboard.Articles(S, S.Page.Url.paths);
+                        var serveArticles = new Services.Articles(S, S.Page.Url.paths);
                         var url = S.Request.Form["Url"];
                         var info = "";
                         var article = serveArticles.Analyze(url);

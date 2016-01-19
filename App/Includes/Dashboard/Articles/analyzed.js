@@ -37,17 +37,18 @@
 
             switch (type) {
                 case "subject":
-                    S.ajax.post('/api/Dashboard/Subjects/AddSubject', { words: words, grammartype: grammartype, hierarchy: hierarchy, score: score }, function () { alert('subject(s) added'); });
+                    S.ajax.post('/api/Subjects/AddSubject', { words: words, grammartype: grammartype, hierarchy: hierarchy, score: score, loadUI: false, element: '' }, function () { alert('subject(s) added'); });
                     break;
                 case "common":
-                    S.ajax.post('/api/Dashboard/Articles/AddCommonWord', { word: words }, function () { alert('common word(s) added'); });
+                    S.ajax.post('/api/Articles/AddCommonWord', { word: words }, function () { alert('common word(s) added'); });
                     break;
                 case "phrase":
-                    S.ajax.post('/api/Dashboard/Articles/AddPhrase', { word: words }, function () { alert('phrase added'); });
+                    S.ajax.post('/api/Articles/AddPhrase', { word: words }, function () { alert('phrase added'); });
                     break;
-                case "word": S.ajax.post('/api/Dashboard/Articles/AddWords', { words: words, grammartype: grammartype, hierarchy: hierarchy, score: score }, function () { alert('word(s) added'); });
+                case "word": S.ajax.post('/api/Articles/AddWords', { words: words, grammartype: grammartype, hierarchy: hierarchy, score: score }, function () { alert('word(s) added'); });
                     break;
             }
+            $('#txtselectedwords').val('');
         }
     }
 };

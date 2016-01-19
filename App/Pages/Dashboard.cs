@@ -19,7 +19,7 @@ namespace Collector.Pages
             //load dashboard section
             string sect = "Articles";
             if(Url.paths.Length > 1) { sect = S.Util.Str.Capitalize(Url.paths[1]); }
-            string className = "Collector.Includes.Dashboard." + sect;
+            string className = "Collector.Includes." + sect;
             Type classType = Type.GetType(className);
             Include section = (Include)Activator.CreateInstance(classType, new object[] { S, scaffold });
             scaffold.Data["content"] = section.Render();

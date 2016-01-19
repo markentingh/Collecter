@@ -2,11 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Collector.Utility.DOM;
 
-namespace Collector.Services.Dashboard
+namespace Collector.Services
 {
     public class Articles : Service
     {
@@ -236,7 +234,7 @@ namespace Collector.Services.Dashboard
         }
 
         #region "Analyze"
-        public AnalyzedArticle Analyze(string url)
+        public AnalyzedArticle Analyze(string url, string content = "")
         {
             AnalyzedArticle analyzed = new AnalyzedArticle();
             analyzed.tags = new AnalyzedTags();
@@ -279,25 +277,12 @@ namespace Collector.Services.Dashboard
                     if(htm == "")
                     {
                         //file was empty. Final resort, download from url
-                        try
-                        {
-                            using (var http = new HttpClient())
-                            {
-                                Task<string> response = http.GetStringAsync(url);
-                                htm = response.Result;
-                                File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
-                            }
-                        }
-                        catch (System.Exception ex)
-                        {
-                            //open local file instead
-                            htm = File.ReadAllText(S.Server.MapPath("/wwwroot/tests/1.html"));
-                            analyzed.url = "/tests/1.html";
-                        }
+                        htm = S.Util.Web.Download(url);
+                        File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
                     }
                 }
             }
-            else
+            else if(content == "")
             {
                 //download html from url
                 if (url.IndexOf("local") == 0) //!!! offline debug only !!!
@@ -307,22 +292,13 @@ namespace Collector.Services.Dashboard
                 }
                 else
                 {
-                    try
-                    {
-                        using (var http = new HttpClient())
-                        {
-                            Task<string> response = http.GetStringAsync(url);
-                            htm = response.Result;
-                            File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
-                        }
-                    }
-                    catch (System.Exception ex)
-                    {
-                        //open local file instead
-                        htm = File.ReadAllText(S.Server.MapPath("/wwwroot/tests/1.html"));
-                        analyzed.url = "/tests/1.html";
-                    }
+                    htm = S.Util.Web.Download(url);
+                    File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
                 }
+            }else if(content.Length > 0)
+            {
+                //use attached content string
+                htm = content.ToString();
             }
             //save raw html
             analyzed.rawHtml = htm;
@@ -1369,6 +1345,16 @@ namespace Collector.Services.Dashboard
             return analyzed;
         }
 
+        public List<AnalyzedArticle> AnalyzeArticles(List<Scavenger.ScavangedContent> content)
+        {
+            var articles = new List<AnalyzedArticle>();
+            foreach(Scavenger.ScavangedContent doc in content)
+            {
+                articles.Add(Analyze(doc.url, doc.html));
+            }
+            return articles;
+        }
+
         private bool CheckWordForPossibleTypes(Parser parsed, DomElement element, string w, int[] possibleTypes, int totalWords)
         {
             if (scriptSeparators.Contains(w))
@@ -1423,6 +1409,41 @@ namespace Collector.Services.Dashboard
                 }
             }
             return true;
+        }
+
+        public List<AnalyzedWord> CombineWordLists(List<AnalyzedWord> list1, List<AnalyzedWord> list2)
+        {
+            List<AnalyzedWord> list;
+            List<AnalyzedWord> added;
+            if(list1.Count > list2.Count)
+            {
+                list = list1;
+                added = list2;
+            }
+            else
+            {
+                list = list2;
+                added = list1;
+            }
+
+            foreach(var a in added)
+            {
+                var i = list.FindIndex(c => c.word == a.word);
+                if(i >= 0)
+                {
+                    var word = list[i];
+                    word.count += a.count;
+                    list[i] = word;
+                }
+                else
+                {
+                    //add new word
+                    list.Add(a);
+                }
+            }
+
+            return list;
+
         }
         #endregion
 

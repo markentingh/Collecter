@@ -1,7 +1,8 @@
 ﻿<style type="text/css">
     .form-addsubjects{padding-bottom:20px;}
 
-    .subjects{padding-top:50px;}
+    .subjects-list{padding-top:30px;}
+    .subjects{padding-top:20px;}
     .subject {
         float: left;
         width: 25%;
@@ -18,9 +19,16 @@
 
     .subjects .box-list{overflow:hidden;}
     .subjects .selection{max-height:0; overflow:hidden;}
-    .subjects .selection .label{float:left; font-size: 22px; color:#00d5b5;}
-    .subjects .selection .option{float:right;}
-    .subjects.selected .box:hover{background-color:#26444a; }
+    .subjects .selection .label{float:left; font-size: 22px; color:#00d5b5; height:30px; padding-top:3px; width:calc(100% - 310px);}
+    .subjects .selection .option{float:right; padding-left:15px;}
+    .subjects .selection .goback{cursor:pointer;}
+    .subjects .selection .goback:hover{text-decoration:underline}
+    .subjects.selected .box:hover{background-color:#4A2649; }
+    .subjects.selected .box:hover .hover-only{display:block;}
+
+    .subjects .option-box{display:none; padding:10px 0; background-color:#222; padding:25px; margin-top:20px;}
+
+
 </style>
 <div class="form-addsubjects" style="display:none;">
     <div class="row space">
@@ -66,6 +74,21 @@
         </div>
         <div class="column input"><div class="button green" id="btnsaveselectedwords">Save Selected</div></div>
         <div class="column input"><div class="button" id="btncancelselectedwords">Cancel</div></div>
+    </div>
+</div>
+
+<div class="form-movesubject" style="display:none;">
+    <div class="row space">
+        <div class="column label">Move Subject ID:</div>
+        <div class="column input">
+            <input type="text" id="txtmovesubjectid" style="width:40px;"/>
+        </div>
+        <div class="column label">to hierarchy:</div>
+        <div class="column input" style="width:calc(100% - 540px);">
+            <input type="text" id="txtmovetohierarchy" style="width:100%;" />
+        </div>
+        <div class="column input"><div class="button green" id="btnmovesubject">Move Subject</div></div>
+        <div class="column input"><div class="button" id="btncancelmovesubject">Cancel</div></div>
     </div>
 </div>
 
