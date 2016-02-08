@@ -2,7 +2,21 @@
     .rendered iframe{width:100%; height:450px;}
     .article-title{font-size:25px;padding:10px 0 10px 0;}
     .article-url{font-size:17px; padding:0 0 50px 0;}
-    .article .contents span{display:block; padding:10px 0px;}
+    .article{font-size:20px;}
+    .article p{padding-bottom:30px; overflow:hidden; clear:both;}
+    .article h1, .article h2, .article h3, .article h4, .article h5, .article h6{overflow:hidden; clear:both;}
+    .article .word{float:left; display:block; padding:4px 5px 4px 0; }
+    .article .word.selected{background-color:#870149;}
+    .article a{float:left;}
+    .article a:hover span{text-decoration:underline;}
+    .article a:hover{text-decoration:underline;}
+    .article a:active{text-decoration:underline;}
+    .article .show-score .word.score1{background-color:#003838;}
+    .article .show-score .word.score2{background-color:#004b5c;}
+    .article .show-score .word.score3{background-color:#004a7c;}
+    .article .show-score .word.score4{background-color:#014d96;}
+    .article .show-score .word.score5{background-color:#0028aa;}
+    .article .para-end{float:none; clear:both; width:100%; height:30px;}
     .raw-html > .box > .contents {width:100%; height:700px;}
     .dom-structure .tag{padding:5px 0; white-space:nowrap;}
     .dom-structure .tag:hover{background-color:#233234;}
@@ -29,7 +43,16 @@
     .phrases .phrase{display:inline-block; position:relative; width:calc(33% - 20px); padding:7px; box-sizing:border-box; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px; overflow:hidden; cursor:pointer;}
     .subjects .subject{width:100%; box-sizing:border-box; padding:30px 10px; border-bottom:1px solid #233234; }
     .subjects .subject:hover{background-color:#233234;}
+    .subject .score{position:relative; display:inline-block; color:#d7005c; background-color:#390028; border:1px solid #820050; padding:10px 20px; margin:0 20px 0 0; font-size:20px;}
+    .subject .score .details{display:none; position:absolute; top:35px; left:40px; color:#d7005c; background-color:#390028; border:1px solid #820050; padding:5px 8px; margin:0 20px 0 0; font-size:15px; white-space:nowrap; box-shadow:rgba(0,0,0,4) 2px 2px 5px;}
+    .subject .score:hover .details{display:block;}
+    .subject .score .details .addition{padding:0 7px 0 4px; font-weight:bold;}
+    .subject .score .details .multiply{padding:0 7px 0 4px; font-weight:bold;}
+    .subject .score .details .symbol{padding:0;}
+    .subject .score .details .number{padding:0;}
+    .subject .word-count{display:inline-block; color:#c4e26b; background-color:#003937; border:1px solid #005F5F; padding:5px 8px; margin:0 20px 0 0;}
     .anchorlinks .link{padding:5px 0;}
+    #lstwordpart{width:100px;}
 </style>
 <link type="text/css" rel="/scripts/ace/ace.css"/>
 
@@ -60,23 +83,16 @@
 </div>
 
 <div class="accordion dom-structure">
-    <div class="title">DOM Structure</div>
+    <div class="title">DOM Structure ({{dom-count}})</div>
     <div class="box">
         <div class="contents">{{dom-structure}}</div>
     </div>
 </div>
 
 <div class="accordion tag-names">
-    <div class="title">Tag Names</div>
+    <div class="title">Tag Names ({{tag-names-count}})</div>
     <div class="box">
         <div class="contents">{{tag-names}}</div>
-    </div>
-</div>
-
-<div class="accordion sentences">
-    <div class="title">Sentences ({{sentence-count}})</div>
-    <div class="box">
-        <div class="contents">{{sentences}}</div>
     </div>
 </div>
 
@@ -97,7 +113,17 @@
             </div>
         </div>
         <div class="row space">
+
             <div class="column input">
+                <select id="lstwordtype" onchange="S.analyzed.buttons.changeWordType(this)">
+                    <option value="subject">New Subject</option>
+                    <option value="word">Subject Words</option>
+                    <option value="common">Common Words</option>
+                    <option value="phrase">Phrase</option>
+                    <option value="normal">Exceptions</option>
+                </select>
+            </div>
+            <div class="column input option-field wordtype-word">
                 <select id="lstwordpart">
                     <option value="1">Verb</option>
                     <option value="2">Adverb</option>
@@ -111,23 +137,15 @@
                     <option value="10">Punctuation</option>
                 </select>
             </div>
-            <div class="column input">
-                <select id="lstwordtype">
-                    <option value="subject">New Subject</option>
-                    <option value="common">Common Word</option>
-                    <option value="phrase">Phrase</option>
-                    <option value="word">Key Word</option>
-                </select>
-            </div>
-            <div class="column label">category:</div>
-            <div class="column input">
-                <input type="text" id="txtwordcategory" style="width:200px;" />
-            </div>
-            <div class="column label">score:</div>
-            <div class="column input">
+            <div class="column label option-field wordtype-word" style="min-width:30px;">score:</div>
+            <div class="column input option-field wordtype-word">
                 <input type="text" id="txtwordscore" style="width:40px;" value="1" />
             </div>
-            <div class="column input"><div class="button green" id="btnsaveselectedwords">Save Selected</div></div>
+            <div class="column label option-field wordtype-subject wordtype-word"><a href="/dashboard/subjects" target="_blank">subject</a>:</div>
+            <div class="column input option-field wordtype-subject wordtype-word" style="width:320px;">
+                <input type="text" id="txtwordcategory" style="width:100%;" value="{{subject-breadcrumb}}" />
+            </div>
+            <div class="column input" style="float:right;"><div class="button green" id="btnsaveselectedwords">Save Selected</div></div>
         </div>
     </div>
 </div>

@@ -18,12 +18,12 @@ body{background-color:#eeeeee; color:#555555; font-size:16px; font-family:sans-s
 
 /* fonts */
 h1, h2, h3, h4, h5, h6{font-family:'Arimo', sans-serif; font-weight:normal;margin:0;padding:0;}
-h1{font-size:4.2em;}
-h2{font-size:3.2em;}
-h3{font-size:2.4em;}
-h4{font-size:1.8em;}
-h5{font-size:1.6em;}
-h6{font-size:1.2em;}
+h1{font-size:48px;}
+h2{font-size:36px;}
+h3{font-size:28px;}
+h4{font-size:22px;}
+h5{font-size:18px;}
+h6{font-size:14px; font-weight:bold;}
 
 a:link{color:#00a8a3; text-decoration:none;}
 a:hover{color:#009bbe; text-decoration:underline;}

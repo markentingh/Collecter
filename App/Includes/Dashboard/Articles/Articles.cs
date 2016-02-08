@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Collector.Utility.DOM;
+using Collector.Services;
 
 
 namespace Collector.Includes
 {
     public class Articles : Include
     {
+        private  string[] separatorExceptions = new string[]{"'", "\""};
+
         public Articles(Core CollectorCore, Scaffold ParentScaffold) : base(CollectorCore, ParentScaffold)
         {
 
@@ -17,11 +20,9 @@ namespace Collector.Includes
         public override string Render()
         {
             Scaffold scaffold = null;
-            SqlClasses.Dashboard sqlDash;
-            SqlReader reader;
 
             //setup dashboard menu
-            string menu = "<div class=\"left\"><ul><li><a href=\"/dashboard/articles/create\" class=\"button blue\">New Article</a></li></ul></div>";
+            string menu = "<div class=\"left\"><ul><li><a href=\"/dashboard/articles/create\" class=\"button blue\">Analyze Article</a></li></ul></div>";
             parentScaffold.Data["menu"] = menu;
 
             //determine which section to load for articles
@@ -45,29 +46,7 @@ namespace Collector.Includes
                         //render form
                         parentScaffold.Data["menu"] = "";
                         break;
-
-                    case "edit":
-                        //load article editor
-                        if(S.Page.Url.paths.Length > 3)
-                        {
-                            //get article from sql
-                            sqlDash = new SqlClasses.Dashboard(S);
-                            reader = sqlDash.GetArticle(int.Parse(S.Page.Url.paths[3]));
-                            if(reader.Rows.Count > 0)
-                            {
-                                reader.Read();
-                                scaffold = new Scaffold(S, "/app/includes/dashboard/articles/edit.html", "", new string[] { "name", "content", "id" });
-                                scaffold.Data["name"] = reader.Get("title");
-                                scaffold.Data["id"] = reader.Get("articleid");
-                                if (File.Exists(S.Server.MapPath("/content/articles/" + reader.Get("articleid") + ".html")))
-                                {
-                                    scaffold.Data["content"] = S.Server.OpenFile("/content/articles/" + reader.Get("articleid") + ".html").Replace("\"","\\\"").Replace("\n","\\n");
-                                }
-                                S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/edit.js");
-                            }
-                        }
-                        
-                        break;
+                    
                 }
             }
             else
@@ -86,25 +65,37 @@ namespace Collector.Includes
                 if (scaffold == null)
                 {
                     //get article list from web service
-                    scaffold = new Scaffold(S, "/app/includes/dashboard/articles/list.html", "", new string[] { "content" });
-                    Services.Articles articles = new Services.Articles(S, S.Page.Url.paths);
-                    reader = articles.GetArticles(1, 50);
-                    if (reader.Rows.Count > 0)
-                    {
-                        var html = new List<string>();
-                        while (reader.Read())
-                        {
-                            html.Add("<div class=\"article\"><a href=\"" + reader.Get("url") + "\" onclick=\"S.articles.analyzeArticle('" + reader.Get("url") + "'); return false\">" + reader.Get("title") + "</a><div class=\"desc\">" + reader.Get("summary") + "</div></div>");
-                        }
-                        scaffold.Data["content"] = string.Join("\n", html);
-                        S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/list.js");
-                    }
+                    scaffold = LoadArticleList();
                 }
                 
             }
 
 
             return scaffold.Render();
+        }
+
+        private Scaffold LoadArticleList()
+        {
+            var scaffold = new Scaffold(S, "/app/includes/dashboard/articles/list.html", "", new string[] { "content" });
+            Services.Articles articles = new Services.Articles(S, S.Page.Url.paths);
+            var reader = articles.GetArticles(1, 50);
+            var htm = "";
+            if (reader.Rows.Count > 0)
+            {
+                var html = new List<string>();
+                while (reader.Read())
+                {
+                    htm = "<div class=\"article\"><a href=\"" + reader.Get("url") + "\" class=\"article-title\" " + 
+                            "onclick=\"S.articles.analyzeArticle('" + reader.Get("url") + "'); return false\">" + 
+                            reader.Get("title") + "</a>" + 
+                                "<div class=\"desc\">" + reader.Get("summary") + "</div>" + 
+                            "</div>";
+                    html.Add(htm);
+                }
+                scaffold.Data["content"] = string.Join("\n", html);
+                S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/list.js");
+            }
+            return scaffold;
         }
 
         private Scaffold LoadCreateArticleForm()
@@ -127,6 +118,9 @@ namespace Collector.Includes
                         var info = "";
                         var article = serveArticles.Analyze(url);
 
+                        //check if article is empty
+                        if(article.title=="" || article.body.Count == 0) { return scaffold; }
+
                         //save article to database
                         serveArticles.SaveArticle(article);
                         //TODO: save article object to file
@@ -138,26 +132,54 @@ namespace Collector.Includes
                         //create article ///////////////////////////////////////////////////////
                         var body = new List<string>();
                         var containerType = "";
+                        var containerChangedType = "";
                         var oldType = "";
                         var containerIndex = 0;
                         var tagIndex = 0;
-                        DomElement elemTag;
+                        var tagId = 0;
                         var tagChanged = false;
                         var tagTypes = new string[] { "p", "h1", "h2", "h3", "h4", "h5", "h6" };
                         var containTypes = new string[] { "a" };
+                        var negativeWords = new string[] {
+                            "shit", "crap", "asshole", "shitty", "bitch", "slut", "whore",
+                            "fuck", "fucking", "fucker", "fucked", "fuckers", "fucks"
+                        };
                         var endTags = "";
                         var startTags = "";
+                        DomElement elemTag;
                         DomElement elem;
+                        DomElement specialTag;
+                        Services.Articles.AnalyzedWord aword;
+                        List<Services.Articles.AnalyzedWord> awords;
+                        int sentenceIndex = 1;
+                        var sentences = new List<string>();
+                        var sentenceEnding = "";
+                        double sentenceScore = 0;
+                        var parWords = "";
+                        var paragraph = "";
+                        var parType = 0;
+                        var parTypeName = "";
+                        var paraEnd = "";
+                        var wordClasses = "";
+                        var sentenceClasses = "";
+                        var paragraphHtml = "";
+                        var str1 = "";
+                        var scoreCount = 5;
+                        string[] wordlist;
                         int bod;
+                        
                         for (var x = 0; x < article.body.Count; x++)
                         {
                             bod = article.body[x];
                             tagChanged = false;
                             elem = article.elements[bod];
+                            containerChangedType = containerType;
 
                             foreach (string tag in tagTypes)
                             {
-                                tagIndex = elem.hierarchyTags.ToList().IndexOf(tag);
+                                tagIndex = elem.hierarchyTags.ToList().LastIndexOf(tag);
+                                if (tagIndex < 0) { continue; }
+                                tagIndex = elem.hierarchyIndexes[tagIndex];
                                 if (tagIndex >= 0)
                                 {
                                     elemTag = article.elements[tagIndex];
@@ -186,31 +208,50 @@ namespace Collector.Includes
                                     }
                                 }
                             }
+                            if (tagChanged == false && containerChangedType != "" && elem.hierarchyTags.Contains(containerChangedType) == false)
+                            {
+                                //old tag doesn't exist in hierarchy
+                                tagChanged = true;
+                                containerType = "";
+                                containerIndex = -1;
+                            }
 
+                            //create tags based on element tag hierarchy
                             foreach (string tag in containTypes)
                             {
-                                tagIndex = elem.hierarchyTags.ToList().IndexOf(tag);
+                                tagIndex = elem.hierarchyTags.ToList().LastIndexOf(tag);
                                 if (tagIndex >= 0)
                                 {
+                                    //found special tag in hierarchy
+                                    tagId = elem.hierarchyIndexes[tagIndex];
+                                    specialTag = article.elements[tagId];
                                     var attrs = "";
+                                    var useTag = false;
                                     switch (tag)
                                     {
                                         case "a":
-                                            attrs = " href=\"#\"";
+                                            str1 = "#";
+                                            if (specialTag.attribute.ContainsKey("href"))
+                                            {
+                                                str1 = specialTag.attribute["href"];
+                                            }
+                                            attrs = " href=\"/dashboard/articles?url=" + S.Util.Str.UrlEncode(str1) + "\" target=\"_blank\"";
+                                            useTag = true;
                                             break;
-
                                     }
-                                    startTags += "<" + tag + attrs + ">";
-                                    endTags += "</a>";
+                                    if(useTag == true)
+                                    {
+                                        startTags += "<" + tag + attrs + ">";
+                                        endTags = "</" + tag + "> " + endTags;
+                                    }
                                 }
                             }
 
 
                             if (tagChanged == true)
                             {
-                                body.Add("</" + oldType + ">");
-
-                                body.Add("<" + containerType + ">");
+                                if (oldType != "") { body.Add("</" + oldType + ">"); }
+                                if (containerType != "") { body.Add("<" + containerType + ">"); }
                                 oldType = containerType;
                             }
 
@@ -219,16 +260,9 @@ namespace Collector.Includes
                                 //check for adding an extra space after this tag (for grammar)
                                 switch (article.elements[article.body[x + 1]].text.Substring(0, 1))
                                 {
-                                    case ".":
-                                    case ":":
-                                    case ";":
-                                    case ",":
-                                    case "!":
-                                    case "?":
-                                    case "\"":
-                                    case "'":
-                                    case "/":
-                                    case "\\":
+                                    case ".": case ":": case ";": case ",":
+                                    case "!": case "?": case "\"": case "'":
+                                    case "/": case "\\":
                                         break;
                                     default:
                                         endTags = " " + endTags;
@@ -237,14 +271,157 @@ namespace Collector.Includes
                             }
 
 
-                            body.Add(startTags + article.elements[bod].text + endTags);
+                            //separate paragraph into sentences
+                            sentences = serveArticles.GetSentences(article.elements[bod].text);
+                            paragraph = "";
+                            
+                            foreach (var s in sentences)
+                            {
+                                //detect whether or not the sentence is important
+                                parType = 1;
+                                switch (parType)
+                                {
+                                    case 1:
+                                        parTypeName = "normal";
+                                        break;
+
+                                    case 2:
+                                        parTypeName = "important";
+                                        break;
+
+                                    case 3:
+                                        parTypeName = "title";
+                                        break;
+
+                                    case 4:
+                                        parTypeName = "published";
+                                        break;
+
+                                    case 5:
+                                        parTypeName = "unknown";
+                                        break;
+
+                                    default:
+                                        parTypeName = "normal";
+                                        break;
+
+                                }
+
+                                //check to see if this is the end of the sentence
+                                wordlist = serveArticles.GetWords(s, separatorExceptions);
+                                if(wordlist.Length > 0)
+                                {
+                                    sentenceEnding = wordlist[wordlist.Length - 1];
+                                    if (tagChanged == true)
+                                    {
+                                        //tag changed, this is the end of a sentence
+                                        sentenceIndex += 1;
+                                        sentenceClasses = "";
+                                    }
+
+                                    //find sentence score based on word list importance
+                                    sentenceScore = 0;
+                                    if (wordlist.Length > 5)
+                                    {
+                                        foreach (var w in wordlist)
+                                        {
+                                            //find analyzed word
+                                            awords = article.words.Where(wr => wr.word == w.ToLower()).ToList();
+                                            if (awords.Count == 1)
+                                            {
+                                                aword = awords[0];
+                                                if (aword.importance >= 5)
+                                                {
+                                                    if (aword.id > 0)
+                                                    {
+                                                        //word is stored in the database
+                                                        if (aword.importance >= 10)
+                                                        {
+                                                            //word is a name
+                                                            sentenceScore += (scoreCount * 0.1);
+                                                        }
+                                                        else
+                                                        {
+                                                            //word is potentially important
+                                                            sentenceScore += (scoreCount * 0.149);
+                                                        }
+
+                                                    }
+                                                    else
+                                                    {
+                                                        //word is potentially important
+                                                        sentenceScore += (scoreCount * 0.149);
+                                                    }
+
+                                                }
+                                                if (negativeWords.Contains(aword.word))
+                                                {
+                                                    //punish score if negative words are found (shit, bitch, fuck)
+                                                    sentenceScore -= (scoreCount * 0.5);
+                                                }
+                                            }
+                                        }
+
+                                        if (sentenceScore > 0)
+                                        {
+                                            if (sentenceScore > scoreCount) { sentenceScore = scoreCount; }
+                                            sentenceScore = Math.Round(sentenceScore);
+                                            //sentenceScore = 0.1 * sentenceScore;
+                                            //sentenceScore = Math.Round(5.0 / (wordlist.Length / 4.0) * sentenceScore);
+                                            if (sentenceScore > 0)
+                                            {
+                                                sentenceClasses += " score" + Math.Round(sentenceScore);
+                                            }
+                                        }
+                                    }
+
+                                    //separate each word into a span tag
+                                    parWords = "";
+                                    foreach (var w in wordlist)
+                                    {
+                                        wordClasses = "";
+                                        if (w.Length == 1)
+                                        {
+                                            if (serveArticles.isSentenceSeparator(w, separatorExceptions))
+                                            {
+                                                wordClasses += " separator";
+                                            }
+                                        }
+
+                                        
+                                        parWords += "<span class=\"word sentence" + sentenceIndex + " " + parTypeName + wordClasses + sentenceClasses + "\">" + w + "</span>\n";
+                                    }
+                                    paragraph += parWords;
+
+                                    //check for end of sentence
+                                    switch (sentenceEnding)
+                                    {
+                                        case ".": case ":": case ")": case "}":
+                                        case "]": case "\"": case "?": case "!":
+                                            //last word is a sentence ending marker
+                                            sentenceIndex += 1;
+                                            break;
+                                    }
+                                        
+                                }
+                            }
+                            if(1 == 0) { paraEnd = "<div class=\"para-end\"></div>"; }
+
+
+                            //TODO: figure out if current body element is the end of a paragraph
+                            paragraphHtml = startTags + paragraph + paraEnd + endTags;
+                            if (paragraphHtml.Trim() != "")
+                            {
+                                body.Add(startTags + paragraph + paraEnd + endTags);
+                            }
                             endTags = "";
                             startTags = "";
-
+                            paraEnd = "";
+                            paragraph = "";
                         }
                         if (containerType != "")
                         {
-                            body.Add("</" + containerType + ">");
+                            body.Add("</" + containerType + ">\n");
                         }
                         scaffold.Data["article"] = string.Join("", body.ToArray());
 
@@ -260,50 +437,20 @@ namespace Collector.Includes
                         foreach (DomElement tag in article.elements)
                         {
                             i++;
-                            domStructure.Add("<div class=\"tag\"><div class=\"line-num\">" + i + "</div>" + string.Join(" > ", tag.hierarchyTags) + (tag.isClosing == false && tag.isSelfClosing == true ? " > " + tag.tagName : "") + "</div>");
+                            domStructure.Add("<div class=\"tag\"><div class=\"line-num\">" + (i+1) + "</div>" + string.Join(" > ", tag.hierarchyTags) + (tag.isClosing == false && tag.isSelfClosing == true ? " > " + tag.tagName : "") + "</div>");
                         }
                         scaffold.Data["dom-structure"] = string.Join("\n", domStructure.ToArray());
-
+                        scaffold.Data["dom-count"] = (i + 1).ToString();
                         //create tag names ///////////////////////////////////////////////////////
                         var tagNames = new List<string>();
                         i = 0;
                         foreach (var tagName in article.tagNames)
                         {
-                            i++;
+                            if(tagName.name.Substring(0,1) == "/") { continue; }
                             tagNames.Add("<div class=\"tag-name\">" + tagName.name + "<div class=\"tag-info\">(" + tagName.count + ")</div></div>");
                         }
                         scaffold.Data["tag-names"] = string.Join("\n", tagNames.ToArray());
-
-                        //create sentences ///////////////////////////////////////////////////////
-
-                        i = 0;
-                        var classes = "";
-                        var sentences = new List<string>();
-                        var se = "";
-                        foreach (string sentence in article.sentences)
-                        {
-                            i++;
-                            se = sentence.ToLower();
-                            classes = "";
-                            if (article.words.Where(w => w.id > 0)
-                                .Where(w => 
-                                se.IndexOf(w.word + " ") >= 0 || se.IndexOf(w.word + ".") >= 0 || se.IndexOf(w.word + ",") >= 0 ||
-                                se.IndexOf(w.word + ":") >= 0 || se.IndexOf(w.word + ";") >= 0 || se.IndexOf(w.word + "]") >= 0 || 
-                                se.IndexOf(w.word + ")") >= 0 || se.IndexOf(w.word + "\"") >= 0 || se.IndexOf(w.word + "'") >= 0
-                                ).Count() > 0)
-                            {
-                                classes = " special";
-                            }
-                            sentences.Add(
-                                "<div class=\"text" + classes + "\">" +
-                                    "<div class=\"line-num\">" + i + "</div>" +
-                                    "<div class=\"raw\" onclick=\"$(this).find('.text-info').toggleClass('expanded')\">" + sentence +
-                                    "</div>" +
-                                "</div>");
-                        }
-                        scaffold.Data["sentence-count"] = String.Format("{0:N0}", article.sentences.Count); 
-                        scaffold.Data["sentences"] = string.Join("\n", sentences.ToArray());
-
+                        scaffold.Data["tag-names-count"] = tagNames.Count().ToString();
                         //create sorted words ///////////////////////////////////////////////////////
                         var wordsSorted = new List<string>();
                         var commonWords = serveArticles.GetCommonWords();
@@ -313,43 +460,7 @@ namespace Collector.Includes
                         foreach (var word in article.words)
                         {
 
-                            wordType = "";
-                            if (S.Util.Str.IsNumeric(word.word) == true)
-                            {
-                                var number = int.Parse(word.word);
-                                var numtype = " number";
-                                if (word.word.Length == 4)
-                                {
-
-                                    //potential year
-                                    if (number <= DateTime.Now.Year + 100 && number >= 1)
-                                    {
-                                        if (number < 1600)
-                                        {
-                                            if (article.words[i + 1].word.ToLower() == "ad" || article.words[i + 1].word.ToLower() == "bc")
-                                            {
-                                                numtype = " year";
-                                            }
-                                        }
-                                        else
-                                        {
-                                            numtype = " year";
-                                        }
-                                    }
-
-                                }
-                                wordType += numtype;
-                                i++;
-                            }
-
-                            if (word.importance == 10) { wordType += " important"; }
-                            if (commonWords.Contains(word.word.ToLower().Trim())) { wordType += " common"; }
-                            else
-                            {
-                                if (word.importance == 0) { wordType += " symbols"; }
-                            }
-                            if (word.id > 0) { wordType += " database"; }
-
+                            wordType = serveArticles.GetWordTypeClassNames(article, word, commonWords);
                             totalWords += word.count;
 
                             wordsSorted.Add(
@@ -364,6 +475,8 @@ namespace Collector.Includes
                         //create subjects ///////////////////////////////////////////////////////
                         var subjects = new List<string>();
                         var sub = "";
+                        var subdetails = "";
+                        Services.Articles.ArticleSubject subj;
                         i = 0;
                         foreach (var subject in article.subjects)
                         {
@@ -376,7 +489,30 @@ namespace Collector.Includes
                             {
                                 sub = subject.title;
                             }
-                            subjects.Add("<div class=\"subject\"><h5>" + S.Util.Str.Capitalize(sub) + "</h5></div>");
+                            if(i == 1)
+                            {
+                                scaffold.Data["subject-breadcrumb"] = sub;
+                            }
+                            subdetails = "<span class=\"number\">" + subject.count + "</span>\n";
+                            if(subject.parentIndexes.Count > 0)
+                            {
+                                for (var x = 0; x < subject.parentIndexes.Count; x++)
+                                {
+                                    subj = article.subjects.Where(s => s.id == subject.parentIndexes[x]).ToList()[0];
+                                    subdetails += "<span class=\"addition\">+</span><span class=\"number\">" + subj.count + "</span>\n";
+                                }
+                            }
+                            if(subject.breadcrumb.Length >= 1)
+                            {
+                                //multiply
+                                subdetails = "<span class=\"symbol\">(</span>" + subdetails + "<span class=\"symbol\">)</span>" +
+                                    "<span class=\"multiply\">*</span>" + "<span class=\"number\">" + (subject.breadcrumb.Length + 1) + "</span>\n";
+                            }
+                            subdetails += "<span class=\"number\"> = <b>" + String.Format("{0:N0}", subject.score) + "</b></span>\n";
+                            subjects.Add(
+                                "<div class=\"subject\"><span class=\"score\" title=\"Score\"><div class=\"details\">" + 
+                                subdetails + "</div>" + String.Format("{0:N0}", subject.score) + "</span><span class=\"word-count\" title=\"Word count\">" +
+                                String.Format("{0:N0}", subject.count)  + "</span><span class=\"subject-breadcrumb\">" + S.Util.Str.Capitalize(sub) + "</span></div>");
                         }
                         scaffold.Data["subjects"] = string.Join("\n", subjects.ToArray());
 
@@ -399,7 +535,6 @@ namespace Collector.Includes
                             {
                                 anchorLinks.Add("<a href=\"" + tag.attribute["href"] + "\" target=\"_blank\">" + tag.attribute["href"] + "</a>");
                             }
-
                         }
                         scaffold.Data["anchorlinks"] = "<div class=\"link\">" + string.Join("</div><div class=\"link\">", anchorLinks.ToArray()) + "</div>";
 
@@ -423,5 +558,7 @@ namespace Collector.Includes
             }
             return scaffold;
         }
+
+        
     }
 }

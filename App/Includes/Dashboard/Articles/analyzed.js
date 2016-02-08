@@ -4,6 +4,9 @@
     load:function(){
         $('#btnsaveselectedwords').on('click', S.analyzed.buttons.saveSelectedWords);
         $('.words-sorted .box .word, .phrases .phrase').on('click', S.analyzed.buttons.toggleWord);
+        $('.article .word').on('mouseenter', S.analyzed.buttons.onArticleWordHover);
+        $('.article .word').on('mouseleave', S.analyzed.buttons.onArticleWordLeave);
+        S.analyzed.buttons.changeWordType(S.elem.get('lstwordtype'));
     },
 
     loadAce: function () {
@@ -16,6 +19,8 @@
     },
 
     buttons: {
+        timerWords: null,
+
         toggleWord: function(){
             $(this).toggleClass('expanded')
             var word = $(this).find(".value")[0].firstChild.nodeValue.toLowerCase();
@@ -28,7 +33,7 @@
             $('#txtselectedwords').val(words.join(', '));
         },
 
-        saveSelectedWords() {
+        saveSelectedWords: function() {
             var type = $('#lstwordtype').val();
             var words = $('#txtselectedwords').val();
             var grammartype = $('#lstwordpart').val();
@@ -42,6 +47,9 @@
                 case "common":
                     S.ajax.post('/api/Articles/AddCommonWord', { word: words }, function () { alert('common word(s) added'); });
                     break;
+                case "normal":
+                    S.ajax.post('/api/Articles/AddNormalWord', { word: words }, function () { alert('normal word(s) added'); });
+                    break;
                 case "phrase":
                     S.ajax.post('/api/Articles/AddPhrase', { word: words }, function () { alert('phrase added'); });
                     break;
@@ -49,6 +57,43 @@
                     break;
             }
             $('#txtselectedwords').val('');
+        },
+
+        onArticleWordHover: function () {
+            //select all words that are part of the same sentence
+            clearTimeout(S.analyzed.buttons.timerWords);
+            var elem = $(this);
+            var names = elem.attr('class');
+            var sentenceId = '';
+            if (names != '' && names != null) {
+                var classes = names.split(' ');
+                var className = '';
+                if (classes.length > 0) {
+                    for (c in classes) {
+                        className = classes[c];
+                        if (className.indexOf('sentence') == 0) {
+                            sentenceId = className;
+                            break;
+                        }
+                    }
+                }
+                
+            }
+            $('.article .word').removeClass('selected');
+            if (sentenceId != '') {
+                $('.article .word.' + sentenceId).addClass('selected');
+            }
+        },
+
+        onArticleWordLeave: function () {
+            S.analyzed.buttons.timerWords = setTimeout(function () { $('.article .word').removeClass('selected'); }, 300);
+        },
+
+        changeWordType: function (elem) {
+            console.log(elem);
+            var type = $(elem).val();
+            $('.words-sorted .menu .option-field').hide();
+            $('.words-sorted .menu .wordtype-' + type).show();
         }
     }
 };

@@ -13,6 +13,9 @@
     [url] NVARCHAR(250) NULL, 
     [title] NVARCHAR(250) NULL, 
     [summary] NVARCHAR(250) NULL, 
+	[unread] BIT NULL DEFAULT 0, 
+	[analyzed] BIT NULL DEFAULT 0, 
+	[cached] BIT NULL DEFAULT 0, 
     [active] BIT NULL DEFAULT 0, 
     [deleted] BIT NULL DEFAULT 0
 )

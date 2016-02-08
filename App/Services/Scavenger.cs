@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Collector.Services
 {
@@ -32,10 +33,11 @@ namespace Collector.Services
             wolfram = 4,
             youtube = 5,
             technorati = 6,
-            livejournal = 7
+            livejournal = 7,
+            wikipedia = 8
         }
 
-        private string[] searchEngines_All = { "google", "bing", "duckduckgo", "wolfram", "youtube", "technorati", "livejournal"};
+        private string[] searchEngines_All = { "google", "bing", "duckduckgo", "wolfram", "youtube", "technorati", "livejournal", "wikipedia"};
 
         #region "Properties"
         private string googleCustomSearchID = "004475701512178542495:kqws5wpl_sm";
@@ -52,36 +54,73 @@ namespace Collector.Services
         public List<ScavangedContent> GetContentFromWebSearch(string search = "", int maxResults = 20, enumWebSearchEngines searchType = enumWebSearchEngines.google)
         {
             var results = new List<ScavangedContent>();
-            var html = "";
-            //load list of search engines
-            var engines = new string[] {};
-            if(searchType != enumWebSearchEngines.all)
-            {
-                engines = new string[] { searchEngines_All[(int)searchType - 1] };
-            }
 
-            foreach(var engine in engines) {
-                //get top 100 results from all search engines
-                switch (engine)
+            //get results from cache (if possible)
+            var searchterm = S.Util.Str.CreateMD5Hash(search) + "-" + searchType.ToString();
+            var folder = S.Server.MapPath("/content/searchterms/");
+            if (File.Exists(folder + searchterm) == true)
+            {
+                try {
+                    results = (List<ScavangedContent>)S.Util.Serializer.OpenFromFile(typeof(List<ScavangedContent>), folder + searchterm);
+                }catch(Exception ex) {  }
+            }
+            if(results.Count == 0)
+            {
+                //no results found in cache
+                var html = "";
+                //load list of search engines
+                var engines = new string[] { };
+                if (searchType != enumWebSearchEngines.all)
                 {
-                    case "google":
-                        
-                        for(int x = 1; x <= maxResults / 10; x++)
-                        {
-                            //add 10 results at a time from google
-                            html = SearchFromGoogle(search, ((x-1) * 10) + 1);
-                            results.AddRange(GetUrlsFromWebSearch(html, enumWebSearchEngines.google));
-                        }
-                        
-                        break;
+                    engines = new string[] { searchEngines_All[(int)searchType - 1] };
                 }
-            }
 
-            //download HTML for each URL in the results list
-            for(var x = 0; x < results.Count; x++)
-            {
-                var result = results[x];
-                result.html = S.Util.Web.DownloadFromPhantomJS(result.url);
+                foreach (var engine in engines)
+                {
+                    //get top 100 results from all search engines
+                    switch (engine)
+                    {
+                        case "google":
+
+                            for (int x = 1; x <= maxResults / 10; x++)
+                            {
+                                //add 10 results at a time from google
+                                html = SearchFromGoogle(search, ((x - 1) * 10) + 1);
+                                results.AddRange(GetUrlsFromWebSearch(html, enumWebSearchEngines.google));
+                            }
+
+                            break;
+
+                        case "wikipedia":
+                            for(int x = 1; x <= maxResults / 10; x++)
+                            {
+                                //add 10 results at a time from google
+                                html = SearchFromGoogle("wikipedia " + search, ((x - 1) * 10) + 1);
+                                var urls = GetUrlsFromWebSearch(html, enumWebSearchEngines.google);
+                                foreach(var url in urls)
+                                {
+                                    if (url.url.IndexOf("wikipedia.org") >= 0 && url.url.IndexOf("/wiki/") >= 0)
+                                    {
+                                        results.Add(url);
+                                        break;
+                                    }
+                                }
+                                if(results.Count > 0) { break; }
+                            }
+                            break;
+                    }
+                }
+
+                //download HTML for each URL in the results list
+                for (var x = 0; x < results.Count; x++)
+                {
+                    var result = results[x];
+                    result.html = S.Util.Web.DownloadFromPhantomJS(result.url);
+                    results[x] = result;
+                }
+
+                //cache results for this search term
+                S.Util.Serializer.SaveToFile(results, folder + searchterm);
             }
             return results;
         }
@@ -99,7 +138,16 @@ namespace Collector.Services
             {
                 case enumWebSearchEngines.google:
                     //parse Google search results
-                    
+                    JObject json = JObject.Parse(html.Replace("\n",""));
+                    IEnumerable<JToken> results = json.SelectTokens("$..items[?(@.link!='')]");
+                    foreach(JToken result in results)
+                    {
+                        var content = new ScavangedContent();
+                        content.url = (string)result["link"].Value<string>();
+                        content.type = enumContentType.webpage;
+                        content.engine = enumWebSearchEngines.google;
+                        urls.Add(content);
+                    }
                     break;
             }
             return urls;

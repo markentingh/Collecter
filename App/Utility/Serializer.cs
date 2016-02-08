@@ -23,14 +23,14 @@ namespace Collector.Utility
             return S.Util.Str.GetBytes(JsonConvert.SerializeObject(obj, formatting, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
         }
 
-        public string WriteObjectAsString(object obj)
+        public string WriteObjectAsString(object obj, Formatting formatting = Formatting.Indented)
         {
-            return JsonConvert.SerializeObject(obj);
+            return JsonConvert.SerializeObject(obj, formatting);
         }
 
-        public void SaveToFile(object obj, string file)
+        public void SaveToFile(object obj, string file, Formatting formatting = Formatting.Indented)
         {
-            File.WriteAllText(file, WriteObjectAsString(obj));
+            File.WriteAllText(file, WriteObjectAsString(obj, formatting));
         }
 
         public object OpenFromFile(Type objType, string file)

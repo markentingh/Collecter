@@ -48,7 +48,7 @@ namespace Collector
             //server.sqlActive = "Azure"; 
             //server.sqlConnection = "Server=tcp:wnbenq358q.database.windows.net,1433;Database=Collector;User ID=easci@wnbenq358q;Password=Development777;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;";
             server.sqlActive = "SqlServerTrusted";
-            server.sqlConnection = "server=.\\SQL2012; database=CollectorDev; Trusted_Connection=true";
+            server.sqlConnection = "server=.\\SQL2014; database=CollectorDev; Trusted_Connection=true";
 
             //run application
             app.Run(async (context) =>

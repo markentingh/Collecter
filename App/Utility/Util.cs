@@ -8,6 +8,7 @@
         public Xml Xml;
         public Serializer Serializer;
         public Web Web;
+        public Shell Shell;
 
         public Util(Core CollectorCore)
         {
@@ -16,6 +17,7 @@
             Xml = new Xml();
             Serializer = new Serializer(S);
             Web = new Web(S);
+            Shell = new Shell(S);
         }
 
         #region "Validation"

@@ -161,4 +161,18 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="topicId" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="7e261f3f-6ef5-4992-9f23-262a6dcc9913" ChangeDateTime="01/15/2016 02:03:23">
+    <Property Name="ElementName" Value="[dbo].[ArticleYears].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[ArticleYears]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="articleId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="d3d1322a-022e-4f20-adb6-7da1c1ef1a0f" ChangeDateTime="01/15/2016 02:04:43">
+    <Property Name="ElementName" Value="[dbo].[ArticleSentences].[isparagrah]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[ArticleSentences]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="isparastart" />
+  </Operation>
 </Operations>

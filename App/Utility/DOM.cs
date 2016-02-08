@@ -213,7 +213,10 @@ namespace Collector.Utility.DOM
                                     //tag has no attributes
                                     if(isSelfClosing)
                                     {
-                                        domTag.tagName = strTag.Substring(0, strTag.Length-2).ToLower();
+                                        if(strTag.Length > 1)
+                                        {
+                                            domTag.tagName = strTag.Substring(0, strTag.Length - 2).ToLower();
+                                        }
                                     }
                                     else
                                     {
@@ -243,7 +246,12 @@ namespace Collector.Utility.DOM
                                             var styleKeyVal = keyval.Trim().Split(new char[] {':'}, 2);
                                             if(styleKeyVal.Length == 2)
                                             {
-                                                domTag.style.Add(styleKeyVal[0].Trim(), styleKeyVal[1].Trim());
+                                                var kv = styleKeyVal[0].Trim().ToLower();
+                                                if (domTag.style.ContainsKey(kv) == false)
+                                                {
+                                                    domTag.style.Add(kv, styleKeyVal[1].Trim());
+                                                }
+                                                
                                             }
                                         }
                                     }

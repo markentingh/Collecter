@@ -36,20 +36,19 @@
             var subj = $('#subjects' + pid);
             var subjbtn = $('#subject' + id);
             var title = subjbtn.find(">a")[0].innerHTML;
+            var box = $('#subjects' + pid + ' .option-box');
             var boxlist = subj.find('.box-list');
             var boxPos = { h: S.elem.height(boxlist[0]) };
             var pbread = '';
-            console.log(breadcrumb); 
             if (breadcrumb.length > 0) {
                 var bread = breadcrumb.split('>');
-                console.log(bread);
                 if (bread.length > 1) {
                     bread.splice(bread.length - 1, 1);
                     pbread = bread.join('>');
-                    console.log(pbread);
                 }
             }
 
+            box.hide();
             boxlist.css({ 'max-height': boxPos.h });
             boxlist.animate({ 'max-height': 0 }, speed);
             subj.find('.selection').animate({ 'max-height': 50 }, speed);

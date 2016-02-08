@@ -13,12 +13,37 @@ namespace Collector.Utility
             S = CollectorCore;
         }
 
-        public string Download(string url)
+        public string Download(string url, bool usePhantomJs = false)
         {
-            using (var http = new HttpClient())
+            if(usePhantomJs == true)
             {
-                return Task.Run(()=> http.GetStringAsync(url)).Result;
+                var htm = "";
+
+                while (1 == 1)
+                {
+                    htm = S.Util.Shell.Execute("cmd.exe", "/k \"phantomjs" +
+                    " --output-encoding=utf8 --ignore-ssl-errors=true" + // --local-to-remote-url-access=true" +
+                    " render.js " + url +
+                    "\"", S.Server.MapPath("PhantomJs"), 15);
+
+                    if(htm.Length < 100)
+                    {
+                        if(htm.IndexOf("fail") >= 0 || htm.IndexOf("cancel") >= 0 || htm == "") { continue; }
+                    }
+                    break;
+                }
+
+                return htm;
+
             }
+            else
+            {
+                using (var http = new HttpClient())
+                {
+                    return Task.Run(() => http.GetStringAsync(url)).Result;
+                }
+            }
+            
         }
 
         public string DownloadFromPhantomJS(string url, int timeout = 3, bool executeJs = true, string postJs = "")

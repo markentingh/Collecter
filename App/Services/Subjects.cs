@@ -217,7 +217,7 @@ namespace Collector.Services
             var articles = new Articles(S, S.Page.Url.paths);
             var scavange = new Scavenger(S, S.Page.Url.paths);
             var words = new List<Articles.AnalyzedWord>();
-            var contents = scavange.GetContentFromWebSearch(search);
+            var contents = scavange.GetContentFromWebSearch(search, 10, Scavenger.enumWebSearchEngines.wikipedia);
             foreach (var c in contents)
             {
                 //analyze each piece of content
@@ -226,6 +226,7 @@ namespace Collector.Services
                 //combine words
                 words = articles.CombineWordLists(words, article.words);
             }
+            
             return words;
         }
 
@@ -233,14 +234,21 @@ namespace Collector.Services
         {
             var response = new Inject();
             var words = GetRelatedWordsForSubject(subjectId, search);
+            var serveArticles = new Articles(S, S.Page.Url.paths);
+            var commonWords = serveArticles.GetCommonWords();
             var i = 0;
+            var wordType = "";
+            var article = new Articles.AnalyzedArticle();
             //only show important words & sort by importance
             words = words.Where(w => w.importance >= 7).OrderBy(w => 10000 - w.count).OrderBy(w => 100 - w.importance).ToList();
             foreach(var word in words)
             {
-                response.html += "<div class=\"word\"><div class=\"label\">" + word.word + "</div><div class=\"count\">" + word.count + "</div></div>\n";
+                if(word.importance >= 7)
+                {
+                    serveArticles.GetWordTypeClassNames(article, word, commonWords);
+                    response.html += "<div class=\"word\"><div class=\"count\">" + word.count + "</div><div class=\"label\">" + word.word + "</div></div>\n";
+                }
                 i++;
-                if(i >= 50) { break; }
             }
             response.element = "#subjects" + parentId + " .option-box";
             response.js = CompileJs();
