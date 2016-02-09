@@ -5,9 +5,12 @@
 *.suo
 *.user
 *.sln.docstates
-wwwroot/content/
+content/articles
+content/searchterms
+wwwroot/content
 wwwroot/images/screenshots
 wwwroot/images/workflow
+wwwroot/tests
 *.bak
 
 # Build results

@@ -175,4 +175,32 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="isparastart" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="58eed563-b12b-45c1-a531-9f259b3e8e4f" ChangeDateTime="02/09/2016 03:29:20">
+    <Property Name="ElementName" Value="[dbo].[Dictionary].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Dictionary]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="word" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="81d85c67-8ede-4a32-a78c-dc21a41c18a4" ChangeDateTime="02/09/2016 03:30:16">
+    <Property Name="ElementName" Value="[dbo].[Dictionary].[type]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Dictionary]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="vocabtype" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="318244fe-0164-4a4c-9f15-c1ea5ecc0e63" ChangeDateTime="02/09/2016 06:23:10">
+    <Property Name="ElementName" Value="[dbo].[Dictionary].[vocabtype]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Dictionary]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="langtype" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="15fc0809-0458-4613-b3d7-5f9ba8b13eb7" ChangeDateTime="02/09/2016 06:23:28">
+    <Property Name="ElementName" Value="[dbo].[Dictionary].[langtype]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Dictionary]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="vocabtype" />
+  </Operation>
 </Operations>
