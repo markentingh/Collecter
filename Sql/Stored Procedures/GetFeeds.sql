@@ -1,0 +1,3 @@
+﻿CREATE PROCEDURE [dbo].[GetFeeds]
+AS
+SELECT * FROM Feeds ORDER BY title ASC

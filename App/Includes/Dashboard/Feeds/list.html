@@ -1,19 +1,30 @@
 ﻿<style type="text/css">
-    .form-search .title{font-size:77.7px; color:#737373; width:100%; text-align:center; padding-bottom:7px;}
-    .form-search .box-search{max-width:800px; margin:0 auto; padding-top:50px;}
-    .form-search .text-search input{width:100%; box-sizing:border-box; padding:7px 21px; border:2px solid #2095C1;}
+    .form-addfeed{padding-bottom:20px;}
+
+    .feeds .feed{padding:10px 20px;}
+    .feeds .feed:hover{background-color:#4A2649;}
+    .feeds .feed .title{font-size:20px;}
+    .feeds .feed .url{font-size:14px;}
 </style>
 
-<form method="post" class="form-search">
-    <div class="box-search">
-        <div class="title">Collector</div>
-        <div class="row text-search">
-            <div class="column field">
-                <input type="text" name="search" value="" />
-            </div>
+<div class="form-addfeed" style="display:none;">
+    <div class="row space">
+        <div class="column label">Feed Title: </div>
+        <div class="column input" style="width:calc(50% - 260px);">
+            <input type="text" id="txtaddfeedtitle" />
         </div>
-        <div class="row">
-            
+        <div class="column label">Url: </div>
+        <div class="column input" style="width:calc(50% - 117px);">
+            <input type="text" id="txtaddfeedurl" />
         </div>
+        <div class="column input"><div class="button green" id="btnsaveaddfeed">Add</div></div>
+        <div class="column input"><div class="button" id="btncanceladdfeed">Cancel</div></div>
     </div>
-</form>
+</div>
+
+<div class="accordion feeds">
+    <div class="title expanded">Available Feeds</div>
+    <div class="box expanded">
+        <div class="contents">{{feeds}}</div>
+    </div>
+</div>

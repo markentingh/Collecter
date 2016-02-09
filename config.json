@@ -3,7 +3,7 @@
     "active": "SqlServerTrusted",
     "SqlServerDev": "server=.\\SQL2012; database=CollectorDev; user=CollectorDev; password=development",
     "SqlServerTrusted": "server=.\\SQL2012; database=CollectorDev; Trusted_Connection=true",
-    "Azure": "Server=tcp:wnbenq358q.database.windows.net,1433;Database=Collector;User ID=easci@wnbenq358q;Password=Development777;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;"
+    "Azure": ""
   },
 
   "platform": "windows"

@@ -21,45 +21,18 @@ namespace Collector.Includes
             //SqlReader reader;
 
             //setup dashboard menu
-            string menu = "<div class=\"left\"><ul><li><a href=\"/dashboard/feeds/add\" class=\"button blue\">Add Feed</a></li></ul></div>";
+            string menu = "<div class=\"left\"><ul><li><a href=\"javascript:\" id=\"btnaddfeed\" class=\"button blue\">Add Feed</a></li></ul></div>";
             parentScaffold.Data["menu"] = menu;
 
-            //determine which section to load for articles
-            if (S.Page.Url.paths.Length > 2)
+            if (scaffold == null)
             {
-                switch (S.Page.Url.paths[2].ToLower())
-                {
-                    case "add":
-                        
-                        if(scaffold == null) { scaffold = LoadAddFeed(); }
-
-                        //render form
-                        parentScaffold.Data["menu"] = "";
-                        break;
-
-                }
+                //get subjects list from web service
+                scaffold = new Scaffold(S, "/app/includes/dashboard/feeds/list.html", "", new string[] { "feeds" });
+                Services.Feeds feeds = new Services.Feeds(S, S.Page.Url.paths);
+                scaffold.Data["feeds"] = feeds.LoadFeedsUI();
+                S.Page.RegisterJSFromFile("/app/includes/dashboard/feeds/list.js");
             }
-            else
-            {
-                if (scaffold == null)
-                {
-                    //get article list from web service
-                    scaffold = new Scaffold(S, "/app/includes/dashboard/feeds/list.html", "", new string[] { "content" });
-                    S.Page.RegisterJSFromFile("/app/includes/dashboard/feeds/list.js");
-                }
-                
-            }
-
-
             return scaffold.Render();
-        }
-
-        private Scaffold LoadAddFeed()
-        {
-            //load article creation form
-            var scaffold = new Scaffold(S, "/app/includes/dashboard/feeds/add.html", "", new string[] { "content" });
-
-            return scaffold;
         }
 
     }

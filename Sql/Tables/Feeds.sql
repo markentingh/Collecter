@@ -1,6 +1,8 @@
 ﻿CREATE TABLE [dbo].[Feeds]
 (
 	[feedId] INT NOT NULL PRIMARY KEY, 
-    [url] NVARCHAR(100) NULL, 
-    [lastChecked] DATETIME NULL
+    [title] NVARCHAR(100) NULL, 
+	[url] NVARCHAR(100) NULL, 
+    [lastChecked] DATETIME NULL, 
+    [filter] NVARCHAR(MAX) NULL
 )

@@ -7,6 +7,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace Collector
 {
@@ -41,14 +42,15 @@ namespace Collector
             app.UseSession();
 
             //get server info from config.json
-            //var configBuilder = new ConfigurationBuilder().AddJsonFile(server.MapPath("config.json")).AddEnvironmentVariables();
-            //IConfiguration config = configBuilder.Build();
-            //string active = config.GetSection("Data:Active");
-            //string conn = config.GetSection("Data:" + active);
-            //server.sqlActive = "Azure"; 
-            //server.sqlConnection = "Server=tcp:wnbenq358q.database.windows.net,1433;Database=Collector;User ID=easci@wnbenq358q;Password=Development777;Trusted_Connection=False;Encrypt=True;Connection Timeout=30;";
-            server.sqlActive = "SqlServerTrusted";
-            server.sqlConnection = "server=.\\SQL2014; database=CollectorDev; Trusted_Connection=true";
+            var configBuilder = new ConfigurationBuilder()
+                .AddJsonFile(server.MapPath("config.json"))
+                .AddEnvironmentVariables();
+            IConfiguration config = configBuilder.Build();
+
+            string active = config.GetSection("Data:Active").Value;
+            string conn = config.GetSection("Data:" + active).Value;
+            server.sqlActive = active; 
+            server.sqlConnection = conn;
 
             //run application
             app.Run(async (context) =>
