@@ -41,7 +41,7 @@ a.dark.red:active{color:#ff0000; text-decoration:none;}
 /* global */
 .left{float:left;}
 .right{float:right;}
-.clear{overflow:auto;}
+.clear{overflow:auto; width:100%;}
 .relative{position:relative}
 .absolute{position:absolute}
 .pad{padding:10px;}
@@ -117,6 +117,7 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:h
 .row .column.center{text-align:center;}
 .row .column.label{padding:5px 5px 0 0; float:left; white-space:nowrap; width:auto; min-width:75px; text-align:right;}
 .row .column.input{padding:0 15px 0 0;float:left; width:auto; }
+.row .column.right{float:right !important;}
 
 .spreadsheet > .row:nth-child(2n+1){background-color:#eeeeee;}
 .spreadsheet > .row:nth-child(2n+2){background-color:#e8e8e8;}

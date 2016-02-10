@@ -8,28 +8,61 @@
     .feed .title{font-size:20px; color:#efefef}
     .feed .url{font-size:14px;}
     .feed .btn{float:right; padding-left:10px;}
+    .list-feedtype{width:190px; padding-bottom:7px !important;}
+    .text-feedtitle{width:calc(50% - 260px) !important;}
+    .text-feedurl{width:calc(50% - 117px) !important;}
+    #feedupload{width:250px; height:45px;}
+    .option-feedupload{width:300px;}
 </style>
 
 <div class="form-addfeed" style="display:none;">
     <div class="row space">
-        <div class="column label">Feed Title: </div>
-        <div class="column input" style="width:calc(50% - 260px);">
-            <input type="text" id="txtaddfeedtitle" />
+        <div class="column label">Type: </div>
+        <div class="column input list-feedtype">
+            <select id="lstfeedtype">
+                <option value="1">RSS &amp; Atom Feed</option>
+                <option value="2">Twitter Feed</option>
+                <option value="3">eBook &amp; Document</option>
+            </select>
         </div>
-        <div class="column label">Url: </div>
-        <div class="column input" style="width:calc(50% - 117px);">
-            <input type="text" id="txtaddfeedurl" />
+        <div class="clear"></div>
+        <div class="option-feedurl">
+            <div class="column label">Title: </div>
+            <div class="column input text-feedtitle">
+                <input type="text" id="txtaddfeedtitle" />
+            </div>
+            <div class="column label">Url: </div>
+            <div class="column input text-feedurl">
+                <input type="text" id="txtaddfeedurl" />
+            </div>
         </div>
-        <div class="column input"><div class="button green" id="btnsaveaddfeed">Add</div></div>
-        <div class="column input"><div class="button" id="btncanceladdfeed">Cancel</div></div>
+        <div class="column input option-feedupload" style="display:none;">
+            <iframe frameborder="0" scrolling="no" name="feedupload" id="feedupload" src="/upload?type=doc&size=small"></iframe>
+        </div>
+        
+        
+        <div class="column input right"><div class="button" id="btncanceladdfeed">Cancel</div></div>
+        <div class="column input right"><div class="button green" id="btnsaveaddfeed">Add</div></div>
     </div>
 </div>
 
 <div class="feeds-list">
     <div class="accordion feeds">
-        <div class="title expanded">Available Feeds</div>
+        <div class="title expanded">RSS &amp; Atom Feeds</div>
         <div class="box expanded">
             <div class="contents">{{feeds}}</div>
+        </div>
+    </div>
+    <div class="accordion feeds">
+        <div class="title">Twitter Feeds</div>
+        <div class="box">
+            <div class="contents">{{twitter}}</div>
+        </div>
+    </div>
+    <div class="accordion feeds">
+        <div class="title">e-Books &amp; Documents</div>
+        <div class="box">
+            <div class="contents">{{ebooks}}</div>
         </div>
     </div>
 </div>

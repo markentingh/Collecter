@@ -7,7 +7,7 @@
 
 /* accordion //////////////////////////////////////////////////////////*/
 .accordion{padding-bottom:30px;}
-.accordion > .title{padding:7px 15px; height:17px; background-color:#dbdbdb; border-bottom:1px solid #cfcfcf; font-size:17px; font-weight:bold; cursor:pointer; overflow:hidden; transition: max-height 0.3s, padding 0.3s;}
+.accordion > .title{padding:7px 15px; height:17px; background-color:#dbdbdb; border-bottom:1px solid #cfcfcf; border-left: 4px solid #75bad4; font-size:17px; font-weight:bold; cursor:pointer; overflow:hidden; transition: max-height 0.3s, padding 0.3s;}
 .accordion > .title:hover{background-color:#acdae4; color:#0066a9; }
 .accordion > .title.expanded{background-color:#75bad4; color:#004476;}
 .accordion > .title.expanded:hover{background-color:#00b1ca;}

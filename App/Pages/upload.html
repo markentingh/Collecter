@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Collector - Upload</title>
+    <style type="text/css">
+        input[type=file]{width:100%; box-sizing:border-box; padding: 7px 20px; }
+    </style>
+</head>
+<body>
+    <form action="/dashboard/upload?type={{type}}" method="post">
+        <div class="content">
+            <div class="uploader">
+                <input type="file" formenctype="multipart/form-data" value="Browse..." />
+            </div>
+        </div>
+    </form>
+    
+</body>
+</html>
