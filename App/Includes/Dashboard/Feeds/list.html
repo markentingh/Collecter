@@ -1,10 +1,13 @@
 ﻿<style type="text/css">
     .form-addfeed{padding-bottom:20px;}
 
-    .feeds .feed{padding:10px 20px;}
-    .feeds .feed:hover{background-color:#4A2649;}
-    .feeds .feed .title{font-size:20px;}
-    .feeds .feed .url{font-size:14px;}
+    .feeds-list{padding-top:50px;}
+
+    .feed{padding:10px 20px;}
+    .feed:hover{background-color:#4A2649;}
+    .feed .title{font-size:20px; color:#efefef}
+    .feed .url{font-size:14px;}
+    .feed .btn{float:right; padding-left:10px;}
 </style>
 
 <div class="form-addfeed" style="display:none;">
@@ -22,9 +25,11 @@
     </div>
 </div>
 
-<div class="accordion feeds">
-    <div class="title expanded">Available Feeds</div>
-    <div class="box expanded">
-        <div class="contents">{{feeds}}</div>
+<div class="feeds-list">
+    <div class="accordion feeds">
+        <div class="title expanded">Available Feeds</div>
+        <div class="box expanded">
+            <div class="contents">{{feeds}}</div>
+        </div>
     </div>
 </div>

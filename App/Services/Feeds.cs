@@ -34,8 +34,11 @@ namespace Collector.Services
             {
                 while (reader.Read())
                 {
-                    htm += "<div class=\"feed\"><div class=\"title\">" + reader.Get("title") + "</div>" +
-                        "<div class=\"url\">" + reader.Get("url") + "</div></div>";
+                    htm += "<div class=\"feed\">" +
+                        "<div class=\"btn\"><a href=\"javascript:\" onclick=\"\" class=\"button green\">Check</a></div>" +
+                        "<div class=\"title\">" + reader.Get("title") + "</div>" +
+                        "<div class=\"url\">" + reader.Get("url") + "</div>" +
+                        "</div>";
                 }
             }
 

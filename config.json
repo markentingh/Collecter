@@ -1,14 +1,10 @@
 ﻿{
   "data": {
     "active": "SqlServerTrusted",
-    "SqlServerDev": "server=.\\SQL2014; database=CollectorDev; user=CollectorDev; password=development",
-    "SqlServerTrusted": "server=.\\SQL2014; database=CollectorDev; Trusted_Connection=true",
+    "SqlServerDev": "server=.\\SQL2012; database=CollectorDev; user=CollectorDev; password=development",
+    "SqlServerTrusted": "server=.\\SQL2012; database=CollectorDev; Trusted_Connection=true",
     "Azure": ""
   },
 
-  "platform": "windows",
-
-  "phantomjs": {
-      
-  }
+  "platform": "windows"
 }
