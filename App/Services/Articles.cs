@@ -248,8 +248,8 @@ namespace Collector.Services
             analyzed.body = new List<int>();
             analyzed.phrases = new List<AnalyzedPhrase>();
             analyzed.subjects = new List<ArticleSubject>();
-            analyzed.url = url;
-            analyzed.domain = S.Util.Str.GetDomainName(url);
+            analyzed.url = S.Util.Str.CleanUrl(url);
+            analyzed.domain = S.Util.Str.GetDomainName(analyzed.url);
             analyzed.title = analyzed.pageTitle = analyzed.summary = "";
             analyzed.relevance = analyzed.importance = 0;
             analyzed.fiction = true;
@@ -264,11 +264,11 @@ namespace Collector.Services
             bool isCached = false;
             SqlReader reader;
 
-            if(ArticleExist(url) == true)
+            if(ArticleExist(analyzed.url) == true)
             {
                 //check if article is already cached
                 reader = new SqlReader();
-                reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetArticleByUrl @url='" + url + "'"));
+                reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetArticleByUrl @url='" + analyzed.url + "'"));
                 if(reader.Read() == true)
                 {
                     var letter = reader.Get("domain").Substring(0, 2);
@@ -289,7 +289,7 @@ namespace Collector.Services
                     if(htm == "")
                     {
                         //file was empty. Final resort, download from url
-                        htm = S.Util.Web.Download(url, true);
+                        htm = S.Util.Web.Download(analyzed.url, true);
                         File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
                     }
                 }
@@ -297,14 +297,14 @@ namespace Collector.Services
             else if(content == "")
             {
                 //download html from url
-                if (url.IndexOf("local") == 0) //!!! offline debug only !!!
+                if (analyzed.url.IndexOf("local") == 0) //!!! offline debug only !!!
                 {
-                    htm = File.ReadAllText(S.Server.MapPath("wwwroot/tests/" + url.Replace("local ", "") + ".html"));
-                    analyzed.url = "/tests/" + url.Replace("local ", "") + ".html";
+                    htm = File.ReadAllText(S.Server.MapPath("wwwroot/tests/" + analyzed.url.Replace("local ", "") + ".html"));
+                    analyzed.url = "/tests/" + analyzed.url.Replace("local ", "") + ".html";
                 }
                 else
                 {
-                    htm = S.Util.Web.Download(url, true);
+                    htm = S.Util.Web.Download(analyzed.url, true);
                     File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
                 }
             }else if(content.Length > 0)

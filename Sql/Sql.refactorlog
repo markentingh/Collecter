@@ -203,4 +203,46 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="vocabtype" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="aaeb8b2b-bb39-4509-8609-1b13306205c9" ChangeDateTime="02/11/2016 21:55:56">
+    <Property Name="ElementName" Value="[dbo].[StatisticsResults].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[StatisticsResults]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="statId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="7ffcc63f-27a4-4e0c-a5d7-a252e31c3f4d" ChangeDateTime="02/11/2016 21:59:27">
+    <Property Name="ElementName" Value="[dbo].[StatisticsProjects].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[StatisticsProjects]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="projectId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="9cd5f04d-0d00-4220-87f9-bb9197a92559" ChangeDateTime="02/11/2016 21:59:32">
+    <Property Name="ElementName" Value="[dbo].[StatisticsResults].[researchId]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[StatisticsResults]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="projectId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="4bb4f3e1-4d4f-418b-89cc-c33edf142a39" ChangeDateTime="02/11/2016 22:59:39">
+    <Property Name="ElementName" Value="[dbo].[StatisticsResearchers].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[StatisticsResearchers]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="researcherId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="b4d7c7f0-b7dd-4e15-a6d0-240a4256af56" ChangeDateTime="02/11/2016 23:03:01">
+    <Property Name="ElementName" Value="[dbo].[StatisticsProjectResearchers].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[StatisticsProjectResearchers]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="projectId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="c4e18323-b631-45c4-bc98-50363601cd33" ChangeDateTime="02/12/2016 00:04:55">
+    <Property Name="ElementName" Value="[dbo].[DownloadQueue].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[DownloadQueue]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="url" />
+  </Operation>
 </Operations>

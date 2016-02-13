@@ -155,6 +155,24 @@ namespace Collector.Utility
             //return Regex.Replace(html, "\\s{2,}", " ").Replace("> <", "><");
         }
 
+        public string CleanUrl(string url, bool queryString = true, bool hash = false, string[] removeFromQuery = null)
+        {
+            var u = url.Split(new char[] { '?' }, 2);
+            var result = u[0];
+            if (queryString == true && u.Length > 1)
+            {
+                if(hash == false && u[1].IndexOf("#") >= 0)
+                {
+                    result += "?" + u[1].Split('#')[0];
+                }
+                else
+                {
+                    result += "?" + u[1];
+                }                
+            }
+            return result;
+        }
+
         public string UrlEncode(string text)
         {
             var chars = new string[] { " " };

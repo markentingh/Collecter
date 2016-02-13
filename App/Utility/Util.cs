@@ -9,6 +9,7 @@
         public Serializer Serializer;
         public Web Web;
         public Shell Shell;
+        public Syndication RSS;
 
         public Util(Core CollectorCore)
         {
@@ -18,6 +19,7 @@
             Serializer = new Serializer(S);
             Web = new Web(S);
             Shell = new Shell(S);
+            RSS = new Syndication(S);
         }
 
         #region "Validation"
