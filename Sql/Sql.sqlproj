@@ -122,7 +122,15 @@
     <Build Include="Tables\StatisticsResearchers.sql" />
     <Build Include="Tables\StatisticsProjectResearchers.sql" />
     <Build Include="Sequences\SequenceStatisticsResults.sql" />
-    <Build Include="Indexes\IndexStatisticsResults.sql" />
+    <Build Include="Tables\Dictionary.sql" />
+    <Build Include="Tables\DownloadQueue.sql" />
+    <Build Include="Stored Procedures\AddToDownloadQueue.sql" />
+    <Build Include="Indexes\IndexStatisticsResultsDate.sql" />
+    <Build Include="Indexes\IndexStatisticsResultsLocation.sql" />
+    <Build Include="Indexes\IndexStatisticsResultsProject.sql" />
+    <Build Include="Sequences\SequenceDownloadQueue.sql" />
+    <Build Include="Tables\FeedsCheckedLog.sql" />
+    <Build Include="Stored Procedures\AddFeedCheckedLog.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

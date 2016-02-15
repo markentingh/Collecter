@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Collector.Utility
@@ -38,10 +39,18 @@ namespace Collector.Utility
             }
             else
             {
-                using (var http = new HttpClient())
+                try
                 {
-                    return Task.Run(() => http.GetStringAsync(url)).Result;
+                    using (var http = new HttpClient())
+                    {
+                        return Task.Run(() => http.GetStringAsync(url)).Result;
+                    }
                 }
+                catch (Exception ex)
+                {
+                    return "";
+                }
+                
             }
             
         }

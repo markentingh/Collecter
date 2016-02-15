@@ -245,4 +245,18 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="url" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="67966d25-087a-42b5-ab39-76b025e1df34" ChangeDateTime="02/13/2016 22:03:24">
+    <Property Name="ElementName" Value="[dbo].[DownloadQueue].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[DownloadQueue]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="url" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="d6f09089-c433-4d01-bad7-e8781950477e" ChangeDateTime="02/15/2016 07:05:19">
+    <Property Name="ElementName" Value="[dbo].[FeedsCheckedLog].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[FeedsCheckedLog]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="feedId" />
+  </Operation>
 </Operations>

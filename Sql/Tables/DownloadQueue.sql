@@ -1,5 +1,7 @@
 ﻿CREATE TABLE [dbo].[DownloadQueue]
 (
-	[url] NVARCHAR(MAX) NOT NULL PRIMARY KEY, 
-    [feedId] INT NULL
+	[qid] INT NOT NULL,
+	[url] NVARCHAR(MAX) NOT NULL, 
+    [feedId] INT NULL, 
+    CONSTRAINT [PK_DownloadQueue] PRIMARY KEY ([qid])
 )

@@ -3,8 +3,9 @@ using System;
 
 namespace Collector.Utility.DOM
 {
-    public struct DomElement
+    public class DomElement
     {
+        public Parser Parser;
         public bool isSelfClosing;
         public bool isClosing;
         public int index;
@@ -15,77 +16,109 @@ namespace Collector.Utility.DOM
         public string id;
         public string[] hierarchyTags;
         public List<string> className;
-        public List<int> children;
+        public List<int> childIndexes;
         public Dictionary<string, string> attribute;
         public Dictionary<string, string> style;
-    }
 
-    public class Element
-    {
-        public Dictionary<string, string> Attributes = new Dictionary<string, string>();
-        public Dictionary<string, string> Style = new Dictionary<string, string>();
-        public List<string> Classes = new List<string>();
+        private int _nextSibling = -1;
+        private int _firstChild = -1;
+        private int _nofirstChild = -1;
 
-        public string tagName = "";
-        public string innerHTML = "";
-        public bool ClosingTag = true;
-        public string id = "";
-
-        public Element(string tagname = "div", string tagId = "")
+        public DomElement(Parser parser)
         {
-            tagName = tagname;
-            id = tagId;
+            Parser = parser;
         }
 
-        public string Render()
+        public List<DomElement> Find(string XPath)
         {
-            string htm = "<" + tagName;
-
-            //add id
-            if(id != "") { htm += " id=\"" + id + "\""; }
-
-            //add class names
-            if(Classes.Count > 0)
-            {
-                htm += " class=\"";
-                for (int x = 0; x < Classes.Count; x++)
-                {
-                   if(x > 0) { htm += " " + Classes[x]; }
-                   else { htm += Classes[x]; } 
-                }
-                htm += "\"";
-            }
-
-            //add style
-            if (Style.Count > 0)
-            {
-                htm += " style=\"";
-                foreach(KeyValuePair<string, string> style in Style)
-                {
-                    htm += style.Key + ":" + style.Value + "; ";
-                }
-                htm += "\"";
-            }
-
-            //add attributes
-            if (Attributes.Count > 0)
-            {
-                foreach (KeyValuePair<string, string> attr in Attributes)
-                {
-                    htm += " " + attr.Key + "=\"" + attr.Value + "\"";
-                }
-            }
-            if(ClosingTag == false)
-            {
-                htm += "/>";
-            }else
-            {
-                htm += ">" + innerHTML + "</" + tagName + ">";
-            }
-            return htm;
+            return Parser.Find(XPath, this);
         }
 
+        public List<DomElement> Children(int limit = 0)
+        {
+            var items = new List<DomElement>();
+            if(childIndexes == null) { return items; }
+            foreach(var x in childIndexes)
+            {
+                items.Add(Parser.Elements[x]);
+                if(limit > 0) { if (x + 1 == limit) { return items; } }
+            }
+            return items;
+        }
 
+        public DomElement FirstChild
+        {
+            get
+            {
+                if(_firstChild >= 0)
+                {
+                    return Parser.Elements[_firstChild];
+                }
+                if(childIndexes != null)
+                {
+                    if (childIndexes.Count > 0)
+                    {
+                        _firstChild = childIndexes[0];
+                        return Parser.Elements[_firstChild];
+                    }
+
+                }
+                if(_nofirstChild == -1 && index < Parser.Elements.Count - 1)
+                {
+                    var hierarchy = string.Join(">", hierarchyIndexes);
+                    for(var x = index + 1; x < Parser.Elements.Count; x++)
+                    {
+                        var childhier = string.Join(">", Parser.Elements[x].hierarchyIndexes);
+                        if (childhier.IndexOf(hierarchy) >= 0)
+                        {
+                            var newhier = childhier.Replace(hierarchy, "");
+                            if (newhier.IndexOf(">") < 0)
+                            {
+                                return Parser.Elements[x];
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    _nofirstChild = 1;
+                }
+                
+
+                
+                return null;
+            }
+        }
+
+        public DomElement NextSibling
+        {
+            get
+            {
+                if (_nextSibling >= 0) { return Parser.Elements[_nextSibling]; }
+                var hierarchy = string.Join(">", hierarchyIndexes);
+                var elem = Parser.Elements[index + 1];
+                var childhier = "";
+                do
+                {
+                    childhier = string.Join(">", elem.hierarchyIndexes);
+                    if (childhier == hierarchy)
+                    {
+                        return elem;
+                    }
+                } while (childhier.IndexOf(hierarchy) == 0);
+                return null;
+            }
+        }
+
+        public DomElement Parent
+        {
+            get
+            {
+                if(hierarchyIndexes.Length == 0) { return null; }
+                return Parser.Elements[hierarchyIndexes[hierarchyIndexes.Length - 1]];
+            }
+        }
     }
 
     public class Parser
@@ -93,6 +126,7 @@ namespace Collector.Utility.DOM
         private Core S;
         public string rawHtml;
         public List<DomElement> Elements;
+        public string documentType = "html";
 
         public Parser(Core CollectorCore, string htm)
         {
@@ -113,21 +147,22 @@ namespace Collector.Utility.DOM
             bool foundTag = false;
             int s1, s2, s3, xs = -1;
             int parentElement = -1;
-            string str1, schar, strTag, strText ;
+            string str1, schar, strTag, strText, docType = "html" ;
             var hierarchy = new List<string>();
             var hierarchyIndexes = new List<int>();
-            var domTag = new DomElement();
-            var textTag = new DomElement();
-            var tagNameChars = new string[] { "/", "!" };
+            var domTag = new DomElement(this);
+            var textTag = new DomElement(this);
+            var tagNameChars = new string[] { "/", "!", "?" };
 
             for (var x = 0; x < htm.Length; x++)
             {
                 //find HTML tag
+                domTag = new DomElement(this);
 
-                if(foundTag == false && xs == 0)
+                if (foundTag == false && xs == 0)
                 {
                     //no tags found in htm, create text tag and exit
-                    textTag = new DomElement();
+                    textTag = new DomElement(this);
                     textTag.tagName = "#text";
                     textTag.text = htm;
                     AddTag(textTag, parentElement, true, false, hierarchy, hierarchyIndexes);
@@ -169,13 +204,13 @@ namespace Collector.Utility.DOM
                         //found HTML tag
                         s1 = htm.IndexOf(">", x + 2);
                         s2 = htm.IndexOf("<", x + 2);
-                        if(s1 >= 0)
+                        if (s1 >= 0)
                         {
                             //check for comment
-                            if(htm.Substring(x + 1, 3) == "!--")
+                            if (htm.Substring(x + 1, 3) == "!--")
                             {
                                 s1 = htm.IndexOf("-->", x + 1);
-                                if(s1 < 0) {
+                                if (s1 < 0) {
                                     s1 = htm.Length - 1;
                                 }
                                 else
@@ -196,7 +231,12 @@ namespace Collector.Utility.DOM
 
                             //check for self-closing tag
                             str1 = strTag.Substring(strTag.Length - 1, 1);
-                            if (str1 == "/"){ isSelfClosing = true; }
+                            if (str1 == "/" || (str1 == "?" && schar[1] == '?')) { isSelfClosing = true; }
+                            if (Elements.Count == 0)
+                            {
+                                if (strTag.IndexOf("?xml") == 0) { docType = "xml"; }
+                            }
+                            documentType = docType;
 
                             //check for attributes
                             domTag.className = new List<string>();
@@ -206,14 +246,14 @@ namespace Collector.Utility.DOM
                                 domTag.text = strTag.Substring(3, strTag.Length - 5);
                             }
                             else
-                            { 
+                            {
                                 s3 = strTag.IndexOf(" ");
-                                if(s3 < 0)
+                                if (s3 < 0)
                                 {
                                     //tag has no attributes
-                                    if(isSelfClosing)
+                                    if (isSelfClosing)
                                     {
-                                        if(strTag.Length > 1)
+                                        if (strTag.Length > 1)
                                         {
                                             domTag.tagName = strTag.Substring(0, strTag.Length - 2).ToLower();
                                         }
@@ -232,7 +272,7 @@ namespace Collector.Utility.DOM
                                     domTag.style = new Dictionary<string, string>();
 
                                     //set up class name list
-                                    if (domTag.attribute.ContainsKey("class")){
+                                    if (domTag.attribute.ContainsKey("class")) {
                                         domTag.className = new List<string>(domTag.attribute["class"].Split(' '));
                                     }
                                     else { domTag.className = new List<string>(); }
@@ -243,109 +283,117 @@ namespace Collector.Utility.DOM
                                         var domStyle = new List<string>(domTag.attribute["style"].Split(';'));
                                         foreach (string keyval in domStyle)
                                         {
-                                            var styleKeyVal = keyval.Trim().Split(new char[] {':'}, 2);
-                                            if(styleKeyVal.Length == 2)
+                                            var styleKeyVal = keyval.Trim().Split(new char[] { ':' }, 2);
+                                            if (styleKeyVal.Length == 2)
                                             {
                                                 var kv = styleKeyVal[0].Trim().ToLower();
                                                 if (domTag.style.ContainsKey(kv) == false)
                                                 {
                                                     domTag.style.Add(kv, styleKeyVal[1].Trim());
                                                 }
-                                                
+
                                             }
+                                        }
+                                    }
+                                }
+                            }
+                            if (domTag.tagName != "")
+                            {
+                                //check if tag is script
+                                if (docType == "html")
+                                {
+                                    if (isInScript == true)
+                                    {
+                                        isInScript = false;
+                                    }
+                                    else if (domTag.tagName == "script" && isSelfClosing == false)
+                                    {
+                                        isInScript = true;
+                                    }
+
+                                    //check if tag is self-closing even if it
+                                    //doesn't include a forward-slash at the end
+                                    switch (domTag.tagName)
+                                    {
+                                        case "br":
+                                        case "img":
+                                        case "input":
+                                        case "link":
+                                        case "meta":
+                                        case "hr":
+                                            isSelfClosing = true;
+                                            break;
+                                    }
+                                }
+
+                                if (domTag.tagName.Substring(0, 1) == "!")
+                                {
+                                    //comments & doctype are self-closing tags
+                                    isSelfClosing = true;
+                                }
+
+                                if (schar[1] == '/')
+                                {
+                                    //found closing tag
+                                    isClosingTag = true;
+                                }
+
+                                //extract text before beginning of tag
+                                strText = htm.Substring(xs, x - xs).Trim();
+                                if (strText != "")
+                                {
+                                    textTag = new DomElement(this);
+                                    textTag.tagName = "#text";
+                                    textTag.text = strText;
+                                    AddTag(textTag, parentElement, true, false, hierarchy, hierarchyIndexes);
+                                }
+
+                                //check if domTag is unusable
+                                if (domTag.tagName == "" || domTag.tagName == null)
+                                {
+                                    foundTag = false;
+                                    continue;
+                                }
+
+                                //add tag to array
+                                var pelem = AddTag(domTag, parentElement, isSelfClosing, isClosingTag, hierarchy, hierarchyIndexes);
+                                parentElement = pelem;
+                                if (isClosingTag == true)
+                                {
+                                    //go back one parent if this tag is a closing tag
+                                    if (parentElement >= 0)
+                                    {
+                                        if (Elements[parentElement].tagName != domTag.tagName.Replace("/", ""))
+                                        {
+                                            //not the same tag as the current parent tag, add missing closing tag
+                                            if (Elements[parentElement].parent >= 0)
+                                            {
+                                                if (Elements[Elements[parentElement].parent].tagName == domTag.tagName.Replace("/", ""))
+                                                {
+                                                    //replace unknown closing tag with missing closing tag
+                                                    domTag.tagName = "/" + Elements[Elements[parentElement].parent].tagName;
+                                                }
+                                                else
+                                                {
+                                                    //skip this closing tag because it doesn't have an opening tag
+                                                    Elements.RemoveAt(Elements.Count - 1);
+                                                    x = xs = s1;
+                                                    continue;
+                                                }
+                                            }
+                                        }
+                                        parentElement = Elements[parentElement].parent;
+                                        if (hierarchy.Count > 0)
+                                        {
+                                            hierarchy.RemoveAt(hierarchy.Count - 1);
+                                            hierarchyIndexes.RemoveAt(hierarchyIndexes.Count - 1);
                                         }
                                     }
                                 }
                             }
                             
 
-                            //check if tag is script
-                            if(isInScript == true)
-                            {
-                                isInScript = false;
-                            }
-                            else if(domTag.tagName == "script" && isSelfClosing == false)
-                            {
-                                isInScript = true;
-                            }
-
-                            //check if tag is self-closing even if it
-                            //doesn't include a forward-slash at the end
-                            switch (domTag.tagName)
-                            {
-                                case "br":
-                                case "img":
-                                case "input":
-                                case "link":
-                                case "meta":
-                                case "hr":
-                                    isSelfClosing = true;
-                                    break;
-                            }
-                            if (domTag.tagName.Substring(0, 1) == "!")
-                            {
-                                //comments & doctype are self-closing tags
-                                isSelfClosing = true;
-                            }
-
-                            if (strTag.Substring(0, 1) == "/")
-                            {
-                                //found closing tag
-                                isClosingTag = true;
-                            }
-
-                            //extract text before beginning of tag
-                            strText = htm.Substring(xs, x - xs).Trim();
-                            if(strText != "")
-                            {
-                                textTag = new DomElement();
-                                textTag.tagName = "#text";
-                                textTag.text = strText;
-                                AddTag(textTag, parentElement, true, false, hierarchy, hierarchyIndexes);
-                            }
-
-                            //check if domTag is unusable
-                            if (domTag.tagName == "" || domTag.tagName == null)
-                            {
-                                foundTag = false;
-                                continue;
-                            }
-
-                            //add tag to array
-                            parentElement = AddTag(domTag, parentElement, isSelfClosing, isClosingTag, hierarchy, hierarchyIndexes);
-
-                            if (isClosingTag == true)
-                            {
-                                //go back one parent if this tag is a closing tag
-                                if (parentElement >= 0)
-                                {
-                                    if(Elements[parentElement].tagName != domTag.tagName.Replace("/",""))
-                                    {
-                                        //not the same tag as the current parent tag, add missing closing tag
-                                        if(Elements[parentElement].parent >= 0)
-                                        {
-                                            if (Elements[Elements[parentElement].parent].tagName == domTag.tagName.Replace("/", ""))
-                                            {
-                                                //replace unknown closing tag with missing closing tag
-                                                domTag.tagName = "/" + Elements[Elements[parentElement].parent].tagName;
-                                            }
-                                            else
-                                            {
-                                                //skip this closing tag because it doesn't have an opening tag
-                                                Elements.RemoveAt(Elements.Count - 1);
-                                                x = xs = s1;
-                                                continue;
-                                            }
-                                        }
-                                    }
-                                    parentElement = Elements[parentElement].parent;
-                                    if (hierarchy.Count > 0)
-                                    {
-                                        hierarchy.RemoveAt(hierarchy.Count - 1);
-                                        hierarchyIndexes.RemoveAt(hierarchyIndexes.Count - 1);
-                                    }
-                                }
-                            }
+                            
                             x = xs = s1;
                         }
                     }
@@ -354,7 +402,7 @@ namespace Collector.Utility.DOM
             //finally, add last text tag (if possible)
             if(xs < htm.Length - 1)
             {
-                textTag = new DomElement();
+                textTag = new DomElement(this);
                 textTag.tagName = "#text";
                 textTag.text = htm.Substring(xs);
                 AddTag(textTag, parentElement, true, false, hierarchy, hierarchyIndexes);
@@ -415,25 +463,52 @@ namespace Collector.Utility.DOM
         private int AddTag(DomElement domTag, int parentElement, bool isSelfClosing, bool isClosingTag, List<string> hierarchy, List<int> hierarchyIndexes)
         {
             domTag.parent = parentElement;
+            domTag.index = Elements.Count;
+            if (hierarchyIndexes != null)
+            {
+                if (hierarchyIndexes.Count > 0)
+                {
+                    if(hierarchyIndexes[hierarchyIndexes.Count - 1] != domTag.index)
+                    {
+                        parentElement = hierarchyIndexes[hierarchyIndexes.Count - 1];
+                    }else if(hierarchyIndexes.Count > 1)
+                    {
+                        parentElement = hierarchyIndexes[hierarchyIndexes.Count - 2];
+                    }
+                    
+                }
+            }
+            if(domTag.tagName == "#text")
+            {
+                if (1 == 1)
+                {
+
+                }
+            }
             if (parentElement > -1)
             {
                 DomElement parent = Elements[parentElement];
-                if (parent.children == null)
+                if (parent.childIndexes == null)
                 {
-                    parent.children = new List<int>();
+                    parent.childIndexes = new List<int>();
                 }
-                parent.children.Add(Elements.Count);
+                if (parent.childIndexes.IndexOf(domTag.index) == -1)
+                {
+                    parent.childIndexes.Add(domTag.index);
+                }
                 Elements[parentElement] = parent;
             }
+
             //make current tag the parent
             if (isSelfClosing == false && isClosingTag == false)
             {
-                parentElement = Elements.Count;
+                parentElement = domTag.index;
                 hierarchy.Add(domTag.tagName);
                 hierarchyIndexes.Add(parentElement);
             }
 
             domTag.index = Elements.Count;
+            domTag.parent = parentElement;
             domTag.isSelfClosing = isSelfClosing;
             domTag.isClosing = isClosingTag;
             domTag.hierarchyTags = hierarchy.ToArray();
@@ -441,5 +516,120 @@ namespace Collector.Utility.DOM
             Elements.Add(domTag);
             return parentElement;
         }
+
+        #region "Query"
+        public List<DomElement> Find(string XPath, DomElement rootElement = null)
+        {
+            var elements = new List<DomElement>();
+            if(XPath == "") { return elements; }
+            if(XPath.IndexOf("/") < 0) { return elements; }
+            if (Elements.Count == 0) { return elements; }
+            var root = rootElement;
+            DomElement elem;
+            var domIndex = 0;
+            if (root == null)
+            {
+                //search from first element
+                root = Elements[0];
+            }
+            else
+            {
+                //start search at rootElement;
+                domIndex = rootElement.index + 1;
+            }
+
+            //search the DOM to find elements based on the XPath query
+            var paths = XPath.Split('/');
+            var lastPath = "";
+            var searchPath = "";
+            var searchFunc = "";
+            var searchName = "";
+            var hierarchy = "";
+            var childhier = "";
+            foreach(var path in paths)
+            {
+                if(path == "")
+                {
+                    //hierarchy symbol
+                    if(lastPath == "/")
+                    {
+                        //look anywhere in the hierarchy
+                        searchPath = "//";
+
+                    }
+                    else
+                    {
+                        searchPath = "/";
+                    }
+                }
+                else
+                {
+                    //check for search function
+                    if(path.IndexOf("[") >= 0)
+                    {
+                        searchFunc = "[" + path.Split('[')[1];
+                        searchName = path.Replace(searchFunc, "").ToLower();
+                    }
+                    else
+                    {
+                        searchName = path.ToLower();
+                    }
+
+                    //find matching elements
+                    switch (searchPath)
+                    {
+                        case "/":
+                            //find elements at current hierarchy level
+                            foreach(var child in root.Children())
+                            {
+                                if(child.tagName == searchName)
+                                {
+                                    //found matching element !!!!!!!
+                                    elements.Add(child);
+                                }
+                            }
+                            break; 
+
+                        case "//":
+                            //find elements at any hierarchy level
+                            if(root.hierarchyIndexes.Length > 0)
+                            {
+                                hierarchy = string.Join(">", root.hierarchyIndexes);
+                            }
+                            else
+                            {
+                                hierarchy = "";
+                            }
+                            for (var x = root.index+1; x < Elements.Count; x++)
+                            {
+                                elem = Elements[x];
+                                if (elem.hierarchyIndexes.Length > 0)
+                                {
+                                    childhier = string.Join(">", elem.hierarchyIndexes);
+                                }
+                                else
+                                {
+                                    childhier = "";
+                                }
+                                if(childhier.IndexOf(hierarchy) == 0)
+                                {
+                                    if(elem.tagName == searchName)
+                                    {
+                                        //found matching element !!!!!!!
+                                        elements.Add(elem);
+                                    }
+                                }
+                            }
+                            break;
+                    }
+                }
+                lastPath = path;
+                if(lastPath == "") { lastPath = "/"; }
+            }
+
+            return elements;
+        }
+
+        #endregion
     }
 }

@@ -13,6 +13,15 @@
     .text-feedurl{width:calc(50% - 117px) !important;}
     #feedupload{width:250px; height:45px;}
     .option-feedupload{width:300px;}
+    .form-feedscheck{display:none ;}
+    .form-feedscheck .settings{ padding:20px 20px; margin-top:50px; background-color:#222; box-sizing:border-box; color:#ddd;}
+    .form-feedscheck .checking{display:none; position:relative; width: 100%; padding:20px 20px; margin-top:50px; background-color:#222; box-sizing:border-box;}
+    .form-feedscheck .checking .checking-msg{float:left; width:calc(100% - 110px); text-align:left; padding:6px 0 0 20px; font-size:20px; color:white;}
+    .form-feedscheck #txtcheckmins{width:50px; margin-right:10px;}
+    .feeds-status{display:none; position:relative; width: 100%; padding:20px 20px; margin-top:50px; background-color:#222; box-sizing:border-box;}
+    .feeds-status.checking{display:block;}
+    .feeds-status .progress-msg{position:absolute; width:100%; text-align:center; padding-top:20px; font-size:20px; color:white;}
+    .feeds-status .progress{height:60px; font-size:0px; background-color:#a80067;}
 </style>
 
 <div class="form-addfeed" style="display:none;">
@@ -44,6 +53,28 @@
         <div class="column input right"><div class="button" id="btncanceladdfeed">Cancel</div></div>
         <div class="column input right"><div class="button green" id="btnsaveaddfeed">Add</div></div>
     </div>
+</div>
+
+<div class="form-feedscheck">
+    <div class="row space settings">
+        <div class="column title">Check Feeds</div>
+        <div class="column label">Interval: </div>
+        <div class="column input">
+            <input type="text" id="txtcheckmins" value="60" /> 
+            <span class="info">minutes</span>
+        </div>
+        <div class="column input right"><div class="button" id="btncancelfeedcheck">Cancel</div></div>
+        <div class="column input right"><div class="button green" id="btnstartfeedcheck">Start</div></div>
+    </div>
+    <div class="row space checking">
+        <div class="column title checking-msg"></div>
+        <div class="column input right"><div class="button" id="btnstopfeedcheck">Stop</div></div>
+    </div>
+</div>
+
+<div class="feeds-status">
+    <div class="progress-msg"></div>
+    <div class="progress" style="width:0px;"></div>
 </div>
 
 <div class="feeds-list">

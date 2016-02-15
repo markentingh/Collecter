@@ -47,6 +47,7 @@ a.dark.red:active{color:#ff0000; text-decoration:none;}
 .pad{padding:10px;}
 .hover-only{display:none;}
 .fade{opacity:0.6;}
+span.info{font-size:14px; color:#aaa;}
 
 /* inputs */
 input[type="text"], input[type="password"], input[type="list"], select, textarea{
@@ -110,7 +111,7 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:h
 .row.bottom{padding-bottom:15px;}
 .row:hover .hover-only{display:block;}
 .row .column{ padding:4px 10px; float:left; width:calc(100% - 20px);}
-.row .column.title{padding-top:15px;font-weight: bold; font-size: 14px;}
+.row .column.title{padding-top:3px; font-size: 20px; width:auto;}
 .row .column.field{}
 .row .column.btn{padding:15px 10px 10px 10px;}
 .row .column.space{padding:0 15px 0 0; float:left; width:auto;}

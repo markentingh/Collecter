@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Collector.Utility.DOM;
-
-namespace Collector.Includes
+﻿namespace Collector.Includes
 {
     public class Feeds : Include
     {
@@ -18,7 +12,10 @@ namespace Collector.Includes
             Scaffold scaffold = null;
 
             //setup feeds menu
-            string menu = "<div class=\"left\"><ul><li><a href=\"javascript:\" id=\"btnaddfeed\" class=\"button blue\">Add Feed</a></li></ul></div>";
+            string menu = "<div class=\"menu left\"><nav><ul>" +
+                "<li><a href=\"javascript:\" id=\"btnaddfeed\" class=\"button blue\">Add Feed</a></li>" +
+                "<li><a href=\"javascript:\" id=\"btncheckfeeds\" class=\"button\">Check Feeds</a></li>" +
+                "</ul></nav></div>";
             parentScaffold.Data["menu"] = menu;
 
             if (scaffold == null)
@@ -29,10 +26,6 @@ namespace Collector.Includes
                 scaffold.Data["feeds"] = feeds.LoadFeedsUI();
                 S.Page.RegisterJSFromFile("/app/includes/dashboard/feeds/list.js");
             }
-
-            //test rss feed reader
-            S.Util.RSS.Read(File.ReadAllText(S.Server.MapPath("/content/rss/1.xml")));
-
             return scaffold.Render();
         }
 

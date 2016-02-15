@@ -168,7 +168,13 @@ namespace Collector.Utility
                 else
                 {
                     result += "?" + u[1];
-                }                
+                }
+            }else
+            {
+                if (hash == false && u[0].IndexOf("#") >= 0)
+                {
+                    result = u[0].Split('#')[0];
+                }
             }
             return result;
         }
