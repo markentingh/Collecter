@@ -439,7 +439,7 @@ namespace Collector.Utility
             }
             return "";
         }
-
+        
         public string NumberSuffix(int digit)
         {
             switch (digit)

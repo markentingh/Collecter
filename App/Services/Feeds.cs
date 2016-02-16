@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using System.Linq;
+using System.Globalization;
 
 namespace Collector.Services
 {
@@ -11,6 +13,12 @@ namespace Collector.Services
         {
             public int id;
             public string url;
+        }
+
+        public struct structFeedLogData
+        {
+            public int count;
+            public DateTime date;
         }
 
         #region "Feeds"
@@ -132,27 +140,60 @@ namespace Collector.Services
             var js = "";
             var reader = new SqlReader();
             var feeds = new List<structFeedList>();
-            reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetFeeds"));
+            var logdata = new List<structFeedLogData>();
+            var days = 3;
+            reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetFeedsAndLogs @dateStart='" + DateTime.Now.AddDays(0-(days-1)).ToString("yyyy-MM-dd HH:mm:ss") + "', @days=" + days));
             if(reader.Rows.Count > 0)
             {
                 js += "setTimeout(function(){ S.feeds.list = [";
                 var i = 0;
                 while (reader.Read())
                 {
-                    htm += "<div class=\"feed\">" +
-                        "<div class=\"btn\"><a href=\"javascript:\" onclick=\"S.feeds.buttons.checkFeed(" + i + ")\" class=\"button green\">Check</a></div>" +
+                    if(reader.Get("title") != "")
+                    {
+                        //new feed
+                        if(i > 0)
+                        {
+                            //render log data chart
+                            htm = htm.Replace("{{chart}}", GetFeedChartFromData(7, logdata)) + "</div>";
+                            
+                        }
+                        htm += "<div class=\"row feed\">" +
+                        
+                        //check button
+                        "<div class=\"btn\"><div class=\"hover-only\"><a href=\"javascript:\" onclick=\"S.feeds.buttons.checkFeed(" + i + ")\" class=\"button green\">Check</a></div></div>" +
+                        
+                        //include chart
+                        "{{chart}}" +
+                        
+                        //title & url
                         "<div class=\"title\">" + reader.Get("title") + "</div>" +
-                        "<div class=\"url\">" + reader.Get("url") + "</div>" +
-                        "</div>";
+                        "<div class=\"url\">" + reader.Get("url") + "</div>";
 
-                    if (i > 0) { js += ","; }
-                    js += "'" + reader.Get("url") + "'";
-                    var newfeed = new structFeedList();
-                    newfeed.id = reader.GetInt("feedid");
-                    newfeed.url = reader.Get("url");
-                    feeds.Add(newfeed);
+                        if (i > 0) { js += ","; }
+                        js += "'" + reader.Get("url") + "'";
+                        var newfeed = new structFeedList();
+                        newfeed.id = reader.GetInt("feedid");
+                        newfeed.url = reader.Get("url");
+                        feeds.Add(newfeed);
+
+                        logdata = new List<structFeedLogData>();
+                    }
+                    else
+                    {
+                        //add log data for chart
+                        var newlog = new structFeedLogData();
+                        newlog.count = reader.GetInt("loglinks");
+                        newlog.date = reader.GetDateTime("logdatechecked");
+                        logdata.Add(newlog);
+                    }
+                    
                     i++;
                 }
+                i--;
+                //render log data chart for last feed item
+                if (i >= 0) { htm = htm.Replace("{{chart}}", GetFeedChartFromData(7, logdata)) + "</div>"; }
+
                 js += "];}, 1000);";
                 S.Page.RegisterJS("feedlist", js);
             }
@@ -160,6 +201,39 @@ namespace Collector.Services
             //save feeds list to session
             S.Session.Set("feedlist", S.Util.Serializer.WriteObject(feeds));
 
+            return htm;
+        }
+
+        public string GetFeedChartFromData(int days, List<structFeedLogData> logData)
+        {
+            var htm = "";
+            var markerLeft = new int[2] { 999, 0 };
+            var dateend = new DateTime(2001,1,1);
+            var daynames = new string[3] { "", "", "" };
+            foreach(var data in logData)
+            {
+                if(data.count < markerLeft[0]) { markerLeft[0] = data.count; }
+                if (data.count > markerLeft[1]) { markerLeft[1] = data.count; }
+                if (data.date > dateend) { dateend = data.date; }
+            }
+
+            //get day names
+            daynames[0] = dateend.AddDays(-2).ToString("ddd").ToLower();
+            daynames[1] = dateend.AddDays(-1).ToString("ddd").ToLower();
+            daynames[2] = dateend.ToString("ddd").ToLower();
+
+            //show 3 vertical markers to represent lowest & highest link count
+            htm += "<div class=\"chart\">" +
+                    "<div class=\"marker-left marker1\">" + markerLeft[0] + "</div>" +
+                    "<div class=\"marker-left marker2\"></div>" +
+                    "<div class=\"marker-left marker3\">" + markerLeft[1] + "</div>";
+
+            //show 3 horizontal markers to represent first, middle & last day of week
+            htm += "<div class=\"marker-bottom markerb1\">" + daynames[0] + "</div>" +
+                    "<div class=\"marker-bottom markerb2\">" + daynames[1] + "</div>" +
+                    "<div class=\"marker-bottom markerb3\">" + daynames[2] + "</div>";
+
+            htm += "</div>";
             return htm;
         }
         #endregion

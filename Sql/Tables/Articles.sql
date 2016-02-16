@@ -12,9 +12,9 @@
     [domain] NVARCHAR(50) NULL, 
     [url] NVARCHAR(250) NULL, 
     [title] NVARCHAR(250) NULL, 
-    [summary] NVARCHAR(250) NULL, 
+    [summary] NVARCHAR(250) NULL,
+	[analyzed] FLOAT DEFAULT 0, 
 	[unread] BIT NULL DEFAULT 0, 
-	[analyzed] BIT NULL DEFAULT 0, 
 	[cached] BIT NULL DEFAULT 0, 
     [active] BIT NULL DEFAULT 0, 
     [deleted] BIT NULL DEFAULT 0

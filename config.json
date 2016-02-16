@@ -6,5 +6,9 @@
     "Azure": ""
   },
 
-  "platform": "windows"
+  "platform": "windows",
+
+  "analyze": {
+    "version" :  "0.111"
+  }
 }
