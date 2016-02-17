@@ -1748,11 +1748,11 @@ namespace Collector.Services
             S.Sql.ExecuteNonQuery("EXEC CleanArticle @articleId=" + articleId);
         }
 
-        public int AddArticle(int feedId, string url, string domain, string title, string summary = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1)
+        public int AddArticle(int feedId, string url, string domain, string title, string summary = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
             return (int)S.Sql.ExecuteScalar("EXEC AddArticle @feedId=" + feedId + ", @url='" + url + "', @subjects=" + subjects +
                 ", @domain='" + S.Sql.Encode(domain) + "', @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @images=" + images + 
-                ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction);
+                ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed="+ analyzerVersion);
         }
 
         public void AddArticleWord(int articleId, int wordId, int count)
@@ -1769,11 +1769,11 @@ namespace Collector.Services
             }
         }
 
-        public void UpdateArticle(int articleId, string title, string summary = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1)
+        public void UpdateArticle(int articleId, string title, string summary = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
             S.Sql.ExecuteNonQuery("EXEC UpdateArticle @articleId=" + articleId + ", @subjects=" + subjects +
                 ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @images=" + images +
-                ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction);
+                ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed=" + analyzerVersion);
         }
 
         public SqlReader GetArticles(int start = 1, int length = 50, int[] subjectIds = null, string search = "", int sort = 0, int isActive = 2, bool isDeleted = false, int minImages = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
@@ -1803,7 +1803,7 @@ namespace Collector.Services
         {
             if (ArticleExist(article.url) == false)
             {
-                article.id = AddArticle(0, article.url, article.domain, article.pageTitle, article.summary, 0, article.publishDate, article.subjects.Count, 1, 0);
+                article.id = AddArticle(0, article.url, article.domain, article.pageTitle, article.summary, 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
             }
             else
             {
@@ -1811,7 +1811,7 @@ namespace Collector.Services
                 CleanArticle(article.id);
 
                 //update article title, summary, & publish date
-                UpdateArticle(article.id, article.pageTitle, article.summary, 0, article.publishDate, article.subjects.Count, 1, 0);
+                UpdateArticle(article.id, article.pageTitle, article.summary, 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
             }
 
             //add words to article

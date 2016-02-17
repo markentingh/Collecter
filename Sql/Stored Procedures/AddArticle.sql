@@ -6,24 +6,25 @@
 	@title nvarchar(250),
 	@summary nvarchar(250),
 	@wordcount int = 0,
-	@sentencecount int = 0,
-	@paragraphcount int = 0,
-	@importantcount int = 0,
-	@yearstart int = 0,
-	@yearend int = 0,
+	@sentencecount smallint = 0,
+	@paragraphcount smallint = 0,
+	@importantcount smallint = 0,
+	@yearstart smallint = 0,
+	@yearend smallint = 0,
 	@years nvarchar(50),
-	@images int = 0,
+	@images tinyint = 0,
 	@datepublished datetime,
 	@relavance smallint = 1,
 	@importance smallint = 1,
-	@fiction smallint = 1
+	@fiction smallint = 1,
+	@analyzed float = 0.1
 AS
 	DECLARE @articleId int = NEXT VALUE FOR SequenceArticles
 	INSERT INTO Articles 
-	(articleId, feedId, subjects, domain, url, title, summary, wordcount, sentencecount, paragraphcount, importantcount, 
-	yearstart, yearend, years, images, datecreated, datepublished, relavance, importance, fiction)
+	(articleId, feedId, subjects, domain, url, title, summary, wordcount, sentencecount, paragraphcount, importantcount, analyzecount,
+	yearstart, yearend, years, images, datecreated, datepublished, relavance, importance, fiction, analyzed)
 	VALUES 
-	(@articleId, @feedId, @subjects, @domain, @url, @title, @summary, @wordcount, @sentencecount, @paragraphcount, @importantcount, 
-	@yearstart, @yearend, @years, @images, GETDATE(), @datepublished, @relavance, @importance, @fiction)
+	(@articleId, @feedId, @subjects, @domain, @url, @title, @summary, @wordcount, @sentencecount, @paragraphcount, @importantcount, 1,
+	@yearstart, @yearend, @years, @images, GETDATE(), @datepublished, @relavance, @importance, @fiction, @analyzed)
 
 	SELECT @articleId

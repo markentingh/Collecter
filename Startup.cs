@@ -52,6 +52,8 @@ namespace Collector
             server.sqlActive = active; 
             server.sqlConnection = conn;
 
+            server.analyzerVersion = config.GetSection("analyzer:version").Value;
+
             //run application
             app.Run(async (context) =>
             {

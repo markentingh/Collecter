@@ -12,14 +12,19 @@ namespace Collector
         //Server     (for application-wide memory store)
         ////////////////////////////////////////////////
 
+        public IApplicationBuilder App;
+        public IHostingEnvironment Env;
+
         public bool isLocal = false;
         public int requestCount = 0;
         public float requestTime = 0;
         public string sqlActive = "Azure";
         public string sqlConnection = "";
         public string saltPrivateKey = "?";
-        public IApplicationBuilder App;
-        public IHostingEnvironment Env;
+
+        //used to tell which articles have been analyzed by which version of the analyzer class
+        public string analyzerVersion = "0.1"; 
+
         private string _path = "";
 
 

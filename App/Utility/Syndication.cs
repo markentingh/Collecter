@@ -43,6 +43,7 @@ namespace Collector.Utility
             public int height;
         }
 
+
         public Syndication(Core CollectorCore)
         {
             S = CollectorCore;

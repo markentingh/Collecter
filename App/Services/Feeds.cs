@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using System.Linq;
-using System.Globalization;
 
 namespace Collector.Services
 {
