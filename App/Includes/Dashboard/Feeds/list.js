@@ -94,8 +94,6 @@
         }
     },
 
-    
-
     updateFeedStatus: function (domain, total, index) {
         S.feeds.urlCount += total;
         $('.feeds-status .progress-msg')[0].innerHTML = "added " + total + " url(s) from " + domain + ".";
@@ -131,6 +129,30 @@
             S.feeds.timer = setTimeout(function () { S.feeds.countdownFeeds(); }, 1000);
         }
 
+    },
+
+    loadChart: function (feedId, data) {
+        var paper = Raphael('paperfeed' + feedId, 100, 36);
+        var setDots = paper.set();
+        var setLines = paper.set();
+        var lastxy = null;
+        var x, y;
+        for (var item in data) {
+            //create dots & lines on chart
+            x = parseInt(data[item][0]);
+            y = parseInt(data[item][1]);
+            //create a dot
+            var dot = paper.circle(x, y, 2);
+            setDots.push(dot);
+            if (lastxy != null) {
+                //create a line
+                var line = paper.path('M' + lastxy[0] + ' ' + lastxy[1] + 'l' + (x - lastxy[0]) + ' ' + (y - lastxy[1]));
+                setLines.push(line);
+            }
+            lastxy = [x, y];
+        }
+        setDots.attr({ 'fill': '#aaa', 'stroke-opacity':0 });
+        setLines.attr({ 'stroke': '#aaa' });
     }
 }
 

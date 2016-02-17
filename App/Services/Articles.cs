@@ -361,6 +361,7 @@ namespace Collector.Services
             var anchorElements = new List<DomElement>();
             var headerElements = new List<DomElement>();
             var imgElements = new List<DomElement>();
+
             var parentIndexes = new List<AnalyzedParentIndex>();
             DomElement traverseElement;
 

@@ -141,6 +141,7 @@ namespace Collector.Services
             var feeds = new List<structFeedList>();
             var logdata = new List<structFeedLogData>();
             var days = 3;
+            var feedId = 0;
             reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetFeedsAndLogs @dateStart='" + DateTime.Now.AddDays(0-(days-1)).ToString("yyyy-MM-dd HH:mm:ss") + "', @days=" + days));
             if(reader.Rows.Count > 0)
             {
@@ -151,16 +152,17 @@ namespace Collector.Services
                     if(reader.Get("title") != "")
                     {
                         //new feed
-                        if(i > 0)
+                        feedId = reader.GetInt("feedid");
+                        if (i > 0)
                         {
                             //render log data chart
-                            htm = htm.Replace("{{chart}}", GetFeedChartFromData(7, logdata)) + "</div>";
+                            htm = htm.Replace("{{chart}}", GetFeedChartFromData(feedId, days, logdata)) + "</div>";
                             
                         }
                         htm += "<div class=\"row feed\">" +
                         
                         //check button
-                        "<div class=\"btn\"><div class=\"hover-only\"><a href=\"javascript:\" onclick=\"S.feeds.buttons.checkFeed(" + i + ")\" class=\"button green\">Check</a></div></div>" +
+                        "<div class=\"btn\"><a href=\"javascript:\" onclick=\"S.feeds.buttons.checkFeed(" + i + ")\" class=\"button green\">Check</a></div>" +
                         
                         //include chart
                         "{{chart}}" +
@@ -172,7 +174,7 @@ namespace Collector.Services
                         if (i > 0) { js += ","; }
                         js += "'" + reader.Get("url") + "'";
                         var newfeed = new structFeedList();
-                        newfeed.id = reader.GetInt("feedid");
+                        newfeed.id = feedId;
                         newfeed.url = reader.Get("url");
                         feeds.Add(newfeed);
 
@@ -191,7 +193,7 @@ namespace Collector.Services
                 }
                 i--;
                 //render log data chart for last feed item
-                if (i >= 0) { htm = htm.Replace("{{chart}}", GetFeedChartFromData(7, logdata)) + "</div>"; }
+                if (i >= 0) { htm = htm.Replace("{{chart}}", GetFeedChartFromData(feedId, days, logdata)) + "</div>"; }
 
                 js += "];}, 1000);";
                 S.Page.RegisterJS("feedlist", js);
@@ -203,36 +205,71 @@ namespace Collector.Services
             return htm;
         }
 
-        public string GetFeedChartFromData(int days, List<structFeedLogData> logData)
+        public string GetFeedChartFromData(int feedId, int days, List<structFeedLogData> logData)
         {
-            var htm = "";
+            var htm = ""; var js = "";
             var markerLeft = new int[2] { 999, 0 };
             var dateend = new DateTime(2001,1,1);
             var daynames = new string[3] { "", "", "" };
-            foreach(var data in logData)
+            var minCount = 0;
+            var maxCount = 0;
+            var rangeCount = 0;
+            var hours = 0.0;
+            var xhours = 0.0;
+            var ylinks = 0.0;
+            var i = 0;
+            var dataTime = new TimeSpan();
+            
+            //get date range
+            foreach (var data in logData)
             {
                 if(data.count < markerLeft[0]) { markerLeft[0] = data.count; }
                 if (data.count > markerLeft[1]) { markerLeft[1] = data.count; }
                 if (data.date > dateend) { dateend = data.date; }
             }
+            minCount = markerLeft[0];
+            maxCount = markerLeft[1];
+            rangeCount = maxCount - minCount;
+
+            //add javascript that will render the chart
+            js = "setTimeout(function(){S.feeds.loadChart(" + feedId + ", [";
+            foreach (var data in logData)
+            {
+                dataTime = (dateend - data.date);
+                hours = dataTime.TotalHours;
+                xhours = Math.Round((100.0 / (days * 24.0)) * ((days * 24.0) - hours));
+                ylinks = (rangeCount == 0 ? 18 : 36 - Math.Round((36.0 / rangeCount) * (data.count - minCount)));
+                js += (i > 0 ? "," : "") + "[" + xhours + "," + ylinks + "]";
+                i++;
+            }
+
+            js += "]);},100);"; //end of S.feeds.loadChart();
 
             //get day names
             daynames[0] = dateend.AddDays(-2).ToString("ddd").ToLower();
             daynames[1] = dateend.AddDays(-1).ToString("ddd").ToLower();
             daynames[2] = dateend.ToString("ddd").ToLower();
 
-            //show 3 vertical markers to represent lowest & highest link count
-            htm += "<div class=\"chart\">" +
+            
+            htm +=  "<div class=\"chart\">" +
+
+            //add 3 vertical markers to represent lowest & highest link count
                     "<div class=\"marker-left marker1\">" + markerLeft[0] + "</div>" +
                     "<div class=\"marker-left marker2\"></div>" +
-                    "<div class=\"marker-left marker3\">" + markerLeft[1] + "</div>";
+                    "<div class=\"marker-left marker3\">" + markerLeft[1] + "</div>" +
 
-            //show 3 horizontal markers to represent first, middle & last day of week
-            htm += "<div class=\"marker-bottom markerb1\">" + daynames[0] + "</div>" +
+            //add 3 horizontal markers to represent first, middle & last day of week
+                    "<div class=\"marker-bottom markerb1\">" + daynames[0] + "</div>" +
                     "<div class=\"marker-bottom markerb2\">" + daynames[1] + "</div>" +
-                    "<div class=\"marker-bottom markerb3\">" + daynames[2] + "</div>";
+                    "<div class=\"marker-bottom markerb3\">" + daynames[2] + "</div>" +
+                    
+            //show raphael js paper
+                    "<div id=\"paperfeed" + feedId + "\"></div>" +
 
-            htm += "</div>";
+                    "</div>";
+
+            S.Page.RegisterJS("feedchart" + feedId, js);
+
             return htm;
         }
         #endregion

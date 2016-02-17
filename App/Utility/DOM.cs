@@ -356,8 +356,8 @@ namespace Collector.Utility.DOM
                                 }
 
                                 //add tag to array
-                                var pelem = AddTag(domTag, parentElement, isSelfClosing, isClosingTag, hierarchy, hierarchyIndexes);
-                                parentElement = pelem;
+                                parentElement = AddTag(domTag, parentElement, isSelfClosing, isClosingTag, hierarchy, hierarchyIndexes);
+                                //parentElement = pelem;
                                 if (isClosingTag == true)
                                 {
                                     //go back one parent if this tag is a closing tag
@@ -391,9 +391,6 @@ namespace Collector.Utility.DOM
                                     }
                                 }
                             }
-                            
-
-                            
                             x = xs = s1;
                         }
                     }
@@ -478,13 +475,7 @@ namespace Collector.Utility.DOM
                     
                 }
             }
-            if(domTag.tagName == "#text")
-            {
-                if (1 == 1)
-                {
 
-                }
-            }
             if (parentElement > -1)
             {
                 DomElement parent = Elements[parentElement];
@@ -492,23 +483,18 @@ namespace Collector.Utility.DOM
                 {
                     parent.childIndexes = new List<int>();
                 }
-                if (parent.childIndexes.IndexOf(domTag.index) == -1)
-                {
-                    parent.childIndexes.Add(domTag.index);
-                }
+                parent.childIndexes.Add(Elements.Count);
                 Elements[parentElement] = parent;
             }
 
             //make current tag the parent
             if (isSelfClosing == false && isClosingTag == false)
             {
-                parentElement = domTag.index;
+                parentElement = Elements.Count;
                 hierarchy.Add(domTag.tagName);
                 hierarchyIndexes.Add(parentElement);
             }
-
-            domTag.index = Elements.Count;
-            domTag.parent = parentElement;
+            
             domTag.isSelfClosing = isSelfClosing;
             domTag.isClosing = isClosingTag;
             domTag.hierarchyTags = hierarchy.ToArray();

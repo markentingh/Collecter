@@ -7,7 +7,8 @@
     .feed:hover{background-color:#4A2649;}
     .feed .title{font-size:20px; color:#efefef}
     .feed .url{font-size:14px;}
-    .feed .btn{float:right; padding-left:10px; width:70px; height:40px; }
+    .feed .btn{float:right; padding-left:10px; width:70px; height:40px; opacity:0.3; }
+    .feed:hover .btn{opacity:1;}
     .list-feedtype{width:190px; padding-bottom:7px !important;}
     .text-feedtitle{width:calc(50% - 260px) !important;}
     .text-feedurl{width:calc(50% - 117px) !important;}
@@ -22,12 +23,11 @@
     .feeds-status.checking{display:block;}
     .feeds-status .progress-msg{position:absolute; width:100%; text-align:center; padding-top:20px; font-size:20px; color:white;}
     .feeds-status .progress{height:60px; font-size:0px; background-color:#a80067;}
-
     .feed .chart{position:absolute; opacity:0.5; right:90px; width:100px; height:36px; background-color:#282828; margin:-1px 20px 0 20px;}
     .feed:hover .chart{background-color:#5a2c58; opacity:1;}
     .feed .marker-left{position:absolute; width:30px; left:-35px; text-align:right; font-size:12px; color:#888;}
-    .feed:hover .marker-left{color:#f7df92}
-    .feed:hover .marker-bottom{color:#ccb56a}
+    .feed:hover .marker-left{color:#f7df92;}
+    .feed:hover .marker-bottom{color:#ccb56a;}
     .feed .marker-bottom{position:absolute; width:50px; bottom:-10px; text-align:center; font-size:9px; color:#888;}
     .feed .marker1{bottom:0px;}
     .feed .marker2{top:14px;}
@@ -110,3 +110,5 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript" src="/scripts/utility/raphael-min.js"></script>

@@ -148,6 +148,11 @@
             var hier = $('#txtmovetohierarchy').val();
             S.ajax.post('/api/Subjects/MoveSubject', { id: id, hierarchy: hier, element: '.subjects-list' }, function () { S.ajax.callback.inject(arguments[0]); });
             S.subjects.buttons.hideMoveSubject();
+        },
+
+        viewTopics(subjectId) {
+            S.ajax.post('/api/Subjects/GetTopics', { element: '#topicslist' + subjectId, subjectId: subjectId, start:1, search:'', orderby:1 }, function () { S.ajax.callback.inject(arguments[0]); });
+
         }
 
 

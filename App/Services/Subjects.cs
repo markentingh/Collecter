@@ -17,6 +17,7 @@ namespace Collector.Services
             int parentId = 0;
             var subjects = subjectList.Replace(" , ", ",").Replace(", ", ",").Replace(" ,", ",").Split(',');
             var hier = new string[] { };
+            var html = "";
             if (hierarchy != "")
             {
                 hier = hierarchy.Replace(" > ", ">").Replace("> ", ">").Replace(" >", ">").Split('>');
@@ -42,7 +43,7 @@ namespace Collector.Services
             {
                 S.Sql.ExecuteNonQuery("EXEC AddSubject @parentid=" + parentId + ", @grammartype=" + grammartype + ", @score=" + score + ", @title='" + subject + "', @breadcrumb='" + string.Join(">", hier) + "'");
             }
-            var html = "";
+            
             if (loadUI == true)
             {
                 //create UI for selected subject's list
@@ -162,13 +163,16 @@ namespace Collector.Services
                 html.Add("</div>" +
                             "<div class=\"selection\">" +
                                 "<div class=\"label goback\"></div>" +
-                                "<div class=\"option\"><a href=\"#\" class=\"button green search\">Topics</a></div>" +
+                                "<div class=\"option\"><a href=\"javascript:\" onclick=\"S.subjects.buttons.viewTopics(" + reader.GetInt("subjectId") + ")\" class=\"button green topics\">Topics</a></div>" +
                                 "<div class=\"option\"><a href=\"javascript:\" class=\"button blue add-from-subject icon-plus\" title=\"Add a Subject\"></a></div>" +
                                 "<div class=\"option\"><a href=\"javascript:\" class=\"button move-from-subject icon-reply\" title=\"Move subject to another parent\"></a></div>" +
                                 (reader.GetBool("haswords") == true ? "" :
                                 "<div class=\"option\"><a href=\"javascript:\" class=\"button green calc-related-words icon-reload\" title=\"Calculate Related Words for this Subject\"></a></div>") +
                             "</div>\n" +
                             "<div class=\"option-box\"></div>\n" +
+                            "<div class=\"topics-box\"><div class=\"arrow\"></div>" + 
+                            "<div class=\"row title\"><h3>Topics for " + S.Util.Str.Capitalize(parentcrumbs.Replace(">", " &gt; ")) + "</h3></div>" +
+                            "<div id=\"topicslist" + reader.GetInt("subjectId") + "\" class=\"topics-list\"></div></div>\n" +
                         "</div>\n" +
                     "</div>\n");
 
@@ -208,6 +212,19 @@ namespace Collector.Services
                 return parent + "\n" + string.Join("\n", html);
             }
             return "";
+        }
+        #endregion
+
+        #region "Topics (on Subjects page)"
+        public Inject GetTopics(string element, int subjectId, int start, string search, int orderby)
+        {
+            Inject response = new Inject();
+            var html = "";
+            response.inject = enumInjectTypes.replace;
+            response.element = element;
+            response.html = html;
+            response.js = CompileJs();
+            return response;
         }
         #endregion
 
