@@ -14,7 +14,7 @@
             //setup feeds menu
             string menu = "<div class=\"menu left\"><nav><ul>" +
                 "<li><a href=\"javascript:\" id=\"btnaddfeed\" class=\"button blue\">Add Feed</a></li>" +
-                "<li><a href=\"javascript:\" id=\"btncheckfeeds\" class=\"button\">Check Feeds</a></li>" +
+                "<li><a href=\"javascript:\" id=\"btncheckfeeds\" class=\"button green\">Check Feeds</a></li>" +
                 "</ul></nav></div>";
             parentScaffold.Data["menu"] = menu;
 

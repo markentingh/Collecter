@@ -376,7 +376,7 @@ namespace Collector.Utility.DOM
                                                 else
                                                 {
                                                     //skip this closing tag because it doesn't have an opening tag
-                                                    Elements.RemoveAt(Elements.Count - 1);
+                                                    //Elements.RemoveAt(Elements.Count - 1);
                                                     x = xs = s1;
                                                     continue;
                                                 }
@@ -399,10 +399,13 @@ namespace Collector.Utility.DOM
             //finally, add last text tag (if possible)
             if(xs < htm.Length - 1)
             {
-                textTag = new DomElement(this);
-                textTag.tagName = "#text";
-                textTag.text = htm.Substring(xs);
-                AddTag(textTag, parentElement, true, false, hierarchy, hierarchyIndexes);
+                if(htm.Substring(xs).Trim().Replace("\r", "").Replace("\n", "").Length > 0)
+                {
+                    textTag = new DomElement(this);
+                    textTag.tagName = "#text";
+                    textTag.text = htm.Substring(xs);
+                    AddTag(textTag, parentElement, true, false, hierarchy, hierarchyIndexes);
+                }
             }
         }
 

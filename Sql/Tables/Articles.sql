@@ -4,6 +4,7 @@
     [feedId] INT NULL, 
 	[subjects] TINYINT NULL,
     [images] TINYINT NULL, 
+	[filesize] FLOAT DEFAULT 0,
     [wordcount] INT DEFAULT 0, 
     [sentencecount] SMALLINT DEFAULT 0, 
     [paragraphcount] SMALLINT DEFAULT 0,

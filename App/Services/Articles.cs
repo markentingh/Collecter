@@ -73,6 +73,7 @@ namespace Collector.Services
             public int count;
             public int importance;
             public enumWordType type;
+            public enumWordCategory category;
             public bool apostrophe;
         }
 
@@ -181,6 +182,15 @@ namespace Collector.Services
             conjunction = 8,
             interjection = 9,
             punctuation = 10
+        }
+
+        public enum enumWordCategory
+        {
+            person = 0,
+            place = 1,
+            thing = 2,
+            year = 3
+
         }
 
         public enum enumAuthorSex
@@ -1067,6 +1077,15 @@ namespace Collector.Services
                     }
                     if(word.word == domainName) { word.importance = 2; }
                     
+                    //check for year
+                    if(S.Util.Str.IsNumeric(word.word) == true)
+                    {
+                        var yr = double.Parse(word.word);
+                        if(yr > 1080 && yr < 2500)
+                        {
+                            word.category = enumWordCategory.year;
+                        }
+                    }
 
                     allWords.Add(word);
                 }
@@ -1757,13 +1776,12 @@ namespace Collector.Services
             S.Sql.ExecuteNonQuery("EXEC CleanArticle @articleId=" + articleId);
         }
 
-        public int AddArticle(int feedId, string url, string domain, string title, string summary = "", int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
+        public int AddArticle(int feedId, string url, string domain, string title, string summary = "", double filesize = 0.0, int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
             return (int)S.Sql.ExecuteScalar("EXEC AddArticle @feedId=" + feedId + ", @url='" + url + "', @subjects=" + subjects +
-                ", @domain='" + S.Sql.Encode(domain) + "', @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "'" +
+                ", @domain='" + S.Sql.Encode(domain) + "', @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @filesize=" + filesize +
                 ", @wordcount=" + wordcount + ", @sentencecount=" + sentencecount + ", @paragraphcount=" + paragraphcount + ", @yearstart=" + yearstart + ", @yearend=" + yearend + ", @years='" + years + "'" +
-                ", @images=" + images + 
-                ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed="+ analyzerVersion);
+                ", @images=" + images +  ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed="+ analyzerVersion);
         }
 
         public void AddArticleWord(int articleId, int wordId, int count)
@@ -1780,9 +1798,9 @@ namespace Collector.Services
             }
         }
 
-        public void UpdateArticle(int articleId, string title, string summary = "", int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
+        public void UpdateArticle(int articleId, string title, string summary = "", double filesize = 0.0, int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
-            S.Sql.ExecuteNonQuery("EXEC UpdateArticle @articleId=" + articleId + ", @subjects=" + subjects + ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "'" +
+            S.Sql.ExecuteNonQuery("EXEC UpdateArticle @articleId=" + articleId + ", @subjects=" + subjects + ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @filesize=" + filesize +
                 ", @wordcount=" + wordcount + ", @sentencecount=" + sentencecount + ", @paragraphcount=" + paragraphcount + ", @yearstart=" + yearstart + ", @yearend=" + yearend + ", @years='" + years + "'" + 
                 ", @images=" + images + ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed=" + analyzerVersion);
         }
@@ -1812,9 +1830,10 @@ namespace Collector.Services
 
         public void SaveArticle(AnalyzedArticle article)
         {
+            var fileSize = (article.rawHtml.Length / 1024.0);
             if (ArticleExist(article.url) == false)
             {
-                article.id = AddArticle(0, article.url, article.domain, article.pageTitle, article.summary, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords,
+                article.id = AddArticle(0, article.url, article.domain, article.pageTitle, article.summary, fileSize, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords,
                     article.yearStart, article.yearEnd, string.Join(",", article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
             }
             else
@@ -1823,7 +1842,7 @@ namespace Collector.Services
                 CleanArticle(article.id);
 
                 //update article title, summary, & publish date
-                UpdateArticle(article.id, article.pageTitle, article.summary, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords, 
+                UpdateArticle(article.id, article.pageTitle, article.summary, fileSize, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords, 
                     article.yearStart, article.yearEnd, string.Join(",",article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
             }
 

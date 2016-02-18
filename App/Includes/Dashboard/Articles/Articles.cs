@@ -469,7 +469,7 @@ namespace Collector.Includes
                                     "<div class=\"value\">" + (word.importance == 10 ? S.Util.Str.Capitalize(word.word) : word.word) + "</div>" +
                                 "</div>");
                         }
-                        scaffold.Data["word-count"] = String.Format("{0:N0}", totalWords);
+                        scaffold.Data["word-count"] = String.Format("{0:N0}", totalWords) + " total / " + String.Format("{0:N0}", article.words.Count) + " unique";
                         scaffold.Data["words-sorted"] = string.Join("\n", wordsSorted.ToArray());
 
                         //create subjects ///////////////////////////////////////////////////////

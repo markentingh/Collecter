@@ -5,6 +5,7 @@
 	@url nvarchar(250),
 	@title nvarchar(250),
 	@summary nvarchar(250),
+	@filesize float = 0,
 	@wordcount int = 0,
 	@sentencecount smallint = 0,
 	@paragraphcount smallint = 0,
@@ -21,10 +22,10 @@
 AS
 	DECLARE @articleId int = NEXT VALUE FOR SequenceArticles
 	INSERT INTO Articles 
-	(articleId, feedId, subjects, domain, url, title, summary, wordcount, sentencecount, paragraphcount, importantcount, analyzecount,
+	(articleId, feedId, subjects, domain, url, title, summary, filesize, wordcount, sentencecount, paragraphcount, importantcount, analyzecount,
 	yearstart, yearend, years, images, datecreated, datepublished, relavance, importance, fiction, analyzed)
 	VALUES 
-	(@articleId, @feedId, @subjects, @domain, @url, @title, @summary, @wordcount, @sentencecount, @paragraphcount, @importantcount, 1,
+	(@articleId, @feedId, @subjects, @domain, @url, @title, @summary, @filesize, @wordcount, @sentencecount, @paragraphcount, @importantcount, 1,
 	@yearstart, @yearend, @years, @images, GETDATE(), @datepublished, @relavance, @importance, @fiction, @analyzed)
 
 	SELECT @articleId

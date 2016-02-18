@@ -223,27 +223,30 @@ namespace Collector.Services
             //get date range
             foreach (var data in logData)
             {
-                if(data.count < markerLeft[0]) { markerLeft[0] = data.count; }
-                if (data.count > markerLeft[1]) { markerLeft[1] = data.count; }
+                if(data.count < minCount) { minCount = data.count; }
+                if (data.count > maxCount) { maxCount = data.count; }
                 if (data.date > dateend) { dateend = data.date; }
             }
-            minCount = markerLeft[0];
-            maxCount = markerLeft[1];
+            markerLeft[0] = 0;
+            markerLeft[1] = maxCount;
             rangeCount = maxCount - minCount;
 
-            //add javascript that will render the chart
-            js = "setTimeout(function(){S.feeds.loadChart(" + feedId + ", [";
-            foreach (var data in logData)
+            if(maxCount > 0)
             {
-                dataTime = (dateend - data.date);
-                hours = dataTime.TotalHours;
-                xhours = Math.Round((100.0 / (days * 24.0)) * ((days * 24.0) - hours));
-                ylinks = (rangeCount == 0 ? 18 : 36 - Math.Round((36.0 / rangeCount) * (data.count - minCount)));
-                js += (i > 0 ? "," : "") + "[" + xhours + "," + ylinks + "]";
-                i++;
-            }
+                //add javascript that will render the chart
+                js = "setTimeout(function(){S.feeds.loadChart(" + feedId + ", [";
+                foreach (var data in logData)
+                {
+                    dataTime = (dateend - data.date);
+                    hours = dataTime.TotalHours;
+                    xhours = Math.Round((100.0 / (days * 24.0)) * ((days * 24.0) - hours));
+                    ylinks = (maxCount == 0 ? 18 : 36 - Math.Round((36.0 / maxCount) * data.count));
+                    js += (i > 0 ? "," : "") + "[" + xhours + "," + ylinks + "]";
+                    i++;
+                }
 
-            js += "]);},100);"; //end of S.feeds.loadChart();
+                js += "]);},10);"; //end of S.feeds.loadChart();
+            }
 
             //get day names
             daynames[0] = dateend.AddDays(-2).ToString("ddd").ToLower();

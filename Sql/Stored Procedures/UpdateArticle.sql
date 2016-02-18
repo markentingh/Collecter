@@ -3,6 +3,7 @@
 	@subjects int = 0,
 	@title nvarchar(250),
 	@summary nvarchar(250),
+	@filesize float = 0,
 	@wordcount int = 0,
 	@sentencecount int = 0,
 	@paragraphcount int = 0,
@@ -19,7 +20,7 @@
 AS
 
 UPDATE Articles SET 
-subjects=@subjects, title=@title, summary=@summary, wordcount=@wordcount, sentencecount=@sentencecount,
+subjects=@subjects, title=@title, summary=@summary, filesize=@filesize, wordcount=@wordcount, sentencecount=@sentencecount,
 paragraphcount=@paragraphcount, importantcount=@importantcount, analyzecount=analyzecount+1, 
 yearstart=@yearstart, yearend=@yearend, years=@years, images=@images, datepublished=@datepublished, 
 relavance=@relavance, importance=@importance, fiction=@fiction, analyzed=@analyzed
