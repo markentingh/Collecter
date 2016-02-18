@@ -21,6 +21,13 @@ namespace Collector.Services
             public string summary;
             public int relevance;
             public int importance;
+            public int totalWords;
+            public int totalSentences;
+            public int totalParagraphs;
+            public int totalImportantWords;
+            public int yearStart;
+            public int yearEnd;
+            public List<int> years;
             public bool fiction;
             public List<DomElement> elements;
             public AnalyzedTags tags;
@@ -253,6 +260,7 @@ namespace Collector.Services
             analyzed.title = analyzed.pageTitle = analyzed.summary = "";
             analyzed.relevance = analyzed.importance = 0;
             analyzed.fiction = true;
+            analyzed.years = new List<int>();
             
             analyzed.publishDate = DateTime.Now;
 
@@ -1749,10 +1757,12 @@ namespace Collector.Services
             S.Sql.ExecuteNonQuery("EXEC CleanArticle @articleId=" + articleId);
         }
 
-        public int AddArticle(int feedId, string url, string domain, string title, string summary = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
+        public int AddArticle(int feedId, string url, string domain, string title, string summary = "", int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
             return (int)S.Sql.ExecuteScalar("EXEC AddArticle @feedId=" + feedId + ", @url='" + url + "', @subjects=" + subjects +
-                ", @domain='" + S.Sql.Encode(domain) + "', @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @images=" + images + 
+                ", @domain='" + S.Sql.Encode(domain) + "', @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "'" +
+                ", @wordcount=" + wordcount + ", @sentencecount=" + sentencecount + ", @paragraphcount=" + paragraphcount + ", @yearstart=" + yearstart + ", @yearend=" + yearend + ", @years='" + years + "'" +
+                ", @images=" + images + 
                 ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed="+ analyzerVersion);
         }
 
@@ -1770,11 +1780,11 @@ namespace Collector.Services
             }
         }
 
-        public void UpdateArticle(int articleId, string title, string summary = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
+        public void UpdateArticle(int articleId, string title, string summary = "", int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
-            S.Sql.ExecuteNonQuery("EXEC UpdateArticle @articleId=" + articleId + ", @subjects=" + subjects +
-                ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @images=" + images +
-                ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed=" + analyzerVersion);
+            S.Sql.ExecuteNonQuery("EXEC UpdateArticle @articleId=" + articleId + ", @subjects=" + subjects + ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "'" +
+                ", @wordcount=" + wordcount + ", @sentencecount=" + sentencecount + ", @paragraphcount=" + paragraphcount + ", @yearstart=" + yearstart + ", @yearend=" + yearend + ", @years='" + years + "'" + 
+                ", @images=" + images + ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed=" + analyzerVersion);
         }
 
         public SqlReader GetArticles(int start = 1, int length = 50, int[] subjectIds = null, string search = "", int sort = 0, int isActive = 2, bool isDeleted = false, int minImages = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
@@ -1804,7 +1814,8 @@ namespace Collector.Services
         {
             if (ArticleExist(article.url) == false)
             {
-                article.id = AddArticle(0, article.url, article.domain, article.pageTitle, article.summary, 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
+                article.id = AddArticle(0, article.url, article.domain, article.pageTitle, article.summary, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords,
+                    article.yearStart, article.yearEnd, string.Join(",", article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
             }
             else
             {
@@ -1812,7 +1823,8 @@ namespace Collector.Services
                 CleanArticle(article.id);
 
                 //update article title, summary, & publish date
-                UpdateArticle(article.id, article.pageTitle, article.summary, 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
+                UpdateArticle(article.id, article.pageTitle, article.summary, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords, 
+                    article.yearStart, article.yearEnd, string.Join(",",article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
             }
 
             //add words to article

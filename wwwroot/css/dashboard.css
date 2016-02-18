@@ -1,7 +1,9 @@
 ﻿.dashboard{padding-top:15px;}
 .dashboard .menu > nav{float:right;}
 .dashboard .menu > nav ul{list-style-type:none; white-space:nowrap;}
-.dashboard .menu > nav ul > li {display:inline-block; padding:0px 10px;}
+.dashboard .menu > nav ul > li {display:inline-block; padding:0 10px;}
+.dash-menu li{padding:7px 13px !important;}
+.dash-menu a{font-size:17px; color:#333;}
 .dashboard > .section{clear:both;}
 .a{color:#ff6a00}
 
