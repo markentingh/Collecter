@@ -256,7 +256,7 @@ namespace Collector.Services
         }
 
         #region "Analyze"
-        public AnalyzedArticle Analyze(string url, string content = "")
+        public AnalyzedArticle Analyze(string url, string content = "", bool minimal = false)
         {
             AnalyzedArticle analyzed = new AnalyzedArticle();
             analyzed.tags = new AnalyzedTags();
@@ -385,86 +385,103 @@ namespace Collector.Services
 
             foreach (DomElement element in parsed.Elements)
             {
-                switch(element.tagName.ToLower())
+                switch (element.tagName.ToLower())
                 {
-                    case "#text":
-                        //sort text elements
-                        textElements.Add(element);
-                        traverseElement = element;
-                        //add element's parent indexes to list
-                        do
-                        {
-                            var parentIndex = parentIndexes.FindIndex(x => x.index == traverseElement.parent);
-                            if (parentIndex >= 0)
-                            {
-                                //update existing parent index
-                                var parent = parentIndexes[parentIndex];
-                                parent.elements.Add(element.index);
-                                parent.textLength += element.text.Length;
-                                parentIndexes[parentIndex] = parent;
-                            }
-                            else
-                            {
-                                //create new parent index
-                                var parent = new AnalyzedParentIndex();
-                                parent.index = traverseElement.parent;
-                                parent.elements = new List<int>();
-                                parent.elements.Add(element.index);
-                                parent.textLength = element.text.Length;
-                                parentIndexes.Add(parent);
-                            }
-                            if(traverseElement.parent > -1)
-                            {
-                                //get next parent element
-                                traverseElement = parsed.Elements[traverseElement.parent];
-                            }
-                            else { break; }
-                        } while (traverseElement.parent > -1);
-                        break;
-                    case "a":
-                        //sort anchor links
-                        anchorElements.Add(element);
-                        break;
-                    case "h1": case "h2": case "h3": case "h4": case "h5": case "h6":
-                        headerElements.Add(element);
-                        break;
                     case "title":
-                        if(analyzed.title == "")
+                        if (analyzed.title == "")
                         {
                             analyzed.pageTitle = analyzed.title = parsed.Elements[element.index + 1].text.Trim();
 
                             //check for 404 error
-                            if(analyzed.title.IndexOf("404") >= 0)
+                            if (analyzed.title.IndexOf("404") >= 0)
                             {
                                 return analyzed;
                             }
                         }
                         break;
-                    case "img":
-                        imgElements.Add(element);
-                        break;
                 }
 
-                //add new tag to list or incriment count of existing tag in list
-                var tagIndex = tagNames.FindIndex(x => x.name == element.tagName);
-                if(tagIndex >= 0)
+                if(minimal == false)
                 {
-                    //incriment tag name count
-                    var t = tagNames[tagIndex];
-                    t.count+=1;
-                    tagNames[tagIndex] = t;
+                    switch (element.tagName.ToLower())
+                    {
+                        case "#text":
+                            //sort text elements
+                            textElements.Add(element);
+                            traverseElement = element;
+                            //add element's parent indexes to list
+                            do
+                            {
+                                var parentIndex = parentIndexes.FindIndex(x => x.index == traverseElement.parent);
+                                if (parentIndex >= 0)
+                                {
+                                    //update existing parent index
+                                    var parent = parentIndexes[parentIndex];
+                                    parent.elements.Add(element.index);
+                                    parent.textLength += element.text.Length;
+                                    parentIndexes[parentIndex] = parent;
+                                }
+                                else
+                                {
+                                    //create new parent index
+                                    var parent = new AnalyzedParentIndex();
+                                    parent.index = traverseElement.parent;
+                                    parent.elements = new List<int>();
+                                    parent.elements.Add(element.index);
+                                    parent.textLength = element.text.Length;
+                                    parentIndexes.Add(parent);
+                                }
+                                if (traverseElement.parent > -1)
+                                {
+                                    //get next parent element
+                                    traverseElement = parsed.Elements[traverseElement.parent];
+                                }
+                                else { break; }
+                            } while (traverseElement.parent > -1);
+                            break;
+                        case "a":
+                            //sort anchor links
+                            anchorElements.Add(element);
+                            break;
+                        case "h1":
+                        case "h2":
+                        case "h3":
+                        case "h4":
+                        case "h5":
+                        case "h6":
+                            headerElements.Add(element);
+                            break;
+                        case "img":
+                            imgElements.Add(element);
+                            break;
+                    }
+
+                    //add new tag to list or incriment count of existing tag in list
+                    var tagIndex = tagNames.FindIndex(x => x.name == element.tagName);
+                    if (tagIndex >= 0)
+                    {
+                        //incriment tag name count
+                        var t = tagNames[tagIndex];
+                        t.count += 1;
+                        tagNames[tagIndex] = t;
+                    }
+                    else
+                    {
+                        //add new tag to list
+                        var t = new AnalyzedTag();
+                        t.name = element.tagName;
+                        t.count = 1;
+                        tagNames.Add(t);
+                    }
                 }
-                else
-                {
-                    //add new tag to list
-                    var t = new AnalyzedTag();
-                    t.name = element.tagName;
-                    t.count = 1;
-                    tagNames.Add(t);
-                }
+                
             }
 
-
+            if(minimal == true)
+            {
+                //minimal analyzation, get title of page only
+                return analyzed;
+            }
 
 
             //STEP #4 : Sort Element Lists & Add to Analyzed Object //////////////////////////////////////////////////////////////////////
@@ -1831,10 +1848,17 @@ namespace Collector.Services
         public void SaveArticle(AnalyzedArticle article)
         {
             var fileSize = (article.rawHtml.Length / 1024.0);
+            var analyzerVersion = "";
+            if(article.words.Count > 0)
+            {
+                //if the analyzer did more than just a minimal analyzation, 
+                //specify the analyzer version used
+                analyzerVersion = S.Server.analyzerVersion;
+            }
             if (ArticleExist(article.url) == false)
             {
                 article.id = AddArticle(0, article.url, article.domain, article.pageTitle, article.summary, fileSize, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords,
-                    article.yearStart, article.yearEnd, string.Join(",", article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
+                    article.yearStart, article.yearEnd, string.Join(",", article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, analyzerVersion);
             }
             else
             {
@@ -1843,7 +1867,7 @@ namespace Collector.Services
 
                 //update article title, summary, & publish date
                 UpdateArticle(article.id, article.pageTitle, article.summary, fileSize, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords, 
-                    article.yearStart, article.yearEnd, string.Join(",",article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, S.Server.analyzerVersion);
+                    article.yearStart, article.yearEnd, string.Join(",",article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, analyzerVersion);
             }
 
             //add words to article

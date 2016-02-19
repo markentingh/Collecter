@@ -259,4 +259,11 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="feedId" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="bd404be5-1178-4e25-b9a3-6f5ca9d1ae4d" ChangeDateTime="02/19/2016 00:08:04">
+    <Property Name="ElementName" Value="[dbo].[DownloadServers].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[DownloadServers]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="serverId" />
+  </Operation>
 </Operations>

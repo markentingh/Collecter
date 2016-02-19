@@ -14,7 +14,7 @@
             //setup feeds menu
             string menu = "<div class=\"menu left\"><nav><ul>" +
                 "<li><a href=\"javascript:\" id=\"btnaddserver\" class=\"button blue\">Add Server</a></li>" +
-                "<li><a href=\"javascript:\" id=\"btnanalyze\" class=\"button green\">Download Articles</a></li>" +
+                "<li><a href=\"javascript:\" id=\"btndownload\" class=\"button green\">Download Articles</a></li>" +
                 "</ul></nav></div>";
             parentScaffold.Data["menu"] = menu;
 
@@ -22,8 +22,8 @@
             {
                 //get feeds list from web service
                 scaffold = new Scaffold(S, "/app/includes/dashboard/downloads/downloads.html", "", new string[] { });
-                Services.Feeds feeds = new Services.Feeds(S, S.Page.Url.paths);
-                scaffold.Data["feeds"] = feeds.LoadFeedsUI();
+                Services.Downloads downloads = new Services.Downloads(S, S.Page.Url.paths);
+                scaffold.Data["servers"] = downloads.LoadServersUI();
                 S.Page.RegisterJSFromFile("/app/includes/dashboard/downloads/downloads.js");
             }
             return scaffold.Render();

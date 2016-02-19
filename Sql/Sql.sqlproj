@@ -132,6 +132,11 @@
     <Build Include="Tables\FeedsCheckedLog.sql" />
     <Build Include="Stored Procedures\AddFeedCheckedLog.sql" />
     <Build Include="Stored Procedures\GetFeedsAndLogs.sql" />
+    <Build Include="Tables\DownloadServers.sql" />
+    <Build Include="Stored Procedures\AddDownloadServer.sql" />
+    <Build Include="Sequences\SequenceDownloadServers.sql" />
+    <Build Include="Stored Procedures\DownloadServerExists.sql" />
+    <Build Include="Stored Procedures\GetDownloadServers.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />
