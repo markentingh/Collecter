@@ -24,6 +24,8 @@
                 scaffold = new Scaffold(S, "/app/includes/dashboard/downloads/downloads.html", "", new string[] { });
                 Services.Downloads downloads = new Services.Downloads(S, S.Page.Url.paths);
                 scaffold.Data["servers"] = downloads.LoadServersUI();
+                scaffold.Data["host"] = S.Request.Host.ToString();
+                scaffold.Data["queue"] = downloads.LoadQueueUI();
                 S.Page.RegisterJSFromFile("/app/includes/dashboard/downloads/downloads.js");
             }
             return scaffold.Render();

@@ -1,12 +1,11 @@
 ﻿S.downloader = {
-    list: [], urlCount: 0, cancelcheck: false, checkingservers: false,
+    list: [], totalDownloads: 0, downloading: false,
     countdown: 0, timer: null, timerStart: null, timerEnd: null, timerCurrent: null,
 
     load: function () {
         $('#btnaddserver').off().on('click', S.downloader.buttons.showAddServer);
-        $('#btndownload').off().on('click', S.downloader.buttons.showDownloadArticles);
-        $('#btncanceldownloader, #btnstopdownloader').off().on('click', S.downloader.buttons.cancelDownloadArticles);
-        $('#btnstartdownloader').off().on('click', S.downloader.buttons.startDownloads);
+        $('#btndownload').off().on('click', S.downloader.buttons.startDownloads);
+        $('#btnstopdownloader').off().on('click', S.downloader.buttons.cancelDownloadArticles);
         $('#btnsaveaddserver').off().on('click', S.downloader.buttons.saveAddServer);
         $('#btncanceladdserver').off().on('click', S.downloader.buttons.hideAddServer);
         $('#lstservertype').off().on('change', S.downloader.buttons.changeServerType);
@@ -29,7 +28,7 @@
             var options = {};
             switch (serverType) {
                 case '0': //local
-                    options = { type: serverType, title:'', settings:'localhost' };
+                    options = { type: serverType, title: '', settings: $('#txtaddlocaladdress').val() };
                     break;
                 case '1': //web server
                     var title = $('#txtaddservertitle').val();
@@ -43,29 +42,18 @@
             S.downloader.buttons.hideAddServer();
         },
 
-        showDownloadArticles(){
-            $('.form-downloader').show();
-            $('#btndownloader').hide();
-        },
-
         cancelDownloadArticles() {
-            S.downloader.checkingservers = false;
-            S.downloader.cancelcheck = true;
+            S.downloader.downloading = false;
             clearTimeout(S.downloader.timer);
             $('.form-downloader, .downloader-status').hide();
-            $('.form-downloader .settings').show();
-            $('.form-downloader .checking').hide();
             $('#btndownloader').show();
         },
 
         startDownloads: function () {
-            S.downloader.checkingservers = true;
-            S.downloader.urlCount = 0;
-            $('.downloader-status .progress').css({ width: '0%' });
-            $('.downloader-status').addClass('checking');
-            $('.downloader-status .progress-msg')[0].innerHTML = "Distributing URLs to servers for downloading...";
-            $('.form-downloader .settings').hide();
-            $('.form-downloader .checking, .downloader-status').show();
+            $('.form-downloader').show();
+            $('#btndownloader').hide();
+            S.downloader.downloading = true;
+            $('.form-downloader .checking-msg')[0].innerHTML = "Distributing URLs to servers for downloading...";
             S.ajax.post('/api/Downloads/StartDownloads', {}, function () { S.ajax.callback.inject(arguments[0]); });
         },
 
@@ -90,23 +78,17 @@
         }
     },
 
-    
-
-    updateServerStatus: function (domain, total, index) {
-        S.downloader.urlCount += total;
-        $('.downloader-status .progress-msg')[0].innerHTML = "added " + total + " url(s) from " + domain + ".";
-        $('.downloader-status .progress').css({width: Math.round((100 / S.downloader.list.length) * (index + 1)) + '%'});
+    loadServerFrames: function (index, serverId, host) {
+        console.log('loadServerFrames');
+        var container = $('.server' + index + ' .downloading');
+        console.log(container);
+        var url = 'http://' + host + '/Download';
+        container[0].innerHTML = '<iframe frameborder="0" scrolling="no" src="' + url + '"></iframe>';
     },
 
-    finishAnalyzing: function (){
-        $('.downloader-status .progress-msg')[0].innerHTML = S.downloader.urlCount + " total articles downloadd.";
-        $('.downloader-status .progress').css({ width: '100%' });
-        S.downloader.checkingservers = false;
-    },
-
-    checkedServer: function (domain) {
-        $('.downloader-status .progress-msg')[0].innerHTML = S.downloader.urlCount + " total articles downloadd.";
-        $('.downloader-status .progress').css({ width: '100%' });
+    updateDownloadQueue: function (minus) {
+        S.downloader.totalDownloads -= minus;
+        $('.servers .total')[0].innerHTML = S.util.math.numberWithCommas(S.downloader.totalDownloads);
     }
 }
 

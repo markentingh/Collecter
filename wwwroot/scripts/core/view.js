@@ -444,7 +444,6 @@ var S = {
 
         callback: {
             inject: function (data) {
-                console.log(data);
                 if (data.type == 'Collector.Inject') {
                     //load new content from web service
                     var elem = $(data.d.element);
@@ -480,10 +479,6 @@ var S = {
                 S.events.doc.resize.trigger();
             },
         }
-    },
-
-    editor: {
-        editMode: false, enabled: false
     },
 
     browser: {
@@ -540,7 +535,14 @@ var S = {
     }
 }
 
-S.util = {}
+S.util = {
+    math: {
+        numberWithCommas(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+    }
+
+}
 
 //setup jQuery //////////////////////////////////////////////////////////////////////////////////////
 $.ajaxSetup({ 'cache': true });

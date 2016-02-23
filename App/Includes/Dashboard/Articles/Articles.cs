@@ -10,7 +10,14 @@ namespace Collector.Includes
 {
     public class Articles : Include
     {
-        private  string[] separatorExceptions = new string[]{"'", "\""};
+        private string[] separatorExceptions = new string[]{"'", "\""};
+
+        private struct structArticleFeedList
+        {
+            public string html;
+            public List<string> list;
+            public int id;
+        }
 
         public Articles(Core CollectorCore, Scaffold ParentScaffold) : base(CollectorCore, ParentScaffold)
         {
@@ -78,19 +85,62 @@ namespace Collector.Includes
         {
             var scaffold = new Scaffold(S, "/app/includes/dashboard/articles/list.html", "", new string[] { "content" });
             Services.Articles articles = new Services.Articles(S, S.Page.Url.paths);
-            var reader = articles.GetArticles(1, 50);
+            var reader = articles.GetArticlesForFeeds(1, 10);
             var htm = "";
             if (reader.Rows.Count > 0)
             {
                 var html = new List<string>();
+                var feeds = new List<structArticleFeedList>();
+
                 while (reader.Read())
                 {
-                    htm = "<div class=\"article\"><a href=\"" + reader.Get("url") + "\" class=\"article-title\" " + 
-                            "onclick=\"S.articles.analyzeArticle('" + reader.Get("url") + "'); return false\">" + 
-                            reader.Get("title") + "</a>" + 
-                                "<div class=\"desc\">" + reader.Get("summary") + "</div>" + 
-                            "</div>";
-                    html.Add(htm);
+                    if (reader.GetBool("isfeed") == true)
+                    {
+                        //load feed container
+                        var newfeed = new structArticleFeedList();
+                        newfeed.html = "<div class=\"accordion article feed" + reader.GetInt("feedId") + "\">" +
+                                            "<div class=\"title\">" + S.Sql.Decode(reader.Get("feedtitle")) + "</div>" +
+                                            "<div class=\"box\">" +
+                                                "<div class=\"contents\">{{list}}</div>" +
+                                            "</div>" +
+                                        "</div>";
+                        newfeed.id = reader.GetInt("feedId");
+                        newfeed.list = new List<string>();
+                        feeds.Add(newfeed);
+                    }
+                    else
+                    {
+                        var fid = reader.GetInt("feedId");
+                        if(fid > 0)
+                        {
+                            for(var x = 0; x < feeds.Count; x++)
+                            {
+                                if(feeds[x].id == fid)
+                                {
+                                    htm = "<div class=\"article\"><a href=\"" + reader.Get("url") + "\" class=\"article-title\" " +
+                                            "onclick=\"S.articles.analyzeArticle('" + reader.Get("url") + "'); return false\">" +
+                                            S.Sql.Decode(reader.Get("title")) + "</a>" +
+                                                "<div class=\"desc\">" + S.Sql.Decode(reader.Get("summary")) + "</div>" +
+                                            "</div>";
+                                    feeds[x].list.Add(htm);
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+
+                if (feeds.Count > 0)
+                {
+                    foreach (var f in feeds)
+                    {
+                        htm = f.html;
+                        if(f.list.Count > 0)
+                        {
+                            htm = htm.Replace("{{list}}", string.Join("\n", f.list.ToArray()));
+                            html.Add(htm);
+                        }
+                    }
                 }
                 scaffold.Data["content"] = string.Join("\n", html);
                 S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/list.js");
@@ -440,7 +490,7 @@ namespace Collector.Includes
                             domStructure.Add("<div class=\"tag\"><div class=\"line-num\">" + (i+1) + "</div>" + string.Join(" > ", tag.hierarchyTags) + (tag.isClosing == false && tag.isSelfClosing == true ? " > " + tag.tagName : "") + "</div>");
                         }
                         scaffold.Data["dom-structure"] = string.Join("\n", domStructure.ToArray());
-                        scaffold.Data["dom-count"] = (i + 1).ToString();
+                        scaffold.Data["dom-count"] = String.Format("{0:N0}", i + 1);
                         //create tag names ///////////////////////////////////////////////////////
                         var tagNames = new List<string>();
                         i = 0;
@@ -450,7 +500,7 @@ namespace Collector.Includes
                             tagNames.Add("<div class=\"tag-name\">" + tagName.name + "<div class=\"tag-info\">(" + tagName.count + ")</div></div>");
                         }
                         scaffold.Data["tag-names"] = string.Join("\n", tagNames.ToArray());
-                        scaffold.Data["tag-names-count"] = tagNames.Count().ToString();
+                        scaffold.Data["tag-names-count"] = String.Format("{0:N0}", tagNames.Count());
                         //create sorted words ///////////////////////////////////////////////////////
                         var wordsSorted = new List<string>();
                         var commonWords = serveArticles.GetCommonWords();
@@ -466,7 +516,7 @@ namespace Collector.Includes
                             wordsSorted.Add(
                                 "<div class=\"word" + wordType + "\">" +
                                     "<div class=\"word-info\">" + word.count + "</div>" +
-                                    "<div class=\"value\">" + (word.importance == 10 ? S.Util.Str.Capitalize(word.word) : word.word) + "</div>" +
+                                    "<div class=\"value\">" + (word.importance == 10 ? S.Util.Str.Capitalize(word.word) : S.Util.Str.HtmlEncode(word.word)) + "</div>" +
                                 "</div>");
                         }
                         scaffold.Data["word-count"] = String.Format("{0:N0}", totalWords) + " total / " + String.Format("{0:N0}", article.words.Count) + " unique";

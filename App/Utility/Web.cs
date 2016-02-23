@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Collector.Utility
 {
     public class Web
     {
+
+        public struct structDownloadInfo
+        {
+            public string url;
+            public string html;
+        }
 
         private Core S;
 
@@ -16,26 +23,36 @@ namespace Collector.Utility
 
         public string Download(string url, bool usePhantomJs = false)
         {
-            if(usePhantomJs == true)
+            if (usePhantomJs == true)
             {
                 var htm = "";
-
-                while (1 == 1)
-                {
-                    htm = S.Util.Shell.Execute("cmd.exe", "/k \"phantomjs" +
-                    " --output-encoding=utf8 --ignore-ssl-errors=true" + // --local-to-remote-url-access=true" +
-                    " render.js " + url +
-                    "\"", S.Server.MapPath("PhantomJs"), 15);
-
-                    if(htm.Length < 100)
-                    {
-                        if(htm.IndexOf("fail") >= 0 || htm.IndexOf("cancel") >= 0 || htm == "") { continue; }
-                    }
-                    break;
+                var file = S.Server.MapPath("/phantomjs/file.html");
+                if (File.Exists(file)){
+                    //delete existing file.html
+                    File.Delete(file);
                 }
+                
+                S.Util.Shell.Execute("cmd.exe", "/k \"phantomjs" +
+                " --output-encoding=utf8 --ignore-ssl-errors=true --local-to-remote-url-access=true" +
+                " render.js " + url +
+                "\"", S.Server.MapPath("PhantomJs"), 0);
 
+                //check if file.html exists
+                var i = 0;
+                while(File.Exists(file) == false)
+                {
+                    if(i >= 30) { break; } //timeout after 10 seconds
+                    System.Threading.Thread.Sleep(1000);
+                    i++;
+                }
+                if (File.Exists(file))
+                {
+                    htm = File.ReadAllText(file);
+                    System.Threading.Thread.Sleep(250);
+                    File.Delete(file);
+                }
+                
                 return htm;
-
             }
             else
             {
@@ -50,16 +67,23 @@ namespace Collector.Utility
                 {
                     return "";
                 }
-                
+
             }
-            
+
         }
 
-        public string DownloadFromPhantomJS(string url, int timeout = 3, bool executeJs = true, string postJs = "")
+        public structDownloadInfo DownloadFromPhantomJS(string url)
         {
-            var html = Download(url).ToString();
-            //TODO: Get PhantomJS tool to download webpage for us
-            return html;
+            var d = new structDownloadInfo();
+            d.html = Download(url, true);
+            d.url = url;
+            var str = d.html.Split(new string[] { "{\\!/}" }, 2, StringSplitOptions.None);
+            if (str.Length == 2)
+            {
+                d.url = str[0];
+                d.html = str[1];
+            }
+            return d;
         }
     }
 }

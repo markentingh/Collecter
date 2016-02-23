@@ -137,6 +137,12 @@
     <Build Include="Sequences\SequenceDownloadServers.sql" />
     <Build Include="Stored Procedures\DownloadServerExists.sql" />
     <Build Include="Stored Procedures\GetDownloadServers.sql" />
+    <Build Include="Stored Procedures\AddDownloadDistribution.sql" />
+    <Build Include="Stored Procedures\GetDownloadDistributionList.sql" />
+    <Build Include="Stored Procedures\GetDownloadServerId.sql" />
+    <Build Include="Stored Procedures\GetDownloadCount.sql" />
+    <Build Include="Stored Procedures\UpdateDownload.sql" />
+    <Build Include="Stored Procedures\GetArticlesForFeeds.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

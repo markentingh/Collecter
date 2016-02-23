@@ -2,7 +2,7 @@
 (
 	[subjectId] INT NOT NULL, 
     [articleId] INT NULL, 
-    [importance] SMALLINT NULL, 
+    [score] SMALLINT NULL, 
     [datecreated] DATETIME NULL, 
     [datepublished] DATETIME NULL
 )

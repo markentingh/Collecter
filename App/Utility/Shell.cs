@@ -30,7 +30,7 @@ namespace Collector.Utility
            // p.ErrorDataReceived += (sender, e) => { Console.WriteLine(e.Data); };
             p.Start();
             p.BeginOutputReadLine();
-            p.WaitForExit(waitForExit * 1000);
+            if (waitForExit > 0) { p.WaitForExit(waitForExit * 1000); }
             return str;
         }
     }

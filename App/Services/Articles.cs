@@ -13,6 +13,7 @@ namespace Collector.Services
         public struct AnalyzedArticle
         {
             public int id;
+            public int feedId;
             public string rawHtml;
             public string url;
             public string domain;
@@ -249,6 +250,9 @@ namespace Collector.Services
 
         private string[] domainSuffixes = new string[] { "com", "net", "org", "biz" };
 
+        //http://pubs.acs.org/doi/full/10.1021/ac102172q?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+AnalyticalChemistryA-pages+%28Analytical+Chemistry+News+%26+Features%29
+        private string[] commonQueryKeys = new string[] { "ie", "utm_source", "utm_medium", "utm_campaign" };
+
         #endregion
 
         public Articles(Core CollectorCore, string[] paths):base(CollectorCore, paths)
@@ -256,27 +260,10 @@ namespace Collector.Services
         }
 
         #region "Analyze"
-        public AnalyzedArticle Analyze(string url, string content = "", bool minimal = false)
+        public AnalyzedArticle Analyze(string url, string content = "")
         {
-            AnalyzedArticle analyzed = new AnalyzedArticle();
-            analyzed.tags = new AnalyzedTags();
-            analyzed.tags.text = new List<AnalyzedText>();
-            analyzed.author = new AnalyzedAuthor();
-            analyzed.body = new List<int>();
-            analyzed.phrases = new List<AnalyzedPhrase>();
-            analyzed.subjects = new List<ArticleSubject>();
-            analyzed.url = S.Util.Str.CleanUrl(url);
-            analyzed.domain = S.Util.Str.GetDomainName(analyzed.url);
-            analyzed.title = analyzed.pageTitle = analyzed.summary = "";
-            analyzed.relevance = analyzed.importance = 0;
-            analyzed.fiction = true;
-            analyzed.years = new List<int>();
+            AnalyzedArticle analyzed = SetupAnalyzedArticle(url, "");
             
-            analyzed.publishDate = DateTime.Now;
-
-
-
-
             //STEP #1 : Get Web Page Contents via disk cache or url download //////////////////////////////////////////////////////////////////////
             string htm = "";
             bool isCached = false;
@@ -307,7 +294,9 @@ namespace Collector.Services
                     if(htm == "")
                     {
                         //file was empty. Final resort, download from url
-                        htm = S.Util.Web.Download(analyzed.url, true);
+                        var d = S.Util.Web.DownloadFromPhantomJS(analyzed.url);
+                        htm = d.html;
+                        analyzed.url = d.url;
                         File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
                     }
                 }
@@ -322,7 +311,9 @@ namespace Collector.Services
                 }
                 else
                 {
-                    htm = S.Util.Web.Download(analyzed.url, true);
+                    var d = S.Util.Web.DownloadFromPhantomJS(analyzed.url);
+                    htm = d.html;
+                    analyzed.url = d.url;
                     File.WriteAllText(S.Server.MapPath("/wwwroot/tests/new.html"), htm);
                 }
             }else if(content.Length > 0)
@@ -387,6 +378,55 @@ namespace Collector.Services
             {
                 switch (element.tagName.ToLower())
                 {
+                    case "#text":
+                        //sort text elements
+                        textElements.Add(element);
+                        traverseElement = element;
+                        //add element's parent indexes to list
+                        do
+                        {
+                            var parentIndex = parentIndexes.FindIndex(x => x.index == traverseElement.parent);
+                            if (parentIndex >= 0)
+                            {
+                                //update existing parent index
+                                var parent = parentIndexes[parentIndex];
+                                parent.elements.Add(element.index);
+                                parent.textLength += element.text.Length;
+                                parentIndexes[parentIndex] = parent;
+                            }
+                            else
+                            {
+                                //create new parent index
+                                var parent = new AnalyzedParentIndex();
+                                parent.index = traverseElement.parent;
+                                parent.elements = new List<int>();
+                                parent.elements.Add(element.index);
+                                parent.textLength = element.text.Length;
+                                parentIndexes.Add(parent);
+                            }
+                            if (traverseElement.parent > -1)
+                            {
+                                //get next parent element
+                                traverseElement = parsed.Elements[traverseElement.parent];
+                            }
+                            else { break; }
+                        } while (traverseElement.parent > -1);
+                        break;
+                    case "a":
+                        //sort anchor links
+                        anchorElements.Add(element);
+                        break;
+                    case "h1":
+                    case "h2":
+                    case "h3":
+                    case "h4":
+                    case "h5":
+                    case "h6":
+                        headerElements.Add(element);
+                        break;
+                    case "img":
+                        imgElements.Add(element);
+                        break;
                     case "title":
                         if (analyzed.title == "")
                         {
@@ -401,86 +441,23 @@ namespace Collector.Services
                         break;
                 }
 
-                if(minimal == false)
+                //add new tag to list or incriment count of existing tag in list
+                var tagIndex = tagNames.FindIndex(x => x.name == element.tagName);
+                if (tagIndex >= 0)
                 {
-                    switch (element.tagName.ToLower())
-                    {
-                        case "#text":
-                            //sort text elements
-                            textElements.Add(element);
-                            traverseElement = element;
-                            //add element's parent indexes to list
-                            do
-                            {
-                                var parentIndex = parentIndexes.FindIndex(x => x.index == traverseElement.parent);
-                                if (parentIndex >= 0)
-                                {
-                                    //update existing parent index
-                                    var parent = parentIndexes[parentIndex];
-                                    parent.elements.Add(element.index);
-                                    parent.textLength += element.text.Length;
-                                    parentIndexes[parentIndex] = parent;
-                                }
-                                else
-                                {
-                                    //create new parent index
-                                    var parent = new AnalyzedParentIndex();
-                                    parent.index = traverseElement.parent;
-                                    parent.elements = new List<int>();
-                                    parent.elements.Add(element.index);
-                                    parent.textLength = element.text.Length;
-                                    parentIndexes.Add(parent);
-                                }
-                                if (traverseElement.parent > -1)
-                                {
-                                    //get next parent element
-                                    traverseElement = parsed.Elements[traverseElement.parent];
-                                }
-                                else { break; }
-                            } while (traverseElement.parent > -1);
-                            break;
-                        case "a":
-                            //sort anchor links
-                            anchorElements.Add(element);
-                            break;
-                        case "h1":
-                        case "h2":
-                        case "h3":
-                        case "h4":
-                        case "h5":
-                        case "h6":
-                            headerElements.Add(element);
-                            break;
-                        case "img":
-                            imgElements.Add(element);
-                            break;
-                    }
-
-                    //add new tag to list or incriment count of existing tag in list
-                    var tagIndex = tagNames.FindIndex(x => x.name == element.tagName);
-                    if (tagIndex >= 0)
-                    {
-                        //incriment tag name count
-                        var t = tagNames[tagIndex];
-                        t.count += 1;
-                        tagNames[tagIndex] = t;
-                    }
-                    else
-                    {
-                        //add new tag to list
-                        var t = new AnalyzedTag();
-                        t.name = element.tagName;
-                        t.count = 1;
-                        tagNames.Add(t);
-                    }
+                    //incriment tag name count
+                    var t = tagNames[tagIndex];
+                    t.count += 1;
+                    tagNames[tagIndex] = t;
                 }
-                
-            }
-
-            if(minimal == true)
-            {
-                //minimal analyzation, get title of page only
-                return analyzed;
+                else
+                {
+                    //add new tag to list
+                    var t = new AnalyzedTag();
+                    t.name = element.tagName;
+                    t.count = 1;
+                    tagNames.Add(t);
+                }
             }
 
 
@@ -1391,10 +1368,11 @@ namespace Collector.Services
                 var tabs = "";
                 foreach(var el in analyzed.elements)
                 {
-                    if(el.isClosing == true && el.isSelfClosing == false)
+                    tabs = "";
+                    if (el.isClosing == true && el.isSelfClosing == false)
                     {
                         //closing tag
-                        htmelem = "</" + el.tagName + ">";
+                        htmelem = "<" + el.tagName + ">";
                     }
                     else{
                         if(el.tagName == "#text")
@@ -1404,16 +1382,28 @@ namespace Collector.Services
                         else
                         {
                             htmelem = "<" + el.tagName;
-                            if (el.attribute.Count > 0)
+                            if(el.attribute != null)
                             {
-                                foreach (var attr in el.attribute)
+                                if (el.attribute.Count > 0)
                                 {
-                                    htmelem += " " + attr.Key + "=\"" + attr.Value + "\"";
+                                    foreach (var attr in el.attribute)
+                                    {
+                                        htmelem += " " + attr.Key + "=\"" + attr.Value + "\"";
+                                    }
                                 }
                             }
+                            
                             if (el.isSelfClosing == true)
                             {
-                                htmelem += "/>";
+                                if(el.tagName == "!--")
+                                {
+                                    htmelem += el.text + "-->";
+                                }
+                                else
+                                {
+                                    htmelem += "/>";
+                                }
+                                
                             }
                             else
                             {
@@ -1423,7 +1413,7 @@ namespace Collector.Services
                         
                         
                     }
-                    tabs = "";
+                    
                     for(var x = 1; x <= el.hierarchyIndexes.Length; x++)
                     {
                         tabs += "    ";
@@ -1781,6 +1771,45 @@ namespace Collector.Services
 
         #region "Articles"
 
+        public AnalyzedArticle SetupAnalyzedArticle(string url, string html) {
+            AnalyzedArticle analyzed = new AnalyzedArticle();
+
+            analyzed.author = new AnalyzedAuthor();
+            analyzed.body = new List<int>();
+            analyzed.bodyElements = new List<DomElement>();
+            analyzed.domain = S.Util.Str.GetDomainName(url);
+            analyzed.elements = new List<DomElement>();
+            analyzed.fiction = true;
+            analyzed.feedId = 0;
+            analyzed.id = 0;
+            analyzed.importance = 0;
+            analyzed.parentIndexes = new List<AnalyzedParentIndex>();
+            analyzed.people = new List<AnalyzedPerson>();
+            analyzed.phrases = new List<AnalyzedPhrase>();
+            analyzed.publishDate = DateTime.Now;
+            analyzed.rawHtml = html;
+            analyzed.relevance = analyzed.importance = 0;
+            analyzed.sentences = new List<string>();
+            analyzed.subjects = new List<ArticleSubject>();
+            analyzed.tagNames = new List<AnalyzedTag>();
+            analyzed.tags = new AnalyzedTags();
+            analyzed.tags.anchorLinks = new List<int>();
+            analyzed.tags.headers = new List<int>();
+            analyzed.tags.text = new List<AnalyzedText>();
+            analyzed.title = analyzed.pageTitle = analyzed.summary = "";
+            analyzed.totalImportantWords = 0;
+            analyzed.totalParagraphs = 0;
+            analyzed.totalSentences = 0;
+            analyzed.totalWords = 0;
+            analyzed.url = S.Util.Str.CleanUrl(url, true, false, commonQueryKeys);
+            analyzed.words = new List<AnalyzedWord>();
+            analyzed.yearEnd = 0;
+            analyzed.yearStart = 0;
+            analyzed.years = new List<int>();
+            
+            return analyzed;
+        }
+
         public bool ArticleExist(string url)
         {
             var result = S.Sql.ExecuteScalar("EXEC ArticleExists @url='" + url + "'");
@@ -1806,12 +1835,12 @@ namespace Collector.Services
             S.Sql.ExecuteNonQuery("EXEC AddArticleWord @articleid=" + articleId + ", @wordid=" + wordId + ", @count=" + count);
         }
 
-        public void AddArticleSubjects(int articleId, int[] subjectId, int importance = 1, DateTime datePublished = new DateTime())
+        public void AddArticleSubjects(int articleId, int[] subjectId, int[] scores, DateTime datePublished = new DateTime())
         {
             if(subjectId.Length == 0) { return; }
-            foreach(int id in subjectId)
+            for(int x =0;x<subjectId.Length;x++)
             {
-                S.Sql.ExecuteNonQuery("AddArticleSubject @articleId=" + articleId + ", @subjectId=" + id + ", @datepublished='" + datePublished.ToString() + "', @importance=" + importance);
+                S.Sql.ExecuteNonQuery("AddArticleSubject @articleId=" + articleId + ", @subjectId=" + subjectId[x] + ", @datepublished='" + datePublished.ToString() + "', @score=" + scores[x]);
             }
         }
 
@@ -1845,19 +1874,43 @@ namespace Collector.Services
             return reader;
         }
 
+        public SqlReader GetArticlesForFeeds(int start = 1, int length = 50, int[] subjectIds = null, string search = "", int sort = 0, int isActive = 2, bool isDeleted = false, int minImages = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
+        {
+            var d1 = dateStart;
+            var d2 = dateEnd;
+            if (d1.Year == 1)
+            {
+                d1 = DateTime.Today.AddYears(-100);
+            }
+            if (d2.Year == 1)
+            {
+                d2 = DateTime.Today.AddYears(100);
+            }
+
+            var reader = new SqlReader();
+
+            reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetArticlesForFeeds " +
+                "@subjectIds='" + (subjectIds == null ? "" : string.Join(",", subjectIds)) + "', @search='" + search + "', " +
+                "@isActive=" + isActive + ", @isDeleted=" + (isDeleted == true ? 1 : 0) + ", " +
+                "@minImages=" + minImages + ", @dateStart=" + reader.ConvertDateTime(d1) + ", @dateEnd=" + reader.ConvertDateTime(d2) + ", " +
+                "@start=" + start + ", @length=" + length + ", @orderby=" + sort));
+            return reader;
+        }
+
         public void SaveArticle(AnalyzedArticle article)
         {
             var fileSize = (article.rawHtml.Length / 1024.0);
-            var analyzerVersion = "";
+            var analyzerVersion = "0";
             if(article.words.Count > 0)
             {
                 //if the analyzer did more than just a minimal analyzation, 
                 //specify the analyzer version used
                 analyzerVersion = S.Server.analyzerVersion;
             }
-            if (ArticleExist(article.url) == false)
+
+            if (article.id <= 0)
             {
-                article.id = AddArticle(0, article.url, article.domain, article.pageTitle, article.summary, fileSize, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords,
+                article.id = AddArticle(article.feedId, article.url, article.domain, article.pageTitle, article.summary, fileSize, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords,
                     article.yearStart, article.yearEnd, string.Join(",", article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, analyzerVersion);
             }
             else
@@ -1883,11 +1936,13 @@ namespace Collector.Services
             if (article.subjects.Count > 0)
             {
                 var subjects = new List<int>();
+                var scores = new List<int>();
                 foreach (var subject in article.subjects)
                 {
                     subjects.Add(subject.id);
+                    scores.Add(subject.score);
                 }
-                AddArticleSubjects(article.id, subjects.ToArray(), 1, article.publishDate);
+                AddArticleSubjects(article.id, subjects.ToArray(), scores.ToArray(), article.publishDate);
             }
 
             //finally, save article html & object to file
@@ -1912,6 +1967,7 @@ namespace Collector.Services
                     File.WriteAllText(path + article.id + ".html", article.rawHtml);
                 }
 
+                return;
 
                 //save (stripped) article object to file
                 var newArticle = new AnalyzedArticle();

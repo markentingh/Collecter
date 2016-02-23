@@ -93,7 +93,7 @@ namespace Collector.Services
                 else
                 {
                     //add urls from feed to download queue
-                    var total = ReadFeedFromUrl(feeds[index].url);
+                    var total = ReadFeedFromUrl(feeds[index].url, feeds[index].id);
 
                     //log feed check
                     S.Sql.ExecuteNonQuery("EXEC AddFeedCheckedLog @feedId=" + feeds[index].id + ", @links=" + total);
@@ -114,18 +114,18 @@ namespace Collector.Services
             return inject;
         }
 
-        public int ReadFeedFromUrl(string url)
+        public int ReadFeedFromUrl(string url, int feedId)
         {
-            return ReadFeed(S.Util.Web.Download(url));
+            return ReadFeed(S.Util.Web.Download(url), feedId);
         }
 
-        public int ReadFeed(string html)
+        public int ReadFeed(string html, int feedId)
         {
             var feed = S.Util.RSS.Read(html);
             var total = 0;
             foreach (var item in feed.items)
             {
-                if (AddToDownloadQueue(item.link) == true)
+                if (AddToDownloadQueue(item.link, feedId) == true)
                 {
                     total++;
                 }
@@ -140,7 +140,7 @@ namespace Collector.Services
             var reader = new SqlReader();
             var feeds = new List<structFeedList>();
             var logdata = new List<structFeedLogData>();
-            var days = 3;
+            var days = 5;
             var feedId = 0;
             reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetFeedsAndLogs @dateStart='" + DateTime.Now.AddDays(0-(days-1)).ToString("yyyy-MM-dd HH:mm:ss") + "', @days=" + days));
             if(reader.Rows.Count > 0)
@@ -159,7 +159,7 @@ namespace Collector.Services
                             htm = htm.Replace("{{chart}}", GetFeedChartFromData(feedId, days, logdata)) + "</div>";
                             
                         }
-                        htm += "<div class=\"row feed\">" +
+                        htm += "<div class=\"row feed feed" + i + "\">" +
                         
                         //check button
                         "<div class=\"btn\"><a href=\"javascript:\" onclick=\"S.feeds.buttons.checkFeed(" + i + ")\" class=\"button green\">Check</a></div>" +
@@ -179,6 +179,7 @@ namespace Collector.Services
                         feeds.Add(newfeed);
 
                         logdata = new List<structFeedLogData>();
+                        i++;
                     }
                     else
                     {
@@ -188,8 +189,6 @@ namespace Collector.Services
                         newlog.date = reader.GetDateTime("logdatechecked");
                         logdata.Add(newlog);
                     }
-                    
-                    i++;
                 }
                 i--;
                 //render log data chart for last feed item
@@ -249,8 +248,8 @@ namespace Collector.Services
             }
 
             //get day names
-            daynames[0] = dateend.AddDays(-2).ToString("ddd").ToLower();
-            daynames[1] = dateend.AddDays(-1).ToString("ddd").ToLower();
+            daynames[0] = dateend.AddDays(1 - days).ToString("ddd").ToLower();
+            daynames[1] = dateend.AddDays(Math.Round(days / 2.0) * -1).ToString("ddd").ToLower();
             daynames[2] = dateend.ToString("ddd").ToLower();
 
             

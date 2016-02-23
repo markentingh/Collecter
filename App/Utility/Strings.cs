@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Text.Encodings.Web;
+using System.Linq;
 
 namespace Collector.Utility
 {
@@ -176,6 +176,28 @@ namespace Collector.Utility
                     result = u[0].Split('#')[0];
                 }
             }
+            if (S.Util.IsEmpty(removeFromQuery) == false)
+            {
+                //remove specific query keys from url
+                u = result.Split(new char[] { '?' }, 2);
+                if(u.Length == 2)
+                {
+                    //get key values
+                    var kv = u[1].ToLower().Split('&');
+                    var k2v = new string[] { };
+                    var newkeys = "";
+                    foreach(var k in kv)
+                    {
+                        k2v = k.Split(new char[] { '=' }, 2);
+                        if (!removeFromQuery.Contains(k2v[0])){
+                            newkeys += (newkeys.Length > 0 ? "&" : "") + k2v[0] + "=" + k2v[1];
+                        }
+                    }
+                    if(newkeys != "") { newkeys = "?" + newkeys; }
+                    result = u[0] + newkeys;
+                }
+            }
+
             return result;
         }
 

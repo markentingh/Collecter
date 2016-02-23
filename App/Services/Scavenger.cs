@@ -115,7 +115,7 @@ namespace Collector.Services
                 for (var x = 0; x < results.Count; x++)
                 {
                     var result = results[x];
-                    result.html = S.Util.Web.DownloadFromPhantomJS(result.url);
+                    result.html = S.Util.Web.Download(result.url,true);
                     results[x] = result;
                 }
 

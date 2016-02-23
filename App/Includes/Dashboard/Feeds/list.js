@@ -55,6 +55,7 @@
             $('.feeds-status .progress-msg')[0].innerHTML = "Checking available feeds for new links...";
             $('.form-feedscheck .settings').hide();
             $('.form-feedscheck .checking, .feeds-status').show();
+            $('.feed').removeClass('checking');
             S.ajax.post('/api/Feeds/CheckFeeds', {}, function () { S.ajax.callback.inject(arguments[0]); });
             S.feeds.countdown = parseInt($('#txtcheckmins').val()); 
             S.feeds.timerStart = new Date();
@@ -64,6 +65,7 @@
 
         checkFeed: function (index) {
             var more = false;
+            $('.feed').removeClass('checking');
             if (S.feeds.cancelcheck == true) {
                 S.feeds.cancelcheck = false;
                 return;
@@ -76,6 +78,7 @@
                 $('.feeds-status .progress-msg')[0].innerHTML = "Checking selected feed for new links...";
                 $('.feeds-status').show();
             }
+            $('.feed' + index).addClass('checking');
             S.ajax.post('/api/Feeds/CheckFeed', { index: index, more: more }, function () { S.ajax.callback.inject(arguments[0]); });
         },
 
@@ -100,9 +103,12 @@
         $('.feeds-status .progress').css({width: Math.round((100 / S.feeds.list.length) * (index + 1)) + '%'});
     },
 
-    checkedAllFeeds: function (){
+    checkedAllFeeds: function () {
+        //finished checking all feeds
         $('.feeds-status .progress-msg')[0].innerHTML = S.feeds.urlCount + " total url(s) collected from " + S.feeds.list.length + " feed(s).";
         $('.feeds-status .progress').css({ width: '100%' });
+        //refresh list of feeds with new chart data
+        S.ajax.post('/api/Feeds/LoadFeedsUI', { index: index, more: more }, function (data) { $('.feeds-list .contents')[0].innerHTML = data.d; });
         S.feeds.checkingfeeds = false;
     },
 
