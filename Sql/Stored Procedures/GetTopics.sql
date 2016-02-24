@@ -29,4 +29,4 @@ AS
 			OR t.topicId = CASE WHEN @subjectIds = '' THEN t.topicId ELSE 0 END
 		)
 		AND t.datecreated >= CONVERT(datetime, @dateStart) AND t.datecreated <= CONVERT(datetime, @dateEnd)
-	) AS tbl WHERE rownum >= @start AND rownum <= @start + @length
+	) AS tbl WHERE rownum >= @start AND rownum < @start + @length

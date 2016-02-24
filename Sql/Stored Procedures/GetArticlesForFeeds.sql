@@ -144,7 +144,7 @@ AS
 			AND deleted=@isDeleted
 			AND images >= @minImages
 			AND datecreated >= CONVERT(datetime, @dateStart) AND datecreated <= CONVERT(datetime, @dateEnd)
-		) AS tbl WHERE rownum >= @start AND rownum <= @start + @length - 1
+		) AS tbl WHERE rownum >= @start AND rownum < @start + @length
 		OPEN @cursor2
 		FETCH FROM @cursor2 INTO
 		@rownum, @articleId, @feedId2, @subjects, @images, @filesize, @wordcount, @sentencecount, 

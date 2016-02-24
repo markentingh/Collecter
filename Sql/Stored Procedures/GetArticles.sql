@@ -44,4 +44,4 @@ AS
 		AND deleted=@isDeleted
 		AND images >= @minImages
 		AND datecreated >= CONVERT(datetime, @dateStart) AND datecreated <= CONVERT(datetime, @dateEnd)
-	) AS tbl WHERE rownum >= @start AND rownum <= @start + @length
+	) AS tbl WHERE rownum >= @start AND rownum < @start + @length

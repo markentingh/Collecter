@@ -143,6 +143,10 @@
     <Build Include="Stored Procedures\GetDownloadCount.sql" />
     <Build Include="Stored Procedures\UpdateDownload.sql" />
     <Build Include="Stored Procedures\GetArticlesForFeeds.sql" />
+    <Build Include="Tables\ArticleBugs.sql" />
+    <Build Include="Stored Procedures\AddArticleBug.sql" />
+    <Build Include="Sequences\SequenceArticleBugs.sql" />
+    <Build Include="Stored Procedures\GetArticleBugsForArticle.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />
