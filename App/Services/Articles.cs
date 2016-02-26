@@ -2185,5 +2185,68 @@ namespace Collector.Services
             return phrases;
         }
         #endregion
+
+        #region "Bug Reporting"
+
+        public string[] GetBugReports(int articleId, int start = 1, int length = 50, int orderby = 1)
+        {
+            //return a string array, 0 = bug count, 1 = html
+            var results = new string[] { "0", "" };
+            var bugs = "<div class=\"nobugs\">No bugs reported yet</div>";
+            var bugcount = 0;
+            if(articleId > 0)
+            {
+                var reader = new SqlReader();
+                reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetArticleBugs @articleId=" + articleId + ", @start=" + start + ", @length=" + length + ", @orderby=" + orderby));
+                if (reader.Rows.Count > 0)
+                {
+                    bugs = "";
+                    while (reader.Read())
+                    {
+                        bugs += "<div class=\"bug\">" +
+                                    "<div class=\"title\">" + S.Sql.Decode(reader.Get("title")) + "</div>" +
+                                    "<div class=\"date\">" + S.Util.Str.DateSentence(reader.GetDateTime("datecreated")) + "</div>" +
+                                    "<div class=\"description\">" + S.Sql.Decode(reader.Get("description")) + "</div>" +
+                                "</div>";
+                        bugcount++;
+                    }
+                }
+            }
+            results[0] = bugcount.ToString();
+            results[1] = bugs;
+            return results;
+        }
+
+        public Inject GetBugReportsUI(int articleId, int start = 1, int length = 50, int orderby = 1)
+        {
+            var response = new Inject();
+            var bugs = GetBugReports(articleId, start, length, orderby);
+            S.Page.RegisterJS("bugs", "$('.bug-count')[0].innerHTML='" + bugs[0] + "';");
+            response.element = ".bugs .contents";
+            response.inject = enumInjectTypes.replace;
+            response.js = CompileJs();
+            response.html = bugs[1];
+            return response;
+        }
+
+        public Inject AddBugReport(int articleId, string title, string description)
+        {
+            //add bug to database
+            S.Sql.ExecuteNonQuery("EXEC AddArticleBug @articleId=" + articleId + ", @title='" + S.Sql.Encode(title) + "', @description='" + S.Sql.Encode(description) + "', @status=0");
+
+            //reload bug reports list
+            return GetBugReportsUI(articleId);
+        }
+
+        public void UpdateBugStatus(int bugId, int status)
+        {
+            S.Sql.ExecuteNonQuery("EXEC UpdateArticleBugStatus @bugId=" + bugId + ", @status=" + status);
+        }
+
+        public void UpdateBugDescription(int bugId, string description)
+        {
+            S.Sql.ExecuteNonQuery("EXEC UpdateArticleBugDescription @bugId=" + bugId + ", @description=" + description);
+        }
+        #endregion
     }
 }

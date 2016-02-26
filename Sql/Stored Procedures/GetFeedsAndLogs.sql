@@ -26,7 +26,7 @@ AS
 
 
 	SET @cursor1 = CURSOR FOR 
-	SELECT * FROM feeds ORDER BY title ASC
+	SELECT * FROM feeds WHERE feedId > 0 ORDER BY title ASC
 	OPEN @cursor1
 	FETCH FROM @cursor1 INTO
 	@feedId, @title, @url, @lastChecked, @filter

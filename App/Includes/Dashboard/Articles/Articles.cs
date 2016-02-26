@@ -91,7 +91,7 @@ namespace Collector.Includes
             {
                 var html = new List<string>();
                 var feeds = new List<structArticleFeedList>();
-
+                var expand = " expanded";
                 while (reader.Read())
                 {
                     if (reader.GetBool("isfeed") == true)
@@ -99,31 +99,40 @@ namespace Collector.Includes
                         //load feed container
                         var newfeed = new structArticleFeedList();
                         newfeed.html = "<div class=\"accordion article feed" + reader.GetInt("feedId") + "\">" +
-                                            "<div class=\"title\">" + S.Sql.Decode(reader.Get("feedtitle")) + "</div>" +
-                                            "<div class=\"box\">" +
+                                            "<div class=\"title" + expand + "\">" + S.Sql.Decode(reader.Get("feedtitle")) + "</div>" +
+                                            "<div class=\"box" + expand + "\">" +
                                                 "<div class=\"contents\">{{list}}</div>" +
                                             "</div>" +
                                         "</div>";
                         newfeed.id = reader.GetInt("feedId");
                         newfeed.list = new List<string>();
                         feeds.Add(newfeed);
+                        expand = "";
                     }
                     else
                     {
                         var fid = reader.GetInt("feedId");
-                        if(fid > 0)
+                        for(var x = 0; x < feeds.Count; x++)
                         {
-                            for(var x = 0; x < feeds.Count; x++)
+                            if(feeds[x].id == fid)
                             {
-                                if(feeds[x].id == fid)
+                                htm = "<div class=\"article\"><div class=\"title\"><a href=\"" + reader.Get("url") + "\" class=\"article-title\" " +
+                                        "onclick=\"S.articles.analyzeArticle('" + reader.Get("url") + "'); return false\">" +
+                                        S.Sql.Decode(reader.Get("title")) + "</a></div>";
+                                if(reader.Get("breadcrumb").Length > 0)
                                 {
-                                    htm = "<div class=\"article\"><a href=\"" + reader.Get("url") + "\" class=\"article-title\" " +
-                                            "onclick=\"S.articles.analyzeArticle('" + reader.Get("url") + "'); return false\">" +
-                                            S.Sql.Decode(reader.Get("title")) + "</a>" +
-                                                "<div class=\"desc\">" + S.Sql.Decode(reader.Get("summary")) + "</div>" +
-                                            "</div>";
-                                    feeds[x].list.Add(htm);
+                                    //show subject breadcrumb
+                                    var bread = S.Sql.Decode(reader.Get("breadcrumb")).Split('>');
+                                    var hier = S.Sql.Decode(reader.Get("hierarchy")).Split('>');
+                                    var crumb = "";
+                                    for (var b = 0; b < bread.Length; b++)
+                                    {
+                                        crumb += (crumb != "" ? " > " : "") + "<a href=\"dashboard/subjects?id=" + hier[b] + "\">" + bread[b] + "</a>";
+                                    }
+                                    htm += "<div class=\"subject\">" + crumb  + "</div>";
                                 }
+                                 htm += "</div>";
+                                feeds[x].list.Add(htm);
                             }
                         }
                     }
@@ -165,7 +174,6 @@ namespace Collector.Includes
                         //analyze an article ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         var serveArticles = new Services.Articles(S, S.Page.Url.paths);
                         var url = S.Request.Form["Url"];
-                        var info = "";
                         var article = serveArticles.Analyze(url);
 
                         //check if article is empty
@@ -588,12 +596,19 @@ namespace Collector.Includes
                         }
                         scaffold.Data["anchorlinks"] = "<div class=\"link\">" + string.Join("</div><div class=\"link\">", anchorLinks.ToArray()) + "</div>";
 
+                        //load bug reports ///////////////////////////////////////////////////
+                        var bugs = serveArticles.GetBugReports(article.id);
+                        scaffold.Data["bug-count"] = bugs[0];
+                        scaffold.Data["bugs"] = bugs[1];
+
+
                         //render article analysis results ////////////////////////////////////////////////////////////////////////////////////////////////////
                         scaffold.Data["content"] = scaffold.Render();
 
                         //load javascript file
                         scriptFiles += "<script type=\"text/javascript\" src=\"/scripts/ace/ace.js\"></script>";
                         S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/analyzed.js");
+                        S.Page.RegisterJS("articleid", "S.analyzed.articleId=" + article.id);
                     }
 
 

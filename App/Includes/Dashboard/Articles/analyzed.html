@@ -53,6 +53,14 @@
     .subject .word-count{display:inline-block; color:#c4e26b; background-color:#003937; border:1px solid #005F5F; padding:5px 8px; margin:0 20px 0 0;}
     .anchorlinks .link{padding:5px 0; height:25px;}
     #lstwordpart{width:100px;}
+    .bugs .menu .column.label{width:90px !important;}
+    .bugs .menu .bugtitle{width:calc(100% - 100px);}
+    .bugs .menu .description{width:calc(100% - 100px);}
+    .bugs .menu .btns{text-align:right;}
+    .bugs .menu .nobugs{width:100%; text-align:center; font-size:22px;}
+    .bugs .contents .title{width:100%; font-size:20px; color:#eee;}
+    .bugs .contents .date{width:100%; font-size:14px; color:#666; padding-bottom:7px;}
+    .bugs .contents .description{width:100%; font-size:20px; color:#aaa; padding-bottom:30px;}
 </style>
 <link type="text/css" rel="/scripts/ace/ace.css"/>
 
@@ -164,10 +172,42 @@
     </div>
 </div>
 
-
 <div class="accordion anchorlinks">
     <div class="title">Anchor Links</div>
     <div class="box">
         <div class="contents">{{anchorlinks}}</div>
+    </div>
+</div>
+
+<div class="accordion bugs">
+    <div class="title">Reported Bugs (<span class="bug-count">{{bug-count}}</span>)</div>
+    <div class="box">
+        <div class="contents">
+            {{bugs}}
+        </div>
+    </div>
+    <div class="menu">
+        <div class="row space">
+            <div class="column title">
+                Report a bug related to analyzing the article
+            </div>
+        </div>
+        <div class="row">
+            <div class="column label">Bug Title:</div>
+            <div class="column bugtitle">
+                <input type="text" id="txtbugtitle" style="width:100%;" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="column label">Description:</div>
+            <div class="column description">
+                <textarea id="txtbugdescription" style="width:100%;" rows="10"></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column btns">
+                <a href="javascript:" id="btnsubmitbug" class="button green">Submit Bug Report</a>
+            </div>
+        </div>
     </div>
 </div>

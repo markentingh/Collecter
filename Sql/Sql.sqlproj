@@ -84,7 +84,6 @@
     <Build Include="Stored Procedures\AddArticle.sql" />
     <Build Include="Tables\ArticleWords.sql" />
     <Build Include="Indexes\IndexArticleWords.sql" />
-    <Build Include="Tables\ArticleStatistics.sql" />
     <Build Include="Tables\ArticleSubjects.sql" />
     <Build Include="Indexes\IndexArticleSubjects.sql" />
     <Build Include="Stored Procedures\AddArticleSubject.sql" />
@@ -146,7 +145,13 @@
     <Build Include="Tables\ArticleBugs.sql" />
     <Build Include="Stored Procedures\AddArticleBug.sql" />
     <Build Include="Sequences\SequenceArticleBugs.sql" />
-    <Build Include="Stored Procedures\GetArticleBugsForArticle.sql" />
+    <Build Include="Indexes\IndexArticleBugs.sql" />
+    <Build Include="Indexes\IndexDictionary.sql" />
+    <Build Include="Indexes\IndexStatisticsResults.sql" />
+    <Build Include="Indexes\IndexTopicsSubjects.sql" />
+    <Build Include="Stored Procedures\GetArticleBugs.sql" />
+    <Build Include="Stored Procedures\UpdateArticleBugStatus.sql" />
+    <Build Include="Stored Procedures\UpdateArticleBugDescription.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

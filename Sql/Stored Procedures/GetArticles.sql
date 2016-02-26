@@ -32,8 +32,12 @@ AS
 		SELECT ROW_NUMBER() OVER(ORDER BY 
 		CASE WHEN @orderby = 1 THEN a.datecreated END ASC,
 		CASE WHEN @orderby = 2 THEN a.datecreated END DESC
-		) AS rownum, a.* 
+		) AS rownum, a.*, 
+		(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=0) AS bugsopen,
+		(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=1) AS bugsresolved,
+		s.breadcrumb, s.hierarchy
 		FROM Articles a 
+		LEFT JOIN Subjects s ON s.subjectId=(SELECT TOP 1 subjectId FROM ArticleSubjects WHERE articleId=a.articleId ORDER BY score DESC)
 		WHERE
 		(
 			articleId IN (SELECT * FROM #subjectarticles)

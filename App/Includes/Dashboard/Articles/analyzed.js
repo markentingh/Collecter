@@ -1,11 +1,12 @@
 ﻿S.analyzed = {
-    ace: null,
+    ace: null, articleId:0,
 
     load:function(){
         $('#btnsaveselectedwords').on('click', S.analyzed.buttons.saveSelectedWords);
         $('.words-sorted .box .word, .phrases .phrase').on('click', S.analyzed.buttons.toggleWord);
         $('.article .word').on('mouseenter', S.analyzed.buttons.onArticleWordHover);
         $('.article .word').on('mouseleave', S.analyzed.buttons.onArticleWordLeave);
+        $('#btnsubmitbug').on('click', S.analyzed.buttons.saveBugReport);
         S.analyzed.buttons.changeWordType(S.elem.get('lstwordtype'));
     },
 
@@ -94,6 +95,14 @@
             var type = $(elem).val();
             $('.words-sorted .menu .option-field').hide();
             $('.words-sorted .menu .wordtype-' + type).show();
+        },
+
+        saveBugReport: function () {
+            var title = $('#txtbugtitle').val();
+            var description = $('#txtbugdescription').val();
+            S.ajax.post('/api/Articles/AddBugReport', { articleId: S.analyzed.articleId, title: title, description: description }, function () { S.ajax.callback.inject(arguments[0]); });
+            $('#txtbugtitle').val('');
+            $('#txtbugdescription').val('');
         }
     }
 };
