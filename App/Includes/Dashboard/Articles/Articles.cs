@@ -105,7 +105,7 @@ namespace Collector.Includes
                     {
                         //load feed container
                         var newfeed = new structArticleFeedList();
-                        newfeed.html = "<div class=\"accordion article feed" + reader.GetInt("feedId") + "\">" +
+                        newfeed.html = "<div class=\"accordion articles feed" + reader.GetInt("feedId") + "\">" +
                                             "<div class=\"title" + expand + "\">" + S.Sql.Decode(reader.Get("feedtitle")) + "</div>" +
                                             "<div class=\"box" + expand + "\">" +
                                                 "<div class=\"contents\">{{list}}</div>" +
@@ -119,14 +119,20 @@ namespace Collector.Includes
                     else
                     {
                         var fid = reader.GetInt("feedId");
+                        var filesize = 0.0;
+                        var bugs = 0;
+                        var resolved = 0;
+                        var words = new int[3] { 0, 0, 0 };
+                        var years = "";
                         for(var x = 0; x < feeds.Count; x++)
                         {
                             if(feeds[x].id == fid)
                             {
                                 htm = "<div class=\"article\"><div class=\"title\"><a href=\"" + reader.Get("url") + "\" class=\"article-title\" " +
                                         "onclick=\"S.articles.analyzeArticle('" + reader.Get("url") + "'); return false\">" +
-                                        S.Sql.Decode(reader.Get("title")) + "</a></div>";
-                                if(reader.Get("breadcrumb").Length > 0)
+                                        S.Sql.Decode(reader.Get("title")) + "</a></div>" +
+                                        "<div class=\"url\"><a href=\"" + reader.Get("url") + "\" target=\"_blank\">" + reader.Get("url") + "</a></div>";
+                                if (reader.Get("breadcrumb").Length > 0)
                                 {
                                     //show subject breadcrumb
                                     var bread = S.Sql.Decode(reader.Get("breadcrumb")).Split('>');
@@ -139,6 +145,25 @@ namespace Collector.Includes
                                     crumb += (crumb != "" ? " > " : "") + "<a href=\"dashboard/subjects?id=" + reader.GetInt("subjectId") + "\">" + S.Sql.Decode(reader.Get("subjectTitle")) + "</a>";
                                     htm += "<div class=\"subject\">" + crumb  + "</div>";
                                 }
+
+                                //show analysis info about article
+                                filesize = Math.Round(reader.GetDouble("filesize"), 2);
+                                words[0] = reader.GetInt("wordcount");
+                                words[1] = reader.GetInt("sentencecount");
+                                words[2] = reader.GetInt("importantcount");
+                                years = reader.Get("years").Replace(",", ", ");
+                                bugs = reader.GetInt("bugsopen");
+                                resolved = reader.GetInt("bugsresolved");
+                                htm += "<div class=\"info\">" +
+                                    (filesize > 0 ? "<div class=\"col\">file size: <span class=\"val\">" + Math.Round(reader.GetDouble("filesize"), 2) + "KB</span></div>" : "") +
+                                    (words[0] > 0 ? "<div class=\"col\">words: <span class=\"val\">" + reader.GetInt("wordcount") + "</span></div>" : "") +
+                                    (words[1] > 0 ? "<div class=\"col\">sentences: <span class=\"val\">" + reader.GetInt("sentencecount") + "</span></div>" : "") +
+                                    (words[2] > 0 ? "<div class=\"col\">important words: <span class=\"val\">" + reader.GetInt("importantcount") + "</span></div>" : "") +
+                                    (years!= "" ? "<div class=\"col\">years: <span class=\"val\">" + reader.Get("years").Replace(",",", ") + "</span></div>" : "") +
+                                    (bugs > 0 ? "<div class=\"col\">bugs: <span class=\"bugs\">" + bugs + "</span>" + (resolved > 0 ? "(" + resolved  + " resolved)" : "") + "</div>" : "") +
+                                    "</div>";
+
+
                                  htm += "</div>";
                                 feeds[x].list.Add(htm);
                             }
