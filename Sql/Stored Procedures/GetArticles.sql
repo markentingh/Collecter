@@ -35,7 +35,7 @@ AS
 		) AS rownum, a.*, 
 		(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=0) AS bugsopen,
 		(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=1) AS bugsresolved,
-		s.breadcrumb, s.hierarchy
+		s.breadcrumb, s.hierarchy, s.subjectId, s.title AS subjectTitle
 		FROM Articles a 
 		LEFT JOIN Subjects s ON s.subjectId=(SELECT TOP 1 subjectId FROM ArticleSubjects WHERE articleId=a.articleId ORDER BY score DESC)
 		WHERE

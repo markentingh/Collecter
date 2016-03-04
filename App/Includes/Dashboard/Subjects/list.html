@@ -34,9 +34,18 @@
     .word:hover .count{display:block;}
 
     .subjects .option-box{display:none; position:relative; padding:10px 0; background-color:#222; padding:25px; margin-top:20px;}
-    .subjects .topics-box{display:none; position:relative; padding:10px 0; background-color:#222; padding:25px; margin-top:20px;}
-    .subjects .option-box .arrow{ position:absolute; right:30px; top:-15px;}
+    .subjects .opiton-box .arrow{ position:absolute; right:30px; top:-15px;}
 
+    .topics-box{display:none; position:relative; padding:10px 0; background-color:#222; padding:25px; margin:20px 0;}
+    .topics-box .arrow{ position:absolute; right:30px; top:-15px;}
+    .topics-box > .title{white-space:nowrap; color:#eee;}
+    .topics-box > .title > .option{float:right; white-space:nowrap; padding-bottom:15px;}
+    .topics-box .topic .title{color:#eee; padding-top:19px;}
+    .topics-box .topic:hover{ background-color:#4A2649;}
+
+    .form-addtopic {padding-bottom: 20px;}
+    .form-addtopic .label{width:90px !important;}
+    .form-addtopic .input{width:calc(100% - 90px) !important;}
 </style>
 <div class="form-addsubjects" style="display:none;">
     <div class="row space">
@@ -99,6 +108,33 @@
         <div class="column input"><div class="button" id="btncancelmovesubject">Cancel</div></div>
     </div>
 </div>
+
+<div class="form-addtopic" style="display:none;">
+    <div class="row field">
+        <div class="column label">Title: </div>
+        <div class="column input text-topictitle">
+            <input type="text" id="txtaddtopictitle" />
+        </div>
+    </div>
+    <div class="row field">
+        <div class="column label">Description: </div>
+        <div class="column input text-topicdesc">
+            <textarea id="txtaddtopicdesc"></textarea>
+        </div>
+    </div>
+    <div class="row field">
+        <div class="column label">Subject: </div>
+        <div class="column input text-topicsubject">
+            <input type="text" id="txtaddtopicsubject" />
+        </div>
+    </div>
+    <div class="row space">
+        <div class="column btn right"><div class="button green" id="btnsaveaddtopic">Add Topic</div></div>
+        <div class="column btn right"><div class="button" id="btncanceladdtopic">Cancel</div></div>
+    </div>
+</div>
+
+
 
 <div class="subjects-list">
     {{content}}

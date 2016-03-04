@@ -156,25 +156,29 @@ namespace Collector.Services
                     }
                     html.Add("<div class=\"subject\" id=\"subject" + reader.GetInt("subjectId") + "\">\n" +
                                     "<a href=\"javascript:\" onclick=\"S.subjects.buttons.selectSubject('" + reader.GetInt("subjectId") + "', '" + parentId + "', '" + breadcrumbs + "', 333); return false\">\n" +
-                                    S.Util.Str.Capitalize(reader.Get("title")) + "</a><div class=\"sub\"></div>\n" +
+                                    S.Util.Str.Capitalize(reader.Get("title")) + "</a>\n" +
                                "</div>\n");
                 }
 
                 html.Add("</div>" +
                             "<div class=\"selection\">" +
                                 "<div class=\"label goback\"></div>" +
-                                "<div class=\"option\"><a href=\"javascript:\" onclick=\"S.subjects.buttons.viewTopics(" + reader.GetInt("subjectId") + ")\" class=\"button green topics\">Topics</a></div>" +
+                                "<div class=\"option\"><a href=\"javascript:\" class=\"button green topics\">Topics</a></div>" +
                                 "<div class=\"option\"><a href=\"javascript:\" class=\"button blue add-from-subject icon-plus\" title=\"Add a Subject\"></a></div>" +
                                 "<div class=\"option\"><a href=\"javascript:\" class=\"button move-from-subject icon-reply\" title=\"Move subject to another parent\"></a></div>" +
                                 (reader.GetBool("haswords") == true ? "" :
                                 "<div class=\"option\"><a href=\"javascript:\" class=\"button green calc-related-words icon-reload\" title=\"Calculate Related Words for this Subject\"></a></div>") +
                             "</div>\n" +
                             "<div class=\"option-box\"></div>\n" +
-                            "<div class=\"topics-box\"><div class=\"arrow\"></div>" + 
-                            "<div class=\"row title\"><h3>Topics for " + S.Util.Str.Capitalize(parentcrumbs.Replace(">", " &gt; ")) + "</h3></div>" +
-                            "<div id=\"topicslist" + reader.GetInt("subjectId") + "\" class=\"topics-list\"></div></div>\n" +
                         "</div>\n" +
-                    "</div>\n");
+                    "</div>\n" +
+                    "<div class=\"topics-box\"id=\"topicsfor" + parentId + "\"><div class=\"arrow\"></div>" +
+                            "<div class=\"row title\">" +
+                                "<div class=\"option\"><a href=\"javascript:\" class=\"button blue add-topic icon-plus\" title=\"Add a Topic\"></a></div>" +
+                                "<h5 class=\"topic-title\"></h5>" +
+                            "</div>" +
+                            "<div class=\"topics-list\"></div></div>\n"
+                            );
 
                 html[0] = html[0].Replace("{{breadcrumb}}", S.Util.Str.Capitalize(parentcrumbs.Replace(">", " &gt; ")));
 
@@ -216,15 +220,38 @@ namespace Collector.Services
         #endregion
 
         #region "Topics (on Subjects page)"
-        public Inject GetTopics(string element, int subjectId, int start, string search, int orderby)
+        public Inject GetTopics(string element, int subjectId, int start = 1, string search = "", int orderby = 1)
         {
             Inject response = new Inject();
             var html = "";
+            var reader = new SqlReader();
+            reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetTopics @subjectIds='" + subjectId + "', @start=" + start + ", @search='" + S.Sql.Encode(search) + "', @orderby=" + orderby + ", @dateStart=NULL, @dateEnd=NULL"));
+            if(reader.Rows.Count > 0)
+            {
+                while (reader.Read())
+                {
+                    html += "<div class=\"row topic\">" +
+                            "<div class=\"column title\">" + S.Sql.Decode(reader.Get("title")) + "</div>" +
+                            "<div class=\"column btn\"><a href=\"/Dashboard/Topics/" + reader.GetInt("topicId") + "\" class=\"button green\">Read</a></div>" +
+                            "</div>";
+                }
+            }
+            else
+            {
+                html = "<div style=\"width:100%; padding:20px 0; text-align:center; font-size:24px;\">No Topics Available</div>";
+            }
+
             response.inject = enumInjectTypes.replace;
             response.element = element;
             response.html = html;
             response.js = CompileJs();
             return response;
+        }
+
+        public Inject AddTopic(string element, int subjectId, string title, string description)
+        {
+            S.Sql.ExecuteNonQuery("EXEC AddTopic @subjectId=" + subjectId + ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(description) + "'");
+            return GetTopics(element, subjectId, 1, "", 1);
         }
         #endregion
 

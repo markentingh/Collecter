@@ -159,7 +159,7 @@
   <ItemGroup>
     <None Include="Sql.publish.xml" />
     <None Include="Sql.Azure.publish.xml" />
-    <None Include="Sequences\SequenceTopics.sql" />
+    <Build Include="Sequences\SequenceTopics.sql" />
     <Build Include="Stored Procedures\AddFeed.sql" />
     <Build Include="Stored Procedures\GetFeeds.sql" />
     <Build Include="Sequences\SequenceStatisticsProjects.sql" />

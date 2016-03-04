@@ -1,10 +1,16 @@
 ﻿S.subjects = {
+    newTopic:{
+        subjectId: 0,
+        parentId: 0
+    },
     load: function () {
         $('#btnsaveselectedwords').off().on('click', S.subjects.buttons.saveSelectedWords);
         $('#btncancelselectedwords').off().on('click', S.subjects.buttons.hideSelectedWords);
         $('#btnaddsubjects').off().on('click', S.subjects.buttons.showSelectedWords);
         $('#btnmovesubject').off().on('click', S.subjects.buttons.saveMoveSubject);
         $('#btncancelmovesubject').off().on('click', S.subjects.buttons.hideMoveSubject);
+        $('#btnsaveaddtopic').off().on('click', S.subjects.buttons.addTopic);
+        $('#btncanceladdtopic').off().on('click', S.subjects.buttons.hideAddTopic);
     },
 
     buttons: {
@@ -34,6 +40,7 @@
 
         selectSubject: function (id, pid, breadcrumb, speed, noload) {
             var subj = $('#subjects' + pid);
+            var topic = $('#topicsfor' + pid);
             var subjbtn = $('#subject' + id);
             var title = subjbtn.find(">a")[0].innerHTML;
             var box = $('#subjects' + pid + ' .option-box');
@@ -59,6 +66,9 @@
             subj.find('.add-from-subject').off().attr('onclick', 'S.subjects.buttons.addFromSubject("' + breadcrumb + '"); return false;');
             subj.find('.move-from-subject').off().attr('onclick', 'S.subjects.buttons.moveFromSubject("' + id + '", "' + pbread + '"); return false;');
             subj.find('.calc-related-words').off().attr('onclick', 'S.subjects.buttons.showRelatedWordsForm("' + id + '","' + pid + '")');
+            topic.find('.add-topic').attr('onclick', 'S.subjects.buttons.showAddTopic(' + id + ',' + pid + ',"'+breadcrumb+'")');
+            subj.find('.topics').off().attr('onclick', 'S.subjects.buttons.viewTopics(' + id + ',' + pid + ')');
+            topic.find('.topic-title')[0].innerHTML = 'Topics for ' + breadcrumb.replace(/\>/g, ' &gt; ');
             subj.find('.goback').off().attr('onclick', 'S.subjects.buttons.cancelSelectSubject(\'' + pid + '\'); return false;');
             if (noload != true) {
                 S.ajax.post('/api/Subjects/LoadSubjectsUI', { parentId: id, arg2: false, arg3: false }, function (data) {
@@ -150,12 +160,38 @@
             S.subjects.buttons.hideMoveSubject();
         },
 
-        viewTopics(subjectId) {
-            S.ajax.post('/api/Subjects/GetTopics', { element: '#topicslist' + subjectId, subjectId: subjectId, start:1, search:'', orderby:1 }, function () { S.ajax.callback.inject(arguments[0]); });
+        viewTopics(subjectId, parentId) {
+            $('#topicsfor' + parentId).show();
+            S.ajax.post('/api/Subjects/GetTopics', { element: '#topicsfor' + parentId + ' .topics-list', subjectId: subjectId, start: 1, search: '', orderby: 1 }, function () { S.ajax.callback.inject(arguments[0]); });
 
+        },
+
+        showAddTopic: function (subjectId, parentId, breadcrumb) {
+            S.subjects.newTopic.subjectId = subjectId;
+            S.subjects.newTopic.parentId = parentId;
+            $('#txtaddtopicsubject').val(breadcrumb.replace(/\>/g,' > '));
+            $('.form-addtopic').show();
+            $('#btnaddtopic').hide();
+        },
+
+        hideAddTopic: function () {
+            S.subjects.newTopic.subjectId = 0;
+            S.subjects.newTopic.parentId = 0;
+            $('.form-addtopic').hide();
+            $('#btnaddtopic').show();
+            $('#txtaddtopictitle').val('');
+            $('#txtaddtopicdesc').val('');
+            $('#txtaddtopicsubject').val('');
+        },
+
+        addTopic: function () {
+            var subjectId = S.subjects.newTopic.subjectId;
+            var parentId = S.subjects.newTopic.parentId;
+            var title = $('#txtaddtopictitle').val();
+            var desc = $('#txtaddtopicdesc').val();
+            S.ajax.post('/api/Subjects/AddTopic', { element: '#topicsfor' + parentId + ' .topics-list', subjectId: subjectId, title: title, description: desc }, function () { S.ajax.callback.inject(arguments[0]); });
+            S.subjects.buttons.hideAddTopic();
         }
-
-
     }
 }
 S.subjects.load();

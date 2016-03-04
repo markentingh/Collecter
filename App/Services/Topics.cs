@@ -6,5 +6,6 @@
         public Topics(Core CollectorCore, string[] paths):base(CollectorCore, paths)
         {
         }
+
     }
 }

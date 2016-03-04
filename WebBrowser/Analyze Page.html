@@ -1,0 +1,20 @@
+Add the following line to a bookmark in your web browser:
+
+javascript:
+(function(){
+window.setTimeout(function() {
+var body = document.getElementsByTagName("body")[0];
+var div = document.createElement('div');
+div.innerHTML='<style type="text/css">'+
+'.analyze-button{display:inline-block !important; text-decoration:none !important; letter-spacing:1.25px !important; font-size:17px !important; font-weight:300 !important; border:1px solid !important; padding: 8px 20px !important; cursor:pointer; border-radius:4px !important;background-image:-webkit-linear-gradient(#b7d3a4, #62a065) !important; background-image:linear-gradient(#b7d3a4, #62a065) !important; color:#ffffff !important; border-color:#5a8a5c !important;}'+
+'.analyze-button:hover {text-decoration:none !important;background-image:-webkit-linear-gradient(#a4d782, #40a145) !important; background-image:linear-gradient(#a4d782, #40a145) !important;}'+
+'</style>'+
+'<div style="width:100%; text-align:center; padding:40px; background-color:#222; position:relative; z-index:999999999999;">' +
+'<div style="width:100%; text-align:center; padding:0 0 15px 0; font-size:50px; color:#ddd;">Collector</div>' +
+'<a id="lnkanalyzeurl" href="http://localhost:5000/dashboard/Articles/Analyze?url='+encodeURIComponent(location.href)+'" target="_blank" class="analyze-button">Analyze This Page Now!</a>';
+document.documentElement.insertBefore(div, body);
+}, 10);
+})();
+
+
+

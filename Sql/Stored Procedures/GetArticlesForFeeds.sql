@@ -60,6 +60,8 @@ AS
 		summary NVARCHAR(250) NULL DEFAULT '',
 		breadcrumb NVARCHAR(250) NULL DEFAULT '',
 		hierarchy NVARCHAR(50) NULL DEFAULT '',
+		subjectId INT NULL DEFAULT 0,
+		subjectTitle NVARCHAR(50) NULL DEFAULT '',
 		analyzed FLOAT NULL DEFAULT 0,
 		cached BIT NULL DEFAULT 0, 
 		active BIT NULL DEFAULT 0, 
@@ -101,6 +103,8 @@ AS
     @summary NVARCHAR(250),
 	@breadcrumb NVARCHAR(500),
 	@hierarchy NVARCHAR(50),
+	@subjectId INT,
+	@subjectTitle nvarchar(50),
 	@analyzed FLOAT,
 	@cached BIT, 
     @active BIT, 
@@ -142,7 +146,7 @@ AS
 			) AS rownum, a.*,
 			(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=0) AS bugsopen,
 			(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=1) AS bugsresolved,
-			s.breadcrumb, s.hierarchy
+			s.breadcrumb, s.hierarchy, s.subjectId, s.title AS subjectTitle
 			FROM Articles a 
 			LEFT JOIN Subjects s ON s.subjectId=(SELECT TOP 1 subjectId FROM ArticleSubjects WHERE articleId=a.articleId ORDER BY score DESC)
 			WHERE feedId=@feedId
@@ -162,23 +166,23 @@ AS
 		@rownum, @articleId, @feedId2, @subjects, @images, @filesize, @wordcount, @sentencecount, 
 		@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 		@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
-		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy
+		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle
 
 		WHILE @@FETCH_STATUS = 0 BEGIN
 			INSERT INTO @results (rownum, articleId, feedId, subjects, images, filesize, wordcount, sentencecount, 
 			paragraphcount, importantcount, analyzecount, yearstart, yearend, years, datecreated, datepublished, 
 			relavance, importance, fiction, domain, url, title, summary, analyzed, cached,  active, deleted,
-			bugsopen, bugsresolved, breadcrumb, hierarchy)
+			bugsopen, bugsresolved, breadcrumb, hierarchy, subjectId, subjectTitle)
 			VALUES (@rownum, @articleId, @feedId, @subjects, @images, @filesize, @wordcount, @sentencecount, 
 			@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 			@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
-			@bugsopen, @bugsresolved, @breadcrumb, @hierarchy)
+			@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle)
 
 			FETCH FROM @cursor2 INTO
 			@rownum, @articleId, @feedId2, @subjects, @images, @filesize, @wordcount, @sentencecount, 
 			@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 			@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
-		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy
+		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle
 		END
 		CLOSE @cursor2
 		DEALLOCATE @cursor2
