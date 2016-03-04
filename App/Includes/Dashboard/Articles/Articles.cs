@@ -143,7 +143,7 @@ namespace Collector.Includes
                                         crumb += (crumb != "" ? " > " : "") + "<a href=\"dashboard/subjects?id=" + hier[b] + "\">" + bread[b] + "</a>";
                                     }
                                     crumb += (crumb != "" ? " > " : "") + "<a href=\"dashboard/subjects?id=" + reader.GetInt("subjectId") + "\">" + S.Sql.Decode(reader.Get("subjectTitle")) + "</a>";
-                                    htm += "<div class=\"subject\">" + crumb  + "</div>";
+                                    htm += "<div class=\"subject\">" + crumb  + " <span class=\"important\" title=\"Subject Relevance Score\">(" + string.Format("{0:N0}", reader.GetInt("subjectScore")) + ")</span></div>";
                                 }
 
                                 //show analysis info about article
@@ -156,9 +156,9 @@ namespace Collector.Includes
                                 resolved = reader.GetInt("bugsresolved");
                                 htm += "<div class=\"info\">" +
                                     (filesize > 0 ? "<div class=\"col\">file size: <span class=\"val\">" + Math.Round(reader.GetDouble("filesize"), 2) + "KB</span></div>" : "") +
-                                    (words[0] > 0 ? "<div class=\"col\">words: <span class=\"val\">" + reader.GetInt("wordcount") + "</span></div>" : "") +
-                                    (words[1] > 0 ? "<div class=\"col\">sentences: <span class=\"val\">" + reader.GetInt("sentencecount") + "</span></div>" : "") +
-                                    (words[2] > 0 ? "<div class=\"col\">important words: <span class=\"val\">" + reader.GetInt("importantcount") + "</span></div>" : "") +
+                                    (words[0] > 0 ? "<div class=\"col\">words: <span class=\"val\">" + string.Format("{0:N0}", reader.GetInt("wordcount")) + "</span></div>" : "") +
+                                    (words[1] > 0 ? "<div class=\"col\">sentences: <span class=\"val\">" + string.Format("{0:N0}", reader.GetInt("sentencecount")) + "</span></div>" : "") +
+                                    (words[2] > 0 ? "<div class=\"col\">important words: <span class=\"important\">" + string.Format("{0:N0}", reader.GetInt("importantcount")) + "</span></div>" : "") +
                                     (years!= "" ? "<div class=\"col\">years: <span class=\"val\">" + reader.Get("years").Replace(",",", ") + "</span></div>" : "") +
                                     (bugs > 0 ? "<div class=\"col\">bugs: <span class=\"bugs\">" + bugs + "</span>" + (resolved > 0 ? "(" + resolved  + " resolved)" : "") + "</div>" : "") +
                                     "</div>";
@@ -207,10 +207,6 @@ namespace Collector.Includes
                 //check if article is empty
                 if(article.title=="" || article.body.Count == 0) { return scaffold; }
 
-                //save article to database
-                serveArticles.SaveArticle(article);
-                //TODO: save article object to file
-
                 //setup article analysis results
                 scaffold.Data["article-title"] = article.pageTitle;
                 scaffold.Data["article-url"] = article.url;
@@ -241,8 +237,10 @@ namespace Collector.Includes
                 var sentences = new List<string>();
                 var sentenceEnding = "";
                 double sentenceScore = 0;
+                int sentenceCount = 0;
                 var parWords = "";
                 var paragraph = "";
+                var paragraphs = 0;
                 var parType = 0;
                 var parTypeName = "";
                 var paraEnd = "";
@@ -359,11 +357,15 @@ namespace Collector.Includes
 
                     //separate paragraph into sentences
                     sentences = serveArticles.GetSentences(article.elements[bod].text);
+                    sentenceCount += sentences.Count();
                     paragraph = "";
-                            
+                    paragraphs+=1;
+
+
                     foreach (var s in sentences)
                     {
                         //detect whether or not the sentence is important
+                        //TODO: figure out paragraph type
                         parType = 1;
                         switch (parType)
                         {
@@ -509,6 +511,8 @@ namespace Collector.Includes
                 {
                     body.Add("</" + containerType + ">\n");
                 }
+                article.totalParagraphs = paragraphs;
+                article.totalSentences = sentenceCount;
                 scaffold.Data["article"] = string.Join("", body.ToArray());
 
                 //create rendered web page ///////////////////////////////////////////////////
@@ -629,9 +633,12 @@ namespace Collector.Includes
                 scaffold.Data["bug-count"] = bugs[0];
                 scaffold.Data["bugs"] = bugs[1];
 
-
                 //render article analysis results ////////////////////////////////////////////////////////////////////////////////////////////////////
                 scaffold.Data["content"] = scaffold.Render();
+
+                //finally, save article to database
+                serveArticles.SaveArticle(article);
+                //TODO: save article object to file
 
                 //load javascript file
                 scriptFiles += "<script type=\"text/javascript\" src=\"/scripts/ace/ace.js\"></script>";

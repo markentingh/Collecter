@@ -917,9 +917,11 @@ namespace Collector.Services
             var dbphrases = GetPhrases();
             int bufferedUnknownPhrase = 0;
             int bufferedPhrase = 0;
+            int totalWords = 0;
             bool isUnknownPhraseBuffered = false;
             bool isPhraseBuffered = false;
             bool isNormal = false;
+
             text = "";
             for (var x = 0; x < analyzed.body.Count; x++)
             {
@@ -940,6 +942,7 @@ namespace Collector.Services
                     }
                 }
                 isNormal = false;
+                
 
                 texts[x] = texts[x].Trim();
 
@@ -1083,9 +1086,11 @@ namespace Collector.Services
 
                     allWords.Add(word);
                 }
+                totalWords += 1;
+
                 //find phrases /////////////////////////////////////////////////////////////////////////////////////////////////////
                 //guess unknown phrases based on capitalized words
-                if(isUnknownPhraseBuffered == false)
+                if (isUnknownPhraseBuffered == false)
                 {
                     if (word.importance == 10 && word.apostrophe == false)
                     {
@@ -1192,7 +1197,7 @@ namespace Collector.Services
             }// END: analyze all words
 
             analyzed.phrases = phrases;
-
+            analyzed.totalWords = totalWords;
 
 
 
@@ -1230,6 +1235,7 @@ namespace Collector.Services
             string subj;
             string[] subjs;
             int subjId = 0;
+            int importantWords = 0;
             reader = new SqlReader();
             reader.ReadFromSqlClient(S.Sql.ExecuteReader("GetWords @words='" + string.Join(",", wordlist.ToArray()) + "'"));
             if (reader.Rows.Count > 0)
@@ -1241,6 +1247,7 @@ namespace Collector.Services
                     {
                         word = allWords[index];
                         word.id = reader.GetInt("wordId");
+                        importantWords += word.count;
                         allWords[index] = word;
 
                         //get list of subject IDs that belong to word
@@ -1273,6 +1280,7 @@ namespace Collector.Services
                     }
                 }
             }
+            analyzed.totalImportantWords = importantWords;
 
             //get a list of subjects that this article can be placed under
             var allSubjects = subjects.OrderByDescending(s => s.count).ToList();
@@ -1847,7 +1855,7 @@ namespace Collector.Services
         public void UpdateArticle(int articleId, string title, string summary = "", double filesize = 0.0, int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
             S.Sql.ExecuteNonQuery("EXEC UpdateArticle @articleId=" + articleId + ", @subjects=" + subjects + ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @filesize=" + filesize +
-                ", @wordcount=" + wordcount + ", @sentencecount=" + sentencecount + ", @paragraphcount=" + paragraphcount + ", @yearstart=" + yearstart + ", @yearend=" + yearend + ", @years='" + years + "'" + 
+                ", @wordcount=" + wordcount + ", @sentencecount=" + sentencecount + ", @paragraphcount=" + paragraphcount + ", @importantcount=" + importantcount + ", @yearstart=" + yearstart + ", @yearend=" + yearend + ", @years='" + years + "'" + 
                 ", @images=" + images + ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed=" + analyzerVersion);
         }
 

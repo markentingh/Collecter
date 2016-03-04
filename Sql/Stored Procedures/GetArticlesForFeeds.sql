@@ -62,6 +62,7 @@ AS
 		hierarchy NVARCHAR(50) NULL DEFAULT '',
 		subjectId INT NULL DEFAULT 0,
 		subjectTitle NVARCHAR(50) NULL DEFAULT '',
+		subjectScore INT NULL DEFAULT 0,
 		analyzed FLOAT NULL DEFAULT 0,
 		cached BIT NULL DEFAULT 0, 
 		active BIT NULL DEFAULT 0, 
@@ -105,6 +106,7 @@ AS
 	@hierarchy NVARCHAR(50),
 	@subjectId INT,
 	@subjectTitle nvarchar(50),
+	@subjectScore INT,
 	@analyzed FLOAT,
 	@cached BIT, 
     @active BIT, 
@@ -146,43 +148,45 @@ AS
 			) AS rownum, a.*,
 			(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=0) AS bugsopen,
 			(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=1) AS bugsresolved,
-			s.breadcrumb, s.hierarchy, s.subjectId, s.title AS subjectTitle
+			s.breadcrumb, s.hierarchy, s.subjectId, s.title AS subjectTitle, asub.score
 			FROM Articles a 
-			LEFT JOIN Subjects s ON s.subjectId=(SELECT TOP 1 subjectId FROM ArticleSubjects WHERE articleId=a.articleId ORDER BY score DESC)
+			LEFT JOIN ArticleSubjects asub ON asub.articleId=a.articleId 
+			AND asub.subjectId=(SELECT TOP 1 subjectId FROM ArticleSubjects WHERE articleId=a.articleId ORDER BY score DESC)
+			LEFT JOIN Subjects s ON s.subjectId=asub.subjectId
 			WHERE feedId=@feedId
 			AND 
 			(
-				articleId IN (SELECT * FROM #subjectarticles)
-				OR articleId IN (SELECT * FROM #searchedarticles)
-				OR articleId = CASE WHEN @subjectIds = '' THEN articleId ELSE 0 END
+				a.articleId IN (SELECT * FROM #subjectarticles)
+				OR a.articleId IN (SELECT * FROM #searchedarticles)
+				OR a.articleId = CASE WHEN @subjectIds = '' THEN a.articleId ELSE 0 END
 			) 
-			AND active = CASE WHEN @isActive = 2 THEN active ELSE @isActive END
-			AND deleted=@isDeleted
-			AND images >= @minImages
-			AND datecreated >= CONVERT(datetime, @dateStart) AND datecreated <= CONVERT(datetime, @dateEnd)
+			AND a.active = CASE WHEN @isActive = 2 THEN a.active ELSE @isActive END
+			AND a.deleted=@isDeleted
+			AND a.images >= @minImages
+			AND a.datecreated >= CONVERT(datetime, @dateStart) AND a.datecreated <= CONVERT(datetime, @dateEnd)
 		) AS tbl WHERE rownum >= @start AND rownum < @start + @length
 		OPEN @cursor2
 		FETCH FROM @cursor2 INTO
 		@rownum, @articleId, @feedId2, @subjects, @images, @filesize, @wordcount, @sentencecount, 
 		@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 		@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
-		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle
+		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle, @subjectScore
 
 		WHILE @@FETCH_STATUS = 0 BEGIN
 			INSERT INTO @results (rownum, articleId, feedId, subjects, images, filesize, wordcount, sentencecount, 
 			paragraphcount, importantcount, analyzecount, yearstart, yearend, years, datecreated, datepublished, 
 			relavance, importance, fiction, domain, url, title, summary, analyzed, cached,  active, deleted,
-			bugsopen, bugsresolved, breadcrumb, hierarchy, subjectId, subjectTitle)
+			bugsopen, bugsresolved, breadcrumb, hierarchy, subjectId, subjectTitle, subjectScore)
 			VALUES (@rownum, @articleId, @feedId, @subjects, @images, @filesize, @wordcount, @sentencecount, 
 			@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 			@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
-			@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle)
+			@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle, @subjectScore)
 
 			FETCH FROM @cursor2 INTO
 			@rownum, @articleId, @feedId2, @subjects, @images, @filesize, @wordcount, @sentencecount, 
 			@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 			@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
-		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle
+		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectId, @subjectTitle, @subjectScore
 		END
 		CLOSE @cursor2
 		DEALLOCATE @cursor2
