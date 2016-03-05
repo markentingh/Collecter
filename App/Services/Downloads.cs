@@ -62,6 +62,7 @@ namespace Collector.Services
                 var i = 0;
                 while (reader.Read())
                 {
+                    if (reader.GetInt("serverId") == 0) { continue; }
                     htm += "<div class=\"row server server" + i + "\">" +
                         
                         //settings button
@@ -107,6 +108,7 @@ namespace Collector.Services
             {
                 while (reader.Read())
                 {
+                    if(reader.GetInt("serverId") == 0) { continue; }
                     //create distribution lists
                     S.Sql.ExecuteNonQuery("EXEC AddDownloadDistribution @serverId=" + reader.GetInt("serverId"));
 
@@ -198,11 +200,19 @@ namespace Collector.Services
                     nextIndex = 0;
                     minusIndex = 0;
                     S.Sql.ExecuteNonQuery("EXEC AddDownloadDistribution @serverId=" + serverId);
+                    list = (List<structDownloadInfo>)S.Util.Serializer.ReadObject(S.Util.Str.GetString(S.Session.Get("downloadQueue")), typeof(List<structDownloadInfo>));
                     LoadDistributionList(serverId);
                 }
 
                 //prep javascript to request next download in distribution list
-                S.Page.RegisterJS("dl", "S.downloads.download(" + nextIndex + ", " + minusIndex + ");");
+                if(list.Count > 0)
+                {
+                    S.Page.RegisterJS("dl", "S.downloads.download(" + nextIndex + ", " + minusIndex + ");");
+                }
+                else
+                {
+                    S.Page.RegisterJS("dl", "S.downloads.finished();");
+                }
             }
             response.html = "";
             response.js = CompileJs();

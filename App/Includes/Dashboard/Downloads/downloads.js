@@ -47,6 +47,7 @@
             clearTimeout(S.downloader.timer);
             $('.form-downloader, .downloader-status').hide();
             $('#btndownloader').show();
+            $('.downloading').html('');
         },
 
         startDownloads: function () {
@@ -79,7 +80,6 @@
     },
 
     loadServerFrames: function (index, serverId, host) {
-        console.log('loadServerFrames');
         var container = $('.server' + index + ' .downloading');
         console.log(container);
         var url = 'http://' + host + '/Download';
@@ -87,8 +87,16 @@
     },
 
     updateDownloadQueue: function (minus) {
+        if (S.downloader.downloading == false) { return false;}
         S.downloader.totalDownloads -= minus;
         $('.servers .total')[0].innerHTML = S.util.math.numberWithCommas(S.downloader.totalDownloads);
+        return true;
+    },
+
+    finishDownloads: function () {
+        $('.downloading').html('');
+        $('.form-downloader .checking-msg')[0].innerHTML = "Finished downloading all articles in the queue.";
+        S.downloader.downloading = false;
     }
 }
 

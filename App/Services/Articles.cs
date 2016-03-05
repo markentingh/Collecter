@@ -80,6 +80,7 @@ namespace Collector.Services
 
         public struct AnalyzedPhrase
         {
+            public int id;
             public string phrase;
             public int[] words;
             public int count;
@@ -1107,6 +1108,7 @@ namespace Collector.Services
                         if (phrasewords.Count > 1)
                         {
                             var newphrase = new AnalyzedPhrase();
+                            newphrase.id = 0;
                             newphrase.phrase = S.Util.Str.RemoveApostrophe(string.Join(" ", phrasewords));
                             newphrase.count = 1;
                             index = phrases.FindIndex(p => p.phrase == newphrase.phrase);
@@ -1236,44 +1238,59 @@ namespace Collector.Services
             string[] subjs;
             int subjId = 0;
             int importantWords = 0;
+            int importantCount = 0;
             reader = new SqlReader();
             reader.ReadFromSqlClient(S.Sql.ExecuteReader("GetWords @words='" + string.Join(",", wordlist.ToArray()) + "'"));
             if (reader.Rows.Count > 0)
             {
                 while (reader.Read())
                 {
+                    importantCount = 0;
                     index = allWords.FindIndex(w => w.word == reader.Get("word"));
                     if (index >= 0)
                     {
                         word = allWords[index];
                         word.id = reader.GetInt("wordId");
                         importantWords += word.count;
+                        importantCount = word.count;
                         allWords[index] = word;
-
-                        //get list of subject IDs that belong to word
-                        subj = reader.Get("subjects");
-                        if (subj != "")
+                    }
+                    else
+                    {
+                        index = analyzed.phrases.FindIndex(w => w.phrase == reader.Get("word"));
+                        if(index >= 0)
                         {
-                            subjs = subj.Split(',');
-                            foreach (string sub in subjs)
+                            phrase = analyzed.phrases[index];
+                            phrase.id = reader.GetInt("wordid");
+                            importantWords += phrase.count;
+                            importantCount = phrase.count;
+                            analyzed.phrases[index] = phrase;
+                        }
+                    }
+
+                    //get list of subject IDs that belong to word
+                    subj = reader.Get("subjects");
+                    if (subj != "")
+                    {
+                        subjs = subj.Split(',');
+                        foreach (string sub in subjs)
+                        {
+                            if (S.Util.Str.IsNumeric(sub))
                             {
-                                if (S.Util.Str.IsNumeric(sub))
+                                subjId = subjects.FindIndex(s => s.id == int.Parse(sub));
+                                if (subjId >= 0)
                                 {
-                                    subjId = subjects.FindIndex(s => s.id == int.Parse(sub));
-                                    if (subjId >= 0)
-                                    {
-                                        //subject already exists
-                                        var newsub = subjects[subjId];
-                                        newsub.count += word.count;
-                                        subjects[subjId] = newsub;
-                                    }
-                                    else
-                                    {
-                                        var newsub = new ArticleSubject();
-                                        newsub.count = word.count;
-                                        newsub.id = int.Parse(sub);
-                                        subjects.Add(newsub);
-                                    }
+                                    //subject already exists
+                                    var newsub = subjects[subjId];
+                                    newsub.count += importantCount;
+                                    subjects[subjId] = newsub;
+                                }
+                                else
+                                {
+                                    var newsub = new ArticleSubject();
+                                    newsub.count = importantCount;
+                                    newsub.id = int.Parse(sub);
+                                    subjects.Add(newsub);
                                 }
                             }
                         }
@@ -1733,37 +1750,29 @@ namespace Collector.Services
         public string GetWordTypeClassNames(AnalyzedArticle article, AnalyzedWord word, List<string> commonWords)
         {
             var wordType = "";
-            var i = 0;
             if (S.Util.Str.IsNumeric(word.word) == true)
             {
-                var number = int.Parse(word.word);
-                var numtype = " number";
-                if (word.word.Length == 4)
-                {
 
-                    //potential year
-                    if (number <= DateTime.Now.Year + 100 && number >= 1)
+                var number = 0.0;
+                var err = false;
+                try { number = double.Parse(word.word); }
+                catch (Exception ex) { err = true; word.importance = 0; }
+                if(err == false)
+                {
+                    var numtype = " number";
+                    if (word.word.Length == 4)
                     {
-                        if (number < 1600)
+                        //potential year
+                        if (number <= DateTime.Now.Year + 100 && number >= 1)
                         {
-                            if(S.Util.IsEmpty(article) == false)
+                            if (number >= 1600)
                             {
-                                if (article.words[i + 1].word.ToLower() == "ad" || article.words[i + 1].word.ToLower() == "bc")
-                                {
-                                    numtype = " year";
-                                }
+                                numtype = " year";
                             }
-                            
-                        }
-                        else
-                        {
-                            numtype = " year";
                         }
                     }
-
+                    wordType += numtype;
                 }
-                wordType += numtype;
-                i++;
             }
 
             if (word.importance == 10) { wordType += " important"; }
@@ -1830,9 +1839,9 @@ namespace Collector.Services
             S.Sql.ExecuteNonQuery("EXEC CleanArticle @articleId=" + articleId);
         }
 
-        public int AddArticle(int feedId, string url, string domain, string title, string summary = "", double filesize = 0.0, int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
+        public int AddArticle(int feedId, string url, string domain, string title, string summary = "", double filesize = 0.0, int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int subjectId=0, int score = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
-            return (int)S.Sql.ExecuteScalar("EXEC AddArticle @feedId=" + feedId + ", @url='" + url + "', @subjects=" + subjects +
+            return (int)S.Sql.ExecuteScalar("EXEC AddArticle @feedId=" + feedId + ", @url='" + url + "', @subjects=" + subjects + ", @subjectId=" + subjectId + ", @score=" + score +
                 ", @domain='" + S.Sql.Encode(domain) + "', @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @filesize=" + filesize +
                 ", @wordcount=" + wordcount + ", @sentencecount=" + sentencecount + ", @paragraphcount=" + paragraphcount + ", @yearstart=" + yearstart + ", @yearend=" + yearend + ", @years='" + years + "'" +
                 ", @images=" + images +  ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed="+ analyzerVersion);
@@ -1852,9 +1861,9 @@ namespace Collector.Services
             }
         }
 
-        public void UpdateArticle(int articleId, string title, string summary = "", double filesize = 0.0, int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
+        public void UpdateArticle(int articleId, string title, string summary = "", double filesize = 0.0, int wordcount = 0, int sentencecount = 0, int paragraphcount = 0, int importantcount = 0, int yearstart = 0, int yearend = 0, string years = "", int images = 0, DateTime datePublished = new DateTime(), int subjects = 0, int subjectId = 0, int score = 0, int relavance = 1, int importance = 1, int fiction = 1, string analyzerVersion = "0.1")
         {
-            S.Sql.ExecuteNonQuery("EXEC UpdateArticle @articleId=" + articleId + ", @subjects=" + subjects + ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @filesize=" + filesize +
+            S.Sql.ExecuteNonQuery("EXEC UpdateArticle @articleId=" + articleId + ", @subjects=" + subjects + ", @subjectId=" + subjectId + ", @score=" + score + ", @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(summary) + "', @filesize=" + filesize +
                 ", @wordcount=" + wordcount + ", @sentencecount=" + sentencecount + ", @paragraphcount=" + paragraphcount + ", @importantcount=" + importantcount + ", @yearstart=" + yearstart + ", @yearend=" + yearend + ", @years='" + years + "'" + 
                 ", @images=" + images + ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed=" + analyzerVersion);
         }
@@ -1909,6 +1918,7 @@ namespace Collector.Services
         {
             var fileSize = (article.rawHtml.Length / 1024.0);
             var analyzerVersion = "0";
+            var subjectId = 0; var score = 0;
             if(article.words.Count > 0)
             {
                 //if the analyzer did more than just a minimal analyzation, 
@@ -1916,10 +1926,17 @@ namespace Collector.Services
                 analyzerVersion = S.Server.analyzerVersion;
             }
 
+            if(article.subjects.Count > 0)
+            {
+                subjectId = article.subjects[0].id;
+                score = article.subjects[0].score;
+            }
+
             if (article.id <= 0)
             {
+                
                 article.id = AddArticle(article.feedId, article.url, article.domain, article.pageTitle, article.summary, fileSize, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords,
-                    article.yearStart, article.yearEnd, string.Join(",", article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, analyzerVersion);
+                    article.yearStart, article.yearEnd, string.Join(",", article.years), 0, article.publishDate, article.subjects.Count, subjectId, score, 1, 0, 1, analyzerVersion);
             }
             else
             {
@@ -1928,7 +1945,7 @@ namespace Collector.Services
 
                 //update article title, summary, & publish date
                 UpdateArticle(article.id, article.pageTitle, article.summary, fileSize, article.totalWords, article.totalSentences, article.totalParagraphs, article.totalImportantWords, 
-                    article.yearStart, article.yearEnd, string.Join(",",article.years), 0, article.publishDate, article.subjects.Count, 1, 0, 1, analyzerVersion);
+                    article.yearStart, article.yearEnd, string.Join(",",article.years), 0, article.publishDate, article.subjects.Count, subjectId, score, 1, 0, 1, analyzerVersion);
             }
 
             //add words to article

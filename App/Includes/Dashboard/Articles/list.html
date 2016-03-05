@@ -19,12 +19,44 @@
     .article .subject .important{display:inline-block; padding-left:10px; color:#00f7ff;}
     .article .desc{color:#777777;}
     .article .article-title{font-size:20px;}
-    .article .info{width:100%; padding:7px 0px; overflow:hidden; font-size:13px;}
+    .article .info{width:100%; padding:7px 0; overflow:hidden; font-size:13px;}
     .article .info .col{float:left; padding:0 20px 0 5px; border-left:4px solid #009b75;}
     .article .info .val{color:#ddd;}
-    .article .info .bugs{color:#ffaa34; font-weight:bold;}
+    .article .info .bugs{color:#ffaa34; font-weight:bold; border-radius: 20px; border: 2px solid #90590C; min-width: 19px; padding: 0px; display: inline-block; text-align: center; box-sizing: border-box; margin-bottom: -5px; margin-top: -2px;}
     .article .info .important{color:#00f7ff; font-weight:bold;}
 </style>
+
+<div class="row filter">
+    <div class="column label">Group By</div>
+    <div class="column input">
+        <select class="">
+            <option value="0">All</option>
+            <option value="1">Feeds</option>
+            <option value="2">Subjects</option>
+            <option value="2">Bugs</option>
+        </select>
+    </div>
+
+    <div class="column label">Sort By</div>
+    <div class="column input">
+        <select class="">
+            <option value="0">Score</option>
+            <option value="1">Newest</option>
+            <option value="2">Oldest</option>
+            <option value="2">Bugs</option>
+        </select>
+    </div>
+    <div class="right">
+        <div class="column label">View</div>
+        <div class="column input">
+            <select class="">
+                <option value="0">Detailed</option>
+                <option value="1">List</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="row space"></div>
 
 {{content}}
 

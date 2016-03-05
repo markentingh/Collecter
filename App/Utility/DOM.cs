@@ -464,6 +464,10 @@ namespace Collector.Utility.DOM
         {
             domTag.parent = parentElement;
             domTag.index = Elements.Count;
+            if(domTag.attribute == null)
+            {
+                domTag.attribute = new Dictionary<string, string>();
+            }
             if (hierarchyIndexes != null)
             {
                 if (hierarchyIndexes.Count > 0)

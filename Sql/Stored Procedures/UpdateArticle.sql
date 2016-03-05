@@ -1,6 +1,8 @@
 ﻿CREATE PROCEDURE [dbo].[UpdateArticle]
 	@articleId int = 0,
 	@subjects int = 0,
+	@subjectId int = 0,
+	@score smallint = 0,
 	@title nvarchar(250),
 	@summary nvarchar(250),
 	@filesize float = 0,
@@ -20,7 +22,7 @@
 AS
 
 UPDATE Articles SET 
-subjects=@subjects, title=@title, summary=@summary, filesize=@filesize, wordcount=@wordcount, sentencecount=@sentencecount,
+subjects=@subjects, subjectId=@subjectId, score=@score, title=@title, summary=@summary, filesize=@filesize, wordcount=@wordcount, sentencecount=@sentencecount,
 paragraphcount=@paragraphcount, importantcount=@importantcount, analyzecount=analyzecount+1, 
 yearstart=@yearstart, yearend=@yearend, years=@years, images=@images, datepublished=@datepublished, 
 relavance=@relavance, importance=@importance, fiction=@fiction, analyzed=@analyzed

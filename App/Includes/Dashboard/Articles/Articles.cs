@@ -128,8 +128,7 @@ namespace Collector.Includes
                         {
                             if(feeds[x].id == fid)
                             {
-                                htm = "<div class=\"article\"><div class=\"title\"><a href=\"" + reader.Get("url") + "\" class=\"article-title\" " +
-                                        "onclick=\"S.articles.analyzeArticle('" + reader.Get("url") + "'); return false\">" +
+                                htm = "<div class=\"article\"><div class=\"title\"><a href=\"/dashboard/articles/analyze?url=" + S.Util.Str.UrlEncode(reader.Get("url")) + "\" class=\"article-title\">" +
                                         S.Sql.Decode(reader.Get("title")) + "</a></div>" +
                                         "<div class=\"url\"><a href=\"" + reader.Get("url") + "\" target=\"_blank\">" + reader.Get("url") + "</a></div>";
                                 if (reader.Get("breadcrumb").Length > 0)
