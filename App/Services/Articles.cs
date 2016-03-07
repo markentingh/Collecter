@@ -26,6 +26,8 @@ namespace Collector.Services
             public int totalSentences;
             public int totalParagraphs;
             public int totalImportantWords;
+            public int totalBugsOpen;
+            public int totalBugsResolved;
             public int yearStart;
             public int yearEnd;
             public List<int> years;
@@ -153,6 +155,13 @@ namespace Collector.Services
             public int[] references; //word indexes within article words (he, she, his, hers, him, her, he'd, she'd, he's, she's, etc...)
         }
 
+        private struct ArticleFeedList
+        {
+            public string html;
+            public List<string> list;
+            public int id;
+        }
+
         public enum enumTextType
         {
             mainArticle = 0,
@@ -200,6 +209,7 @@ namespace Collector.Services
             female = 0,
             male = 1
         }
+
 
         private int textTypesCount = 13;
 
@@ -1891,7 +1901,7 @@ namespace Collector.Services
             return reader;
         }
 
-        public SqlReader GetArticlesForFeeds(int start = 1, int length = 50, int[] subjectIds = null, string search = "", int sort = 0, int isActive = 2, bool isDeleted = false, int minImages = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
+        public SqlReader GetArticlesForFeeds(int start = 1, int length = 10, int feedId = -1, int[] subjectIds = null, string search = "", int sort = 2, int isActive = 2, bool isDeleted = false, int minImages = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
         {
             var d1 = dateStart;
             var d2 = dateEnd;
@@ -1910,8 +1920,174 @@ namespace Collector.Services
                 "@subjectIds='" + (subjectIds == null ? "" : string.Join(",", subjectIds)) + "', @search='" + search + "', " +
                 "@isActive=" + isActive + ", @isDeleted=" + (isDeleted == true ? 1 : 0) + ", " +
                 "@minImages=" + minImages + ", @dateStart=" + reader.ConvertDateTime(d1) + ", @dateEnd=" + reader.ConvertDateTime(d2) + ", " +
-                "@start=" + start + ", @length=" + length + ", @orderby=" + sort));
+                "@start=" + start + ", @length=" + length + ", @orderby=" + sort + ", @feedId=" + feedId));
             return reader;
+        }
+
+        public Inject GetArticlesUI(string element = "", int start = 1, int length = 5, int groupby = 1, int sortby = 2, int viewby = 0, 
+            int feedId = -1, int subjectId = 0, string subjectIds = "", string search = "", int isActive = 2, bool isDeleted = false, 
+            int minImages = 0, string dateStart = "", string dateEnd = "")
+        {
+            var response = new Inject();
+            var htm = "";
+            var dStart = DateTime.Now.AddYears(-100);
+            var dEnd = DateTime.Now;
+            var footer = "";
+            if(dateStart != "")
+            {
+                dStart = DateTime.Parse(dateStart);
+            }
+            if(dateEnd != "")
+            {
+                dEnd = DateTime.Parse(dateEnd);
+            }
+            //render articles list based on group type
+            switch (groupby)
+            {
+                case 0: // all //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                    break;
+
+                case 1: // feeds ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    var reader = GetArticlesForFeeds(start, length+1, feedId, S.Util.Str.GetInts(subjectIds), search, sortby, isActive, isDeleted, minImages, dStart, dEnd);
+                    if (reader.Rows.Count > 0)
+                    {
+                        var html = new List<string>();
+                        var feeds = new List<ArticleFeedList>();
+                        var expand = " expanded";
+                        var fid = 0;
+                        var rid = 0;
+                        var fx = 0;
+                        while (reader.Read())
+                        {
+                            if (reader.GetBool("isfeed") == true)
+                            {
+                                
+                                //load feed container
+                                var newfeed = new ArticleFeedList();
+                                if (feedId < 0)
+                                {
+                                    newfeed.html = 
+                                        "<div class=\"accordion articles feed" + reader.GetInt("feedId") + "\">" +
+                                            "<div class=\"title" + expand + "\">" + S.Sql.Decode(reader.Get("feedtitle")) + "</div>" +
+                                            "<div class=\"box" + expand + "\">" +
+                                                "<div class=\"contents\">{{list}}</div>" +
+                                            "</div>" +
+                                        "</div>";
+                                }
+                                newfeed.id = reader.GetInt("feedId");
+                                newfeed.list = new List<string>();
+                                feeds.Add(newfeed);
+                                expand = "";
+                            }
+                            else
+                            {
+                                fid = reader.GetInt("feedId");
+                                if(rid != fid)
+                                {
+                                    rid = fid;
+                                    for (fx = 0; fx < feeds.Count; fx++)
+                                    {
+                                        if (feeds[fx].id == fid) { break; }
+                                    }
+                                }
+                                feeds[fx].list.Add(
+                                    GetArticleListItem(
+                                        reader.Get("title"), reader.Get("url"), reader.Get("breadcrumb"), reader.Get("hierarchy"),
+                                        reader.GetInt("subjectId"), reader.Get("subjectTitle"), reader.GetInt("subjectScore"), reader.GetDouble("filesize"),
+                                        reader.GetInt("wordcount"), reader.GetInt("sentencecount"), reader.GetInt("importantcount"), reader.Get("years"),
+                                        reader.GetInt("bugsopen"), reader.GetInt("bugsresolved")
+                                    )
+                                );
+                            }
+                        }
+                        footer = "";
+                        if (feeds.Count > 0 && feedId < 0)
+                        {
+                            //output all feeds lists
+                            foreach (var f in feeds)
+                            {
+                                if (f.list.Count > 0)
+                                {
+                                    if(f.list.Count > length) { footer = GetArticleListFooter(1, f.id, subjectId); }
+                                    html.Add(f.html.Replace("{{list}}",
+                                        string.Join("\n", f.list.ToArray()) + footer));
+                                }
+                            }
+                            htm = string.Join("\n", html);
+                        }else if(feedId >= 0)
+                        {
+                            //output one feed list
+                            if (reader.Rows.Count > length + 1) { footer = GetArticleListFooter(start + length, feedId, subjectId); }
+                            htm += string.Join("\n", feeds[0].list.ToArray()) + footer;
+                        }
+                    }
+                    break;
+
+                case 2: // bugs ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                    break;
+            }
+
+            response.inject = enumInjectTypes.replace;
+            response.element = element;
+            response.html = htm;
+            if (element != "") {
+                response.js = CompileJs();
+            }
+            return response;
+        }
+
+        public string GetArticleListItem(string title, string url, string breadcrumb, string hierarchy, int subjectId, string subjectTitle, int subjectScore, 
+            double fileSize, int wordCount, int sentenceCount, int importantCount, string years, int bugsOpen, int bugsResolved)
+        {
+            var words = new int[3] { 0, 0, 0 };
+            var htm = "<div class=\"listing-item\"><div class=\"title\"><a href=\"/dashboard/articles/analyze?url=" + S.Util.Str.UrlEncode(url) + "\" class=\"article-title\">" +
+                                                S.Sql.Decode(title) + "</a></div>" +
+                                                "<div class=\"url\"><a href=\"" + url + "\" target=\"_blank\">" + url + "</a></div>";
+            if (breadcrumb.Length > 0)
+            {
+                //show subject breadcrumb
+                var bread = S.Sql.Decode(breadcrumb).Split('>');
+                var hier = S.Sql.Decode(hierarchy).Split('>');
+                var crumb = "";
+                var hasSubject = false;
+                for (var b = 0; b < bread.Length; b++)
+                {
+                    crumb += (crumb != "" ? " > " : "") + "<a href=\"dashboard/subjects?id=" + hier[b] + "\">" + bread[b] + "</a>";
+                    if(int.Parse(hier[b]) == subjectId) { hasSubject = true; }
+                }
+                if(hasSubject == false)
+                {
+                    crumb += (crumb != "" ? " > " : "") + "<a href=\"dashboard/subjects?id=" + subjectId + "\">" + S.Sql.Decode(subjectTitle) + "</a>";
+                }
+                htm += "<div class=\"subject\">" + crumb + " <span class=\"important\" title=\"Subject Relevance Score\">(" + string.Format("{0:N0}", subjectScore) + ")</span></div>";
+            }
+
+            //show analysis info about article
+            fileSize = Math.Round(fileSize, 2);
+            words[0] = wordCount;
+            words[1] = sentenceCount;
+            words[2] = importantCount;
+            years = years.Replace(",", ", ");
+            htm += "<div class=\"info\">" +
+                        (fileSize > 0 ? "<div class=\"col\">file size: <span class=\"val\">" + Math.Round(fileSize, 2) + "KB</span></div>" : "") +
+                        (words[0] > 0 ? "<div class=\"col\">words: <span class=\"val\">" + string.Format("{0:N0}", wordCount) + "</span></div>" : "") +
+                        (words[1] > 0 ? "<div class=\"col\">sentences: <span class=\"val\">" + string.Format("{0:N0}", sentenceCount) + "</span></div>" : "") +
+                        (words[2] > 0 ? "<div class=\"col\">important words: <span class=\"important\">" + string.Format("{0:N0}", importantCount) + "</span></div>" : "") +
+                        (years != "" ? "<div class=\"col\">years: <span class=\"val\">" + years.Replace(",", ", ") + "</span></div>" : "") +
+                        (bugsOpen > 0 ? "<div class=\"col\">bugs: <span class=\"bugs\">" + bugsOpen + "</span>" + (bugsResolved > 0 ? "(" + bugsResolved + " resolved)" : "") + "</div>" : "") +
+                    "</div>" +
+            "</div>";
+            return htm;
+        }
+
+        private string GetArticleListFooter(int start = 1, int feedId = -1, int subjectId = 0)
+        {
+            return "<div class=\"list-footer\">" +
+                "<a href=\"javascript:\" class=\"button outline\" onclick=\"S.articles.pagingArticles(" + start + "," + feedId + "," + subjectId + ")\">" +
+                "More...</a>" +
+                "</div>";
         }
 
         public void SaveArticle(AnalyzedArticle article)
@@ -2213,16 +2389,16 @@ namespace Collector.Services
 
         #region "Bug Reporting"
 
-        public string[] GetBugReports(int articleId, int start = 1, int length = 50, int orderby = 1)
+        public string[] GetBugReports(AnalyzedArticle article, int start = 1, int length = 50, int orderby = 1)
         {
             //return a string array, 0 = bug count, 1 = html
             var results = new string[] { "0", "" };
             var bugs = "<div class=\"nobugs\">No bugs reported yet</div>";
             var bugcount = 0;
-            if(articleId > 0)
+            if(article.id > 0)
             {
                 var reader = new SqlReader();
-                reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetArticleBugs @articleId=" + articleId + ", @start=" + start + ", @length=" + length + ", @orderby=" + orderby));
+                reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetArticleBugs @articleId=" + article.id + ", @start=" + start + ", @length=" + length + ", @orderby=" + orderby));
                 if (reader.Rows.Count > 0)
                 {
                     bugs = "";
@@ -2234,6 +2410,16 @@ namespace Collector.Services
                                     "<div class=\"description\">" + S.Sql.Decode(reader.Get("description")) + "</div>" +
                                 "</div>";
                         bugcount++;
+                        if(reader.GetInt("status") == 0)
+                        {
+                            //open bug
+                            article.totalBugsOpen += 1;
+                        }
+                        else
+                        {
+                            //resolved bug
+                            article.totalBugsResolved += 1;
+                        }
                     }
                 }
             }
@@ -2245,7 +2431,9 @@ namespace Collector.Services
         public Inject GetBugReportsUI(int articleId, int start = 1, int length = 50, int orderby = 1)
         {
             var response = new Inject();
-            var bugs = GetBugReports(articleId, start, length, orderby);
+            var article = new AnalyzedArticle();
+            article.id = articleId;
+            var bugs = GetBugReports(article, start, length, orderby);
             S.Page.RegisterJS("bugs", "$('.bug-count')[0].innerHTML='" + bugs[0] + "';");
             response.element = ".bugs .contents";
             response.inject = enumInjectTypes.replace;

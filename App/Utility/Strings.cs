@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -58,6 +59,35 @@ namespace Collector.Utility
             return reader.ReadToEnd();
         }
 
+        public double[] GetNumbers(string numberArray)
+        {
+            if(numberArray.Length == 0) { return new double[] { }; }
+            var nums = new List<double>();
+            var arr = numberArray.Replace(", ", ",").Replace(" ,", ",").Split(',');
+            foreach(var a in arr)
+            {
+                if (IsNumeric(a))
+                {
+                    nums.Add(double.Parse(a));
+                }
+            }
+            return nums.ToArray();
+        }
+
+        public int[] GetInts(string numberArray)
+        {
+            if (numberArray.Length == 0) { return new int[] { }; }
+            var nums = new List<int>();
+            var arr = numberArray.Replace(", ", ",").Replace(" ,", ",").Split(',');
+            foreach (var a in arr)
+            {
+                if (IsNumeric(a))
+                {
+                    nums.Add(int.Parse(a));
+                }
+            }
+            return nums.ToArray();
+        }
         #endregion
 
         #region "Manipulation"

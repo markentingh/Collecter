@@ -1,5 +1,32 @@
 ﻿<style type="text/css">
     .rendered iframe{width:100%; height:450px;}
+
+    .listing-item{padding:10px; margin:0 0 20px 0; border-bottom:1px solid #015e4a;}
+    .listing-item:hover{background-color:#00383c;}
+    .listing-item .title{padding-bottom:4px;}
+    .listing-item .url{font-size:13px; padding-bottom:7px;}
+    .listing-item .url a:link{color:#aaa;}
+    .listing-item .url a:hover{color:#aaa;}
+    .listing-item .url a:active{color:#aaa;}
+    .listing-item .url a:visited{color:#aaa;}
+    .listing-item .title a:link{color:#fff;}
+    .listing-item .title a:hover{color:#fff;}
+    .listing-item .title a:active{color:#fff;}
+    .listing-item .title a:visited{color:#fff;}
+    .listing-item .subject{color:#38e5a5;}
+    .listing-item .subject a:link{color:#38e5a5;}
+    .listing-item .subject a:hover{color:#38e5a5;}
+    .listing-item .subject a:active{color:#38e5a5;}
+    .listing-item .subject a:visited{color:#38e5a5;}
+    .listing-item .subject .important{display:inline-block; padding-left:10px; color:#00f7ff;}
+    .listing-item .desc{color:#777777;}
+    .listing-item .article-title{font-size:20px;}
+    .listing-item .info{width:100%; padding:7px 0; overflow:hidden; font-size:13px;}
+    .listing-item .info .col{float:left; padding:0 20px 0 5px; border-left:4px solid #009b75;}
+    .listing-item .info .val{color:#ddd;}
+    .listing-item .info .bugs{color:#ffaa34; font-weight:bold; border-radius: 20px; border: 2px solid #90590C; min-width: 19px; padding: 0px; display: inline-block; text-align: center; box-sizing: border-box; margin-bottom: -5px; margin-top: -2px;}
+    .listing-item .info .important{color:#00f7ff; font-weight:bold;}
+
     .article-title{font-size:25px;padding:10px 0 10px 0;}
     .article-url{font-size:17px; padding:0 0 50px 0;}
     .article{font-size:20px;}
@@ -17,17 +44,16 @@
     .article .show-score .word.score4{background-color:#014d96;}
     .article .show-score .word.score5{background-color:#0028aa;}
     .article .para-end{float:none; clear:both; width:100%; height:30px;}
+
     .raw-html > .box > .contents {width:100%; height:700px;}
+
     .dom-structure .tag{padding:5px 0; white-space:nowrap;}
     .dom-structure .tag:hover{background-color:#233234;}
     .dom-structure .line-num{display:inline-block; width:40px; text-align:right; padding-right:20px; color:#16a8a8}
+
     .tag-names .tag-name{display:inline-block; padding:7px; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px;}
     .tag-names .tag-info{font-size:12px; color:#666;}
-    .sentences .text{padding:10px 0 5px 0; white-space:normal; max-width:100%; border-bottom:1px solid #005F5F;}
-    .sentences .text:hover{background-color:#233234;}
-    .sentences .text.special{background-color:#411b3a; border-bottom-color:#a00056;}
-    .sentences .line-num{display:inline-block; width:40px; text-align:right; padding-right:20px; color:#16a8a8}
-    .sentences .raw{display:inline-block; width:calc(100% - 60px); text-align:left; cursor:pointer;}
+
     .words-sorted .word{display:inline-block; position:relative; width:calc(20% - 50px); padding:7px; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px; overflow:hidden; cursor:pointer;}
     .words-sorted .word.common{background-color:#271313; border-color:#63100d;}
     .words-sorted .word.database{background-color:#270919; border-color:#870149;}
@@ -40,7 +66,9 @@
     .words-sorted .word.expanded{background-color:#015b5b;}
     .words-sorted .word .word-info{overflow:hidden; display:none; position:absolute; right:0; white-space:nowrap; padding:0 10px 0 0; color:#0aff00;}
     .words-sorted .word:hover .word-info{display:block;}
+    
     .phrases .phrase{display:inline-block; position:relative; width:calc(33% - 20px); padding:7px; box-sizing:border-box; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px; overflow:hidden; cursor:pointer;}
+    
     .subjects .subject{width:100%; box-sizing:border-box; padding:30px 10px; border-bottom:1px solid #233234; }
     .subjects .subject:hover{background-color:#233234;}
     .subject .score{position:relative; display:inline-block; color:#d7005c; background-color:#390028; border:1px solid #820050; padding:10px 20px; margin:0 20px 0 0; font-size:20px;}
@@ -51,8 +79,11 @@
     .subject .score .details .symbol{padding:0;}
     .subject .score .details .number{padding:0;}
     .subject .word-count{display:inline-block; color:#c4e26b; background-color:#003937; border:1px solid #005F5F; padding:5px 8px; margin:0 20px 0 0;}
+    
     .anchorlinks .link{padding:5px 0; height:25px;}
+    
     #lstwordpart{width:100px;}
+    
     .bugs .menu .column.label{width:90px !important;}
     .bugs .menu .bugtitle{width:calc(100% - 100px);}
     .bugs .menu .description{width:calc(100% - 100px);}
@@ -64,8 +95,12 @@
 </style>
 <link type="text/css" rel="/scripts/ace/ace.css"/>
 
-<div class="article-title">{{article-title}}</div>
-<div class="article-url"><a href="{{article-url}}" target="_blank">{{article-url}}</a></div>
+<div class="accordion listing">
+    <div class="title expanded">Listing</div>
+    <div class="box expanded">
+        <div class="contents">{{listing}}</div>
+    </div>
+</div>
 
 <div class="accordion article">
     <div class="title">Article</div>

@@ -1,5 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[GetArticlesForFeeds]
 	@subjectIds nvarchar(MAX),
+	@feedId int = -1,
 	@search nvarchar(MAX),
 	@isActive int = 2,
 	@isDeleted bit = 0,
@@ -19,14 +20,11 @@ AS
 	SELECT articleId INTO #subjectarticles FROM ArticleSubjects
 	WHERE subjectId IN (SELECT CONVERT(int, value) FROM #subjects)
 	AND datecreated >= CONVERT(datetime, @dateStart) AND datecreated <= CONVERT(datetime, @dateEnd)
-
 	
-
 	/* get articles that match a search term */
 	SELECT * INTO #search FROM dbo.SplitArray(@search, ',')
 	SELECT wordId INTO #wordids FROM Words WHERE word IN (SELECT value FROM #search)
-	SELECT articleId INTO #searchedarticles FROM ArticleWords
-	WHERE wordId IN (SELECT * FROM #wordids)
+	SELECT articleId INTO #searchedarticles FROM ArticleWords WHERE wordId IN (SELECT * FROM #wordids)
 
 	/* create results table */
 	DECLARE @results TABLE(
@@ -75,7 +73,7 @@ AS
 	@cursor1 CURSOR, 
 	@cursor2 CURSOR, 
 	@rownum int,
-	@feedId int,
+	@feedId1 int,
 	@feedId2 int,
 	@feedTitle nvarchar(100),
 	@feedUrl nvarchar(100),
@@ -115,28 +113,29 @@ AS
     @bugsresolved SMALLINT
 	
 	/* first, get feeds list //////////////////////////////////////////////////////////////////////////////////////////// */
+	SELECT * INTO #feeds FROM Feeds WHERE feedId = CASE WHEN @feedId >= 0 THEN @feedId ELSE feedId END ORDER BY title ASC
 	SET @cursor1 = CURSOR FOR
-	SELECT * FROM Feeds ORDER BY feedId ASC
+	SELECT * FROM #feeds
 	OPEN @cursor1
 	FETCH FROM @cursor1 INTO
-	@feedId, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter
+	@feedId1, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter
 
 	WHILE @@FETCH_STATUS = 0 BEGIN
-		/* get 10 articles for each feed */
+		/* get a list of feeds */
 		INSERT INTO @results (feedId, isfeed, feedTitle, feedUrl, feedLastChecked, feedFilter)
-		VALUES (@feedId, 1, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter)
+		VALUES (@feedId1, 1, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter)
 		
 		FETCH FROM @cursor1 INTO
-		@feedId, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter
+		@feedId1, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter
 	END
 	CLOSE @cursor1
 	DEALLOCATE @cursor1
 
 	/* next, loop through feeds list to get articles for each feed ////////////////////////////////////////////////////// */
 	SET @cursor1 = CURSOR FOR
-	SELECT feedId FROM Feeds
+	SELECT feedId FROM #feeds
 	OPEN @cursor1
-	FETCH FROM @cursor1 INTO @feedId
+	FETCH FROM @cursor1 INTO @feedId1
 
 	WHILE @@FETCH_STATUS = 0 BEGIN
 		/* get 10 articles for each feed */
@@ -144,7 +143,9 @@ AS
 		SELECT * FROM (
 			SELECT ROW_NUMBER() OVER(ORDER BY 
 			CASE WHEN @orderby = 1 THEN a.datecreated END ASC,
-			CASE WHEN @orderby = 2 THEN a.datecreated END DESC
+			CASE WHEN @orderby = 2 THEN a.datecreated END DESC,
+			CASE WHEN @orderby = 3 THEN a.score END ASC,
+			CASE WHEN @orderby = 4 THEN a.score END DESC
 			) AS rownum, a.*,
 			(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=0) AS bugsopen,
 			(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=1) AS bugsresolved,
@@ -152,7 +153,7 @@ AS
 			FROM Articles a 
 			LEFT JOIN ArticleSubjects asub ON asub.articleId=a.articleId AND asub.subjectId=a.subjectId
 			LEFT JOIN Subjects s ON s.subjectId=a.subjectId
-			WHERE feedId=@feedId
+			WHERE feedId=@feedId1
 			AND 
 			(
 				a.articleId IN (SELECT * FROM #subjectarticles)
@@ -176,7 +177,7 @@ AS
 			paragraphcount, importantcount, analyzecount, yearstart, yearend, years, datecreated, datepublished, 
 			relavance, importance, fiction, domain, url, title, summary, analyzed, cached,  active, deleted,
 			bugsopen, bugsresolved, breadcrumb, hierarchy, subjectTitle)
-			VALUES (@rownum, @articleId, @feedId, @subjects, @subjectId, @subjectScore, @images, @filesize, @wordcount, @sentencecount, 
+			VALUES (@rownum, @articleId, @feedId1, @subjects, @subjectId, @subjectScore, @images, @filesize, @wordcount, @sentencecount, 
 			@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 			@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
 			@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectTitle)
@@ -190,9 +191,9 @@ AS
 		CLOSE @cursor2
 		DEALLOCATE @cursor2
 		
-		FETCH FROM @cursor1 INTO @feedId
+		FETCH FROM @cursor1 INTO @feedId1
 	END
 	CLOSE @cursor1
 	DEALLOCATE @cursor1
 
-	SELECT * FROM @results ORDER BY isfeed DESC, feedId ASC, articleId ASC
+	SELECT * FROM @results ORDER BY isfeed DESC, feedId ASC

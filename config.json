@@ -1,7 +1,7 @@
 ﻿{
   "data": {
     "active": "SqlServerTrusted",
-    "SqlServerTrusted": "server=.\\SQL2012; database=CollectorDev; Trusted_Connection=true"
+    "SqlServerTrusted": "server=.\\SQL2014; database=CollectorDev; Trusted_Connection=true"
   },
 
   "platform": "windows",

@@ -12,13 +12,6 @@ namespace Collector.Includes
     {
         private string[] separatorExceptions = new string[]{"'", "\""};
 
-        private struct structArticleFeedList
-        {
-            public string html;
-            public List<string> list;
-            public int id;
-        }
-
         public Articles(Core CollectorCore, Scaffold ParentScaffold) : base(CollectorCore, ParentScaffold)
         {
 
@@ -92,100 +85,8 @@ namespace Collector.Includes
         {
             var scaffold = new Scaffold(S, "/app/includes/dashboard/articles/list.html", "", new string[] { "content" });
             Services.Articles articles = new Services.Articles(S, S.Page.Url.paths);
-            var reader = articles.GetArticlesForFeeds(1, 10);
-            var htm = "";
-            if (reader.Rows.Count > 0)
-            {
-                var html = new List<string>();
-                var feeds = new List<structArticleFeedList>();
-                var expand = " expanded";
-                while (reader.Read())
-                {
-                    if (reader.GetBool("isfeed") == true)
-                    {
-                        //load feed container
-                        var newfeed = new structArticleFeedList();
-                        newfeed.html = "<div class=\"accordion articles feed" + reader.GetInt("feedId") + "\">" +
-                                            "<div class=\"title" + expand + "\">" + S.Sql.Decode(reader.Get("feedtitle")) + "</div>" +
-                                            "<div class=\"box" + expand + "\">" +
-                                                "<div class=\"contents\">{{list}}</div>" +
-                                            "</div>" +
-                                        "</div>";
-                        newfeed.id = reader.GetInt("feedId");
-                        newfeed.list = new List<string>();
-                        feeds.Add(newfeed);
-                        expand = "";
-                    }
-                    else
-                    {
-                        var fid = reader.GetInt("feedId");
-                        var filesize = 0.0;
-                        var bugs = 0;
-                        var resolved = 0;
-                        var words = new int[3] { 0, 0, 0 };
-                        var years = "";
-                        for(var x = 0; x < feeds.Count; x++)
-                        {
-                            if(feeds[x].id == fid)
-                            {
-                                htm = "<div class=\"article\"><div class=\"title\"><a href=\"/dashboard/articles/analyze?url=" + S.Util.Str.UrlEncode(reader.Get("url")) + "\" class=\"article-title\">" +
-                                        S.Sql.Decode(reader.Get("title")) + "</a></div>" +
-                                        "<div class=\"url\"><a href=\"" + reader.Get("url") + "\" target=\"_blank\">" + reader.Get("url") + "</a></div>";
-                                if (reader.Get("breadcrumb").Length > 0)
-                                {
-                                    //show subject breadcrumb
-                                    var bread = S.Sql.Decode(reader.Get("breadcrumb")).Split('>');
-                                    var hier = S.Sql.Decode(reader.Get("hierarchy")).Split('>');
-                                    var crumb = "";
-                                    for (var b = 0; b < bread.Length; b++)
-                                    {
-                                        crumb += (crumb != "" ? " > " : "") + "<a href=\"dashboard/subjects?id=" + hier[b] + "\">" + bread[b] + "</a>";
-                                    }
-                                    crumb += (crumb != "" ? " > " : "") + "<a href=\"dashboard/subjects?id=" + reader.GetInt("subjectId") + "\">" + S.Sql.Decode(reader.Get("subjectTitle")) + "</a>";
-                                    htm += "<div class=\"subject\">" + crumb  + " <span class=\"important\" title=\"Subject Relevance Score\">(" + string.Format("{0:N0}", reader.GetInt("subjectScore")) + ")</span></div>";
-                                }
-
-                                //show analysis info about article
-                                filesize = Math.Round(reader.GetDouble("filesize"), 2);
-                                words[0] = reader.GetInt("wordcount");
-                                words[1] = reader.GetInt("sentencecount");
-                                words[2] = reader.GetInt("importantcount");
-                                years = reader.Get("years").Replace(",", ", ");
-                                bugs = reader.GetInt("bugsopen");
-                                resolved = reader.GetInt("bugsresolved");
-                                htm += "<div class=\"info\">" +
-                                    (filesize > 0 ? "<div class=\"col\">file size: <span class=\"val\">" + Math.Round(reader.GetDouble("filesize"), 2) + "KB</span></div>" : "") +
-                                    (words[0] > 0 ? "<div class=\"col\">words: <span class=\"val\">" + string.Format("{0:N0}", reader.GetInt("wordcount")) + "</span></div>" : "") +
-                                    (words[1] > 0 ? "<div class=\"col\">sentences: <span class=\"val\">" + string.Format("{0:N0}", reader.GetInt("sentencecount")) + "</span></div>" : "") +
-                                    (words[2] > 0 ? "<div class=\"col\">important words: <span class=\"important\">" + string.Format("{0:N0}", reader.GetInt("importantcount")) + "</span></div>" : "") +
-                                    (years!= "" ? "<div class=\"col\">years: <span class=\"val\">" + reader.Get("years").Replace(",",", ") + "</span></div>" : "") +
-                                    (bugs > 0 ? "<div class=\"col\">bugs: <span class=\"bugs\">" + bugs + "</span>" + (resolved > 0 ? "(" + resolved  + " resolved)" : "") + "</div>" : "") +
-                                    "</div>";
-
-
-                                 htm += "</div>";
-                                feeds[x].list.Add(htm);
-                            }
-                        }
-                    }
-                    
-                }
-
-                if (feeds.Count > 0)
-                {
-                    foreach (var f in feeds)
-                    {
-                        htm = f.html;
-                        if(f.list.Count > 0)
-                        {
-                            htm = htm.Replace("{{list}}", string.Join("\n", f.list.ToArray()));
-                            html.Add(htm);
-                        }
-                    }
-                }
-                scaffold.Data["content"] = string.Join("\n", html);
-                S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/list.js");
-            }
+            scaffold.Data["content"] = string.Join("\n", articles.GetArticlesUI().html);
+            S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/list.js");
             return scaffold;
         }
 
@@ -205,10 +106,6 @@ namespace Collector.Includes
 
                 //check if article is empty
                 if(article.title=="" || article.body.Count == 0) { return scaffold; }
-
-                //setup article analysis results
-                scaffold.Data["article-title"] = article.pageTitle;
-                scaffold.Data["article-url"] = article.url;
 
                 //create article ///////////////////////////////////////////////////////
                 var body = new List<string>();
@@ -563,8 +460,14 @@ namespace Collector.Includes
 
                 //create subjects ///////////////////////////////////////////////////////
                 var subjects = new List<string>();
+                var subjectId = 0;
+                var subjectTitle = "";
+                var subjectScore = 0;
                 var sub = "";
+                var hier = "";
                 var subdetails = "";
+                var breadcrumb = "";
+                var hierarchy = "";
                 Services.Articles.ArticleSubject subj;
                 i = 0;
                 foreach (var subject in article.subjects)
@@ -573,14 +476,21 @@ namespace Collector.Includes
                     if (subject.breadcrumb != null)
                     {
                         sub = string.Join(" > ", subject.breadcrumb) + " > " + subject.title;
+                        hier = string.Join(" > ", subject.hierarchy) + " > " + subject.id;
                     }
                     else
                     {
                         sub = subject.title;
+                        hier = subject.id.ToString();
                     }
                     if(i == 1)
                     {
                         scaffold.Data["subject-breadcrumb"] = sub;
+                        breadcrumb = sub;
+                        hierarchy = hier;
+                        subjectId = subject.id;
+                        subjectTitle = subject.title;
+                        subjectScore = subject.score;
                     }
                     subdetails = "<span class=\"number\">" + subject.count + "</span>\n";
                     if(subject.parentIndexes.Count > 0)
@@ -628,9 +538,17 @@ namespace Collector.Includes
                 scaffold.Data["anchorlinks"] = "<div class=\"link\">" + string.Join("</div><div class=\"link\">", anchorLinks.ToArray()) + "</div>";
 
                 //load bug reports ///////////////////////////////////////////////////
-                var bugs = serveArticles.GetBugReports(article.id);
+                var bugs = serveArticles.GetBugReports(article);
                 scaffold.Data["bug-count"] = bugs[0];
                 scaffold.Data["bugs"] = bugs[1];
+
+                //load article listing ////////////////////////////////////////////////
+                var fileSize = (article.rawHtml.Length / 1024.0);
+                scaffold.Data["listing"] =
+                    serveArticles.GetArticleListItem(
+                        article.title, article.url, breadcrumb, hierarchy, subjectId, subjectTitle, subjectScore, fileSize, article.totalWords,
+                        article.totalSentences, article.totalImportantWords, string.Join(", ", article.years), article.totalBugsOpen, article.totalBugsResolved 
+                        );
 
                 //render article analysis results ////////////////////////////////////////////////////////////////////////////////////////////////////
                 scaffold.Data["content"] = scaffold.Render();

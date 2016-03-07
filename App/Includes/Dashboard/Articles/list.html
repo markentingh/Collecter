@@ -1,56 +1,63 @@
 ﻿<style type="text/css">
-    .article{padding:10px; margin:0 0 20px 0; border-bottom:1px solid #015e4a;}
-    .article:hover{background-color:#00383c;}
-    .article .title{padding-bottom:4px;}
-    .article .url{font-size:13px; padding-bottom:7px;}
-    .article .url a:link{color:#aaa;}
-    .article .url a:hover{color:#aaa;}
-    .article .url a:active{color:#aaa;}
-    .article .url a:visited{color:#aaa;}
-    .article .title a:link{color:#fff;}
-    .article .title a:hover{color:#fff;}
-    .article .title a:active{color:#fff;}
-    .article .title a:visited{color:#fff;}
-    .article .subject{color:#38e5a5;}
-    .article .subject a:link{color:#38e5a5;}
-    .article .subject a:hover{color:#38e5a5;}
-    .article .subject a:active{color:#38e5a5;}
-    .article .subject a:visited{color:#38e5a5;}
-    .article .subject .important{display:inline-block; padding-left:10px; color:#00f7ff;}
-    .article .desc{color:#777777;}
-    .article .article-title{font-size:20px;}
-    .article .info{width:100%; padding:7px 0; overflow:hidden; font-size:13px;}
-    .article .info .col{float:left; padding:0 20px 0 5px; border-left:4px solid #009b75;}
-    .article .info .val{color:#ddd;}
-    .article .info .bugs{color:#ffaa34; font-weight:bold; border-radius: 20px; border: 2px solid #90590C; min-width: 19px; padding: 0px; display: inline-block; text-align: center; box-sizing: border-box; margin-bottom: -5px; margin-top: -2px;}
-    .article .info .important{color:#00f7ff; font-weight:bold;}
+    .listing-item{padding:10px; margin:0 0 20px 0; border-bottom:1px solid #015e4a;}
+    .listing-item:hover{background-color:#00383c;}
+    .listing-item .title{padding-bottom:4px;}
+    .listing-item .url{font-size:13px; padding-bottom:7px;}
+    .listing-item .url a:link{color:#aaa;}
+    .listing-item .url a:hover{color:#aaa;}
+    .listing-item .url a:active{color:#aaa;}
+    .listing-item .url a:visited{color:#aaa;}
+    .listing-item .title a:link{color:#fff;}
+    .listing-item .title a:hover{color:#fff;}
+    .listing-item .title a:active{color:#fff;}
+    .listing-item .title a:visited{color:#fff;}
+    .listing-item .subject{color:#38e5a5;}
+    .listing-item .subject a:link{color:#38e5a5;}
+    .listing-item .subject a:hover{color:#38e5a5;}
+    .listing-item .subject a:active{color:#38e5a5;}
+    .listing-item .subject a:visited{color:#38e5a5;}
+    .listing-item .subject .important{display:inline-block; padding-left:10px; color:#00f7ff;}
+    .listing-item .desc{color:#777777;}
+    .listing-item .article-title{font-size:20px;}
+    .listing-item .info{width:100%; padding:7px 0; overflow:hidden; font-size:13px;}
+    .listing-item .info .col{float:left; padding:0 20px 0 5px; border-left:4px solid #009b75;}
+    .listing-item .info .val{color:#ddd;}
+    .listing-item .info .bugs{color:#ffaa34; font-weight:bold; border-radius: 20px; border: 2px solid #90590C; min-width: 19px; padding: 0px; display: inline-block; text-align: center; box-sizing: border-box; margin-bottom: -5px; margin-top: -2px;}
+    .listing-item .info .important{color:#00f7ff; font-weight:bold;}
+    #articlesearch{max-width:250px; min-width:100px;}
+    .list-footer{text-align:center; padding:20px;}
 </style>
 
 <div class="row filter">
     <div class="column label">Group By</div>
     <div class="column input">
-        <select class="">
+        <select id="lstgroupby">
             <option value="0">All</option>
-            <option value="1">Feeds</option>
+            <option value="1" selected="selected">Feeds</option>
             <option value="2">Subjects</option>
-            <option value="2">Bugs</option>
+            <option value="2">Has Bugs</option>
         </select>
     </div>
 
     <div class="column label">Sort By</div>
     <div class="column input">
-        <select class="">
-            <option value="0">Score</option>
-            <option value="1">Newest</option>
-            <option value="2">Oldest</option>
-            <option value="2">Bugs</option>
+        <select id="lstsortby">
+            <option value="4">Score</option>
+            <option value="2" selected="selected">Newest</option>
+            <option value="1">Oldest</option>
         </select>
     </div>
+
+    <div class="column label">Search</div>
+    <div class="column input">
+        <input type="text" id="articlesearch">
+    </div>
+
     <div class="right">
         <div class="column label">View</div>
         <div class="column input">
-            <select class="">
-                <option value="0">Detailed</option>
+            <select id="lstviewby">
+                <option value="0" selected="selected">Detailed</option>
                 <option value="1">List</option>
             </select>
         </div>
@@ -58,7 +65,9 @@
 </div>
 <div class="row space"></div>
 
-{{content}}
+<div id="articleslist">
+    {{content}}
+</div>
 
 <form method="post" class="analyze-form" style="display:none;">
     <input type="text" name="url" id="articleurl" />
