@@ -9,23 +9,10 @@
 	@dateEnd nvarchar(50),
 	@orderby int = 1,
 	@start int = 1,
-	@length int = 10
+	@length int = 10,
+	@bugsonly bit = 0
 AS
-	/* set default dates */
-	IF (@dateStart IS NULL) BEGIN SET @dateStart = DATEADD(YEAR, -100, GETDATE()) END
-	IF (@dateEnd IS NULL) BEGIN SET @dateEnd = DATEADD(YEAR, 100, GETDATE()) END
-
-	/* get subjects from array */
-	SELECT * INTO #subjects FROM dbo.SplitArray(@subjectIds, ',')
-	SELECT articleId INTO #subjectarticles FROM ArticleSubjects
-	WHERE subjectId IN (SELECT CONVERT(int, value) FROM #subjects)
-	AND datecreated >= CONVERT(datetime, @dateStart) AND datecreated <= CONVERT(datetime, @dateEnd)
 	
-	/* get articles that match a search term */
-	SELECT * INTO #search FROM dbo.SplitArray(@search, ',')
-	SELECT wordId INTO #wordids FROM Words WHERE word IN (SELECT value FROM #search)
-	SELECT articleId INTO #searchedarticles FROM ArticleWords WHERE wordId IN (SELECT * FROM #wordids)
-
 	/* create results table */
 	DECLARE @results TABLE(
 		rownum int,
@@ -60,7 +47,7 @@ AS
 		hierarchy NVARCHAR(50) NULL DEFAULT '',
 		subjectId INT NULL DEFAULT 0,
 		subjectTitle NVARCHAR(50) NULL DEFAULT '',
-		subjectScore INT NULL DEFAULT 0,
+		score INT NULL DEFAULT 0,
 		analyzed FLOAT NULL DEFAULT 0,
 		cached BIT NULL DEFAULT 0, 
 		active BIT NULL DEFAULT 0, 
@@ -104,13 +91,28 @@ AS
 	@hierarchy NVARCHAR(50),
 	@subjectId INT,
 	@subjectTitle nvarchar(50),
-	@subjectScore INT,
+	@score INT,
 	@analyzed FLOAT,
 	@cached BIT, 
     @active BIT, 
     @deleted BIT, 
     @bugsopen SMALLINT, 
     @bugsresolved SMALLINT
+
+	/* set default dates */
+	IF (@dateStart IS NULL) BEGIN SET @dateStart = DATEADD(YEAR, -100, GETDATE()) END
+	IF (@dateEnd IS NULL) BEGIN SET @dateEnd = DATEADD(YEAR, 100, GETDATE()) END
+
+	/* get subjects from array */
+	SELECT * INTO #subjects FROM dbo.SplitArray(@subjectIds, ',')
+	SELECT articleId INTO #subjectarticles FROM ArticleSubjects
+	WHERE subjectId IN (SELECT CONVERT(int, value) FROM #subjects)
+	AND datecreated >= CONVERT(datetime, @dateStart) AND datecreated <= CONVERT(datetime, @dateEnd)
+	
+	/* get articles that match a search term */
+	SELECT * INTO #search FROM dbo.SplitArray(@search, ',')
+	SELECT wordId INTO #wordids FROM Words WHERE word IN (SELECT value FROM #search)
+	SELECT articleId INTO #searchedarticles FROM ArticleWords WHERE wordId IN (SELECT * FROM #wordids)
 	
 	/* first, get feeds list //////////////////////////////////////////////////////////////////////////////////////////// */
 	SELECT * INTO #feeds FROM Feeds WHERE feedId = CASE WHEN @feedId >= 0 THEN @feedId ELSE feedId END ORDER BY title ASC
@@ -164,26 +166,38 @@ AS
 			AND a.deleted=@isDeleted
 			AND a.images >= @minImages
 			AND a.datecreated >= CONVERT(datetime, @dateStart) AND a.datecreated <= CONVERT(datetime, @dateEnd)
+
+			AND (
+				a.articleId = CASE 
+				WHEN @search = '' THEN a.articleId 
+				ELSE (SELECT articleId FROM #searchedarticles WHERE articleId=a.articleId)
+				END
+				OR a.title LIKE '%' + @search + '%'
+				OR a.summary LIKE '%' + @search + '%'
+				)
+			AND a.articleId = CASE 
+			WHEN @bugsonly=1 THEN (SELECT TOP 1 articleId FROM ArticleBugs WHERE articleId=a.articleId) 
+			ELSE a.articleId END
 		) AS tbl WHERE rownum >= @start AND rownum < @start + @length
 		OPEN @cursor2
 		FETCH FROM @cursor2 INTO
-		@rownum, @articleId, @feedId2, @subjects, @subjectId, @subjectScore, @images, @filesize, @wordcount, @sentencecount, 
+		@rownum, @articleId, @feedId2, @subjects, @subjectId, @score, @images, @filesize, @wordcount, @sentencecount, 
 		@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 		@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
 		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectTitle
 
 		WHILE @@FETCH_STATUS = 0 BEGIN
-			INSERT INTO @results (rownum, articleId, feedId, subjects, subjectId, subjectScore, images, filesize, wordcount, sentencecount, 
+			INSERT INTO @results (rownum, articleId, feedId, subjects, subjectId, score, images, filesize, wordcount, sentencecount, 
 			paragraphcount, importantcount, analyzecount, yearstart, yearend, years, datecreated, datepublished, 
 			relavance, importance, fiction, domain, url, title, summary, analyzed, cached,  active, deleted,
 			bugsopen, bugsresolved, breadcrumb, hierarchy, subjectTitle)
-			VALUES (@rownum, @articleId, @feedId1, @subjects, @subjectId, @subjectScore, @images, @filesize, @wordcount, @sentencecount, 
+			VALUES (@rownum, @articleId, @feedId1, @subjects, @subjectId, @score, @images, @filesize, @wordcount, @sentencecount, 
 			@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 			@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
 			@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectTitle)
 
 			FETCH FROM @cursor2 INTO
-			@rownum, @articleId, @feedId2, @subjects, @subjectId, @subjectScore, @images, @filesize, @wordcount, @sentencecount, 
+			@rownum, @articleId, @feedId2, @subjects, @subjectId, @score, @images, @filesize, @wordcount, @sentencecount, 
 			@paragraphcount, @importantcount, @analyzecount, @yearstart, @yearend, @years, @datecreated, @datepublished, 
 			@relavance, @importance, @fiction, @domain, @url, @title, @summary, @analyzed, @cached, @active, @deleted,
 		@bugsopen, @bugsresolved, @breadcrumb, @hierarchy, @subjectTitle

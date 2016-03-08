@@ -1878,7 +1878,7 @@ namespace Collector.Services
                 ", @images=" + images + ", @datePublished='" + datePublished.ToString() + "', @relavance=" + relavance + ", @importance=" + importance + ", @fiction=" + fiction + ", @analyzed=" + analyzerVersion);
         }
 
-        public SqlReader GetArticles(int start = 1, int length = 50, int[] subjectIds = null, string search = "", int sort = 0, int isActive = 2, bool isDeleted = false, int minImages = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
+        public SqlReader GetArticles(int start = 1, int length = 50, int[] subjectIds = null, string search = "", int sort = 0, int isActive = 2, bool isDeleted = false, int minImages = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime(), bool bugsOnly = false)
         {
             var d1 = dateStart;
             var d2 = dateEnd;
@@ -1897,7 +1897,7 @@ namespace Collector.Services
                 "@subjectIds='" + (subjectIds == null ? "" : string.Join(",", subjectIds)) + "', @search='" + search + "', " + 
                 "@isActive=" + isActive + ", @isDeleted=" + (isDeleted == true ? 1 : 0) + ", " + 
                 "@minImages=" + minImages +", @dateStart=" + reader.ConvertDateTime(d1) + ", @dateEnd=" + reader.ConvertDateTime(d2) + ", " + 
-                "@start=" + start + ", @length=" + length + ", @orderby=" + sort));
+                "@start=" + start + ", @length=" + length + ", @orderby=" + sort + ", @bugsonly=" + (bugsOnly == true ? 1 : 0)));
             return reader;
         }
 
@@ -1933,6 +1933,14 @@ namespace Collector.Services
             var dStart = DateTime.Now.AddYears(-100);
             var dEnd = DateTime.Now;
             var footer = "";
+            var html = new List<string>();
+            var feeds = new List<ArticleFeedList>();
+            var expand = " expanded";
+            var fid = 0;
+            var rid = 0;
+            var fx = 0;
+            var bugsonly = false;
+            SqlReader reader;
             if(dateStart != "")
             {
                 dStart = DateTime.Parse(dateStart);
@@ -1944,20 +1952,45 @@ namespace Collector.Services
             //render articles list based on group type
             switch (groupby)
             {
+                case 2: // bugs only ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 case 0: // all //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+                    if (groupby == 2) { bugsonly = true; }
+                    reader = GetArticles(start, length + 1, S.Util.Str.GetInts(subjectIds), search, sortby, isActive, isDeleted, minImages, dStart, dEnd, bugsonly);
+                    if (reader.Rows.Count > 0)
+                    {
+                        
+                        html.Add("<div class=\"accordion articles feed00\">" +
+                                    "<div class=\"title" + expand + "\">Articles</div>" +
+                                    "<div class=\"box" + expand + "\">" +
+                                        "<div class=\"contents\">");
+                        while (reader.Read())
+                        {
+                            
+                            html.Add(
+                                GetArticleListItem(
+                                    reader.Get("title"), reader.Get("url"), reader.Get("breadcrumb"), reader.Get("hierarchy"),
+                                    reader.GetInt("subjectId"), reader.Get("subjectTitle"), reader.GetInt("score"), reader.GetDouble("filesize"),
+                                    reader.GetInt("wordcount"), reader.GetInt("sentencecount"), reader.GetInt("importantcount"), reader.Get("years"),
+                                    reader.GetInt("bugsopen"), reader.GetInt("bugsresolved")
+                                )
+                            );
+                        }
+                        //render list footer
+                        if (reader.Rows.Count >= length + 1)
+                        {
+                            html.Add(GetArticleListFooter((start + length <= 10 ? 1 : start + length + 1), -1, subjectId));
+                        }
+                        //render end of accordion
+                        html.Add("</div></div></div>");
+                        htm += string.Join("\n", html.ToArray());
+                        
+                    }
                     break;
 
                 case 1: // feeds ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    var reader = GetArticlesForFeeds(start, length+1, feedId, S.Util.Str.GetInts(subjectIds), search, sortby, isActive, isDeleted, minImages, dStart, dEnd);
+                    reader = GetArticlesForFeeds(start, length+1, feedId, S.Util.Str.GetInts(subjectIds), search, sortby, isActive, isDeleted, minImages, dStart, dEnd);
                     if (reader.Rows.Count > 0)
                     {
-                        var html = new List<string>();
-                        var feeds = new List<ArticleFeedList>();
-                        var expand = " expanded";
-                        var fid = 0;
-                        var rid = 0;
-                        var fx = 0;
                         while (reader.Read())
                         {
                             if (reader.GetBool("isfeed") == true)
@@ -1994,7 +2027,7 @@ namespace Collector.Services
                                 feeds[fx].list.Add(
                                     GetArticleListItem(
                                         reader.Get("title"), reader.Get("url"), reader.Get("breadcrumb"), reader.Get("hierarchy"),
-                                        reader.GetInt("subjectId"), reader.Get("subjectTitle"), reader.GetInt("subjectScore"), reader.GetDouble("filesize"),
+                                        reader.GetInt("subjectId"), reader.Get("subjectTitle"), reader.GetInt("score"), reader.GetDouble("filesize"),
                                         reader.GetInt("wordcount"), reader.GetInt("sentencecount"), reader.GetInt("importantcount"), reader.Get("years"),
                                         reader.GetInt("bugsopen"), reader.GetInt("bugsresolved")
                                     )
@@ -2018,14 +2051,10 @@ namespace Collector.Services
                         }else if(feedId >= 0)
                         {
                             //output one feed list
-                            if (reader.Rows.Count > length + 1) { footer = GetArticleListFooter(start + length, feedId, subjectId); }
+                            if (reader.Rows.Count > length + 1) { footer = GetArticleListFooter(start + length + 1, feedId, subjectId); }
                             htm += string.Join("\n", feeds[0].list.ToArray()) + footer;
                         }
                     }
-                    break;
-
-                case 2: // bugs ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
                     break;
             }
 

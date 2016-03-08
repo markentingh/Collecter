@@ -8,7 +8,8 @@
 	@dateEnd nvarchar(50),
 	@orderby int = 1,
 	@start int = 1,
-	@length int = 50
+	@length int = 50,
+	@bugsonly bit = 0
 AS
 	/* set default dates */
 	IF (@dateStart IS NULL) BEGIN SET @dateStart = DATEADD(YEAR, -100, GETDATE()) END
@@ -30,22 +31,29 @@ AS
 
 	SELECT * FROM (
 		SELECT ROW_NUMBER() OVER(ORDER BY 
-		CASE WHEN @orderby = 1 THEN a.datecreated END ASC,
-		CASE WHEN @orderby = 2 THEN a.datecreated END DESC
+			CASE WHEN @orderby = 1 THEN a.datecreated END ASC,
+			CASE WHEN @orderby = 2 THEN a.datecreated END DESC,
+			CASE WHEN @orderby = 3 THEN a.score END ASC,
+			CASE WHEN @orderby = 4 THEN a.score END DESC
 		) AS rownum, a.*, 
 		(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=0) AS bugsopen,
 		(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=1) AS bugsresolved,
-		s.breadcrumb, s.hierarchy, s.subjectId, s.title AS subjectTitle
+		s.breadcrumb, s.hierarchy, s.title AS subjectTitle
 		FROM Articles a 
-		LEFT JOIN Subjects s ON s.subjectId=(SELECT TOP 1 subjectId FROM ArticleSubjects WHERE articleId=a.articleId ORDER BY score DESC)
+		LEFT JOIN Subjects s ON s.subjectId=a.subjectId
 		WHERE
 		(
-			articleId IN (SELECT * FROM #subjectarticles)
-			OR articleId IN (SELECT * FROM #searchedarticles)
-			OR articleId = CASE WHEN @subjectIds = '' THEN articleId ELSE 0 END
+			a.articleId IN (SELECT * FROM #subjectarticles)
+			OR a.articleId IN (SELECT * FROM #searchedarticles)
+			OR a.articleId = CASE WHEN @subjectIds = '' THEN a.articleId ELSE 0 END
+			OR a.title LIKE '%' + @search + '%'
+			OR a.summary LIKE '%' + @search + '%'
 		) 
-		AND active = CASE WHEN @isActive = 2 THEN active ELSE @isActive END
-		AND deleted=@isDeleted
-		AND images >= @minImages
-		AND datecreated >= CONVERT(datetime, @dateStart) AND datecreated <= CONVERT(datetime, @dateEnd)
+		AND a.articleId = CASE 
+			WHEN @bugsonly=1 THEN (SELECT TOP 1 articleId FROM ArticleBugs WHERE articleId=a.articleId) 
+			ELSE a.articleId END
+		AND a.active = CASE WHEN @isActive = 2 THEN a.active ELSE @isActive END
+		AND a.deleted=@isDeleted
+		AND a.images >= @minImages
+		AND a.datecreated >= CONVERT(datetime, @dateStart) AND a.datecreated <= CONVERT(datetime, @dateEnd)
 	) AS tbl WHERE rownum >= @start AND rownum < @start + @length
