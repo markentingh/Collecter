@@ -155,7 +155,7 @@ namespace Collector.Services
             public int[] references; //word indexes within article words (he, she, his, hers, him, her, he'd, she'd, he's, she's, etc...)
         }
 
-        private struct ArticleFeedList
+        private struct ArticleHtmlList
         {
             public string html;
             public List<string> list;
@@ -1924,6 +1924,30 @@ namespace Collector.Services
             return reader;
         }
 
+        public SqlReader GetArticlesForSubjects(int start = 1, int length = 10, int[] subjectIds = null, string search = "", int sort = 2, int isActive = 2, bool isDeleted = false, int minImages = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
+        {
+            var d1 = dateStart;
+            var d2 = dateEnd;
+            if (d1.Year == 1)
+            {
+                d1 = DateTime.Today.AddYears(-100);
+            }
+            if (d2.Year == 1)
+            {
+                d2 = DateTime.Today.AddYears(100);
+            }
+
+            var reader = new SqlReader();
+
+            if(subjectIds == null) { return reader; } else { if(subjectIds.Length == 0) { return reader; } }
+            reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetArticlesForSubjects " +
+                "@subjectIds='" + (subjectIds == null ? "" : string.Join(",", subjectIds)) + "', @search='" + search + "', " +
+                "@isActive=" + isActive + ", @isDeleted=" + (isDeleted == true ? 1 : 0) + ", " +
+                "@minImages=" + minImages + ", @dateStart=" + reader.ConvertDateTime(d1) + ", @dateEnd=" + reader.ConvertDateTime(d2) + ", " +
+                "@start=" + start + ", @length=" + length + ", @orderby=" + sort));
+            return reader;
+        }
+
         public Inject GetArticlesUI(string element = "", int start = 1, int length = 5, int groupby = 1, int sortby = 2, int viewby = 0, 
             int feedId = -1, int subjectId = 0, string subjectIds = "", string search = "", int isActive = 2, bool isDeleted = false, 
             int minImages = 0, string dateStart = "", string dateEnd = "")
@@ -1934,7 +1958,7 @@ namespace Collector.Services
             var dEnd = DateTime.Now;
             var footer = "";
             var html = new List<string>();
-            var feeds = new List<ArticleFeedList>();
+            var htmls = new List<ArticleHtmlList>();
             var expand = " expanded";
             var fid = 0;
             var rid = 0;
@@ -1997,7 +2021,7 @@ namespace Collector.Services
                             {
                                 
                                 //load feed container
-                                var newfeed = new ArticleFeedList();
+                                var newfeed = new ArticleHtmlList();
                                 if (feedId < 0)
                                 {
                                     newfeed.html = 
@@ -2010,7 +2034,7 @@ namespace Collector.Services
                                 }
                                 newfeed.id = reader.GetInt("feedId");
                                 newfeed.list = new List<string>();
-                                feeds.Add(newfeed);
+                                htmls.Add(newfeed);
                                 expand = "";
                             }
                             else
@@ -2019,12 +2043,12 @@ namespace Collector.Services
                                 if(rid != fid)
                                 {
                                     rid = fid;
-                                    for (fx = 0; fx < feeds.Count; fx++)
+                                    for (fx = 0; fx < htmls.Count; fx++)
                                     {
-                                        if (feeds[fx].id == fid) { break; }
+                                        if (htmls[fx].id == fid) { break; }
                                     }
                                 }
-                                feeds[fx].list.Add(
+                                htmls[fx].list.Add(
                                     GetArticleListItem(
                                         reader.Get("title"), reader.Get("url"), reader.Get("breadcrumb"), reader.Get("hierarchy"),
                                         reader.GetInt("subjectId"), reader.Get("subjectTitle"), reader.GetInt("score"), reader.GetDouble("filesize"),
@@ -2035,10 +2059,10 @@ namespace Collector.Services
                             }
                         }
                         footer = "";
-                        if (feeds.Count > 0 && feedId < 0)
+                        if (htmls.Count > 0 && feedId < 0)
                         {
                             //output all feeds lists
-                            foreach (var f in feeds)
+                            foreach (var f in htmls)
                             {
                                 if (f.list.Count > 0)
                                 {
@@ -2052,7 +2076,77 @@ namespace Collector.Services
                         {
                             //output one feed list
                             if (reader.Rows.Count > length + 1) { footer = GetArticleListFooter(start + length + 1, feedId, subjectId); }
-                            htm += string.Join("\n", feeds[0].list.ToArray()) + footer;
+                            htm += string.Join("\n", htmls[0].list.ToArray()) + footer;
+                        }
+                    }
+                    break;
+                case 3: //subjects
+                    reader = GetArticlesForSubjects(start, length + 1, S.Util.Str.GetInts(subjectIds), search, sortby, isActive, isDeleted, minImages, dStart, dEnd);
+                    if (reader.Rows.Count > 0)
+                    {
+                        while (reader.Read())
+                        {
+                            if (reader.GetBool("isfeed") == true)
+                            {
+
+                                //load subject container
+                                var newsubj = new ArticleHtmlList();
+                                if (feedId < 0)
+                                {
+                                    newsubj.html =
+                                        "<div class=\"accordion articles feed" + reader.GetInt("subjectId") + "\">" +
+                                            "<div class=\"title" + expand + "\">" + S.Sql.Decode(reader.Get("breadcrumb")) + "</div>" +
+                                            "<div class=\"box" + expand + "\">" +
+                                                "<div class=\"contents\">{{list}}</div>" +
+                                            "</div>" +
+                                        "</div>";
+                                }
+                                newsubj.id = reader.GetInt("subjectId");
+                                newsubj.list = new List<string>();
+                                htmls.Add(newsubj);
+                                expand = "";
+                            }
+                            else
+                            {
+                                fid = reader.GetInt("subjectId");
+                                if (rid != fid)
+                                {
+                                    rid = fid;
+                                    for (fx = 0; fx < htmls.Count; fx++)
+                                    {
+                                        if (htmls[fx].id == fid) { break; }
+                                    }
+                                }
+                                htmls[fx].list.Add(
+                                    GetArticleListItem(
+                                        reader.Get("title"), reader.Get("url"), reader.Get("breadcrumb"), reader.Get("hierarchy"),
+                                        reader.GetInt("subjectId"), reader.Get("subjectTitle"), reader.GetInt("score"), reader.GetDouble("filesize"),
+                                        reader.GetInt("wordcount"), reader.GetInt("sentencecount"), reader.GetInt("importantcount"), reader.Get("years"),
+                                        reader.GetInt("bugsopen"), reader.GetInt("bugsresolved")
+                                    )
+                                );
+                            }
+                        }
+                        footer = "";
+                        if (htmls.Count > 0 && feedId < 0)
+                        {
+                            //output all subject lists
+                            foreach (var f in htmls)
+                            {
+                                if (f.list.Count > 0)
+                                {
+                                    if (f.list.Count > length) { footer = GetArticleListFooter(1, f.id, subjectId); }
+                                    html.Add(f.html.Replace("{{list}}",
+                                        string.Join("\n", f.list.ToArray()) + footer));
+                                }
+                            }
+                            htm = string.Join("\n", html);
+                        }
+                        else if (feedId >= 0)
+                        {
+                            //output one feed list
+                            if (reader.Rows.Count > length + 1) { footer = GetArticleListFooter(start + length + 1, feedId, subjectId); }
+                            htm += string.Join("\n", htmls[0].list.ToArray()) + footer;
                         }
                     }
                     break;

@@ -154,6 +154,7 @@
     <Build Include="Stored Procedures\UpdateArticleBugDescription.sql" />
     <Build Include="Stored Procedures\DestroyCollection.sql" />
     <Build Include="Indexes\IndexArticleScore.sql" />
+    <Build Include="Stored Procedures\GetArticlesForSubjects.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />
