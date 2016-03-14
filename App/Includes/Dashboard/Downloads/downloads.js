@@ -1,6 +1,6 @@
 ﻿S.downloader = {
-    list: [], totalDownloads: 0, downloading: false,
-    countdown: 0, timer: null, timerStart: null, timerEnd: null, timerCurrent: null,
+    list: [], totalDownloads: 0, downloading: false, countdown: 0, queueCheckMins: 2,
+    timer: null, timerStart: null, timerEnd: null, timerCurrent: null, timerQueue: null,
 
     load: function () {
         $('#btnaddserver').off().on('click', S.downloader.buttons.showAddServer);
@@ -48,6 +48,7 @@
             $('.form-downloader, .downloader-status').hide();
             $('#btndownloader').show();
             $('.downloading').html('');
+            S.downloader.stopQueueChecker();
         },
 
         startDownloads: function () {
@@ -56,6 +57,7 @@
             S.downloader.downloading = true;
             $('.form-downloader .checking-msg')[0].innerHTML = "Distributing URLs to servers for downloading...";
             S.ajax.post('/api/Downloads/StartDownloads', {}, function () { S.ajax.callback.inject(arguments[0]); });
+            S.downloader.startQueueChecker();
         },
 
         changeServerType: function () {
@@ -81,14 +83,14 @@
 
     loadServerFrames: function (index, serverId, host) {
         var container = $('.server' + index + ' .downloading');
-        console.log(container);
         var url = 'http://' + host + '/Download';
         container[0].innerHTML = '<iframe frameborder="0" scrolling="no" src="' + url + '"></iframe>';
     },
 
-    updateDownloadQueue: function (minus) {
+    updateDownloadQueue: function (minus, msg) {
         if (S.downloader.downloading == false) { return false;}
-        S.downloader.totalDownloads -= minus;
+        if (minus != 0) { S.downloader.totalDownloads -= minus; }
+        if (msg != null) { S.downloader.consoleLog(msg); }
         $('.servers .total')[0].innerHTML = S.util.math.numberWithCommas(S.downloader.totalDownloads);
         return true;
     },
@@ -96,7 +98,46 @@
     finishDownloads: function () {
         $('.downloading').html('');
         $('.form-downloader .checking-msg')[0].innerHTML = "Finished downloading all articles in the queue.";
+        S.downloader.consoleLog('Finished downloading all articles in the queue. Waiting for new articles to download...');
         S.downloader.downloading = false;
+    },
+
+    startQueueChecker: function () {
+        clearTimeout(S.downloader.timerQueue);
+        S.downloader.timerQueue = setTimeout(function () { S.downloader.checkQueue();}, 60000 * S.downloader.queueCheckMins)
+    },
+
+    checkQueue: function (){
+        S.ajax.post('/api/Downloads/CheckQueue', {},
+            function (data) {
+                S.downloader.totalDownloads += data.d;
+                if (data.d > 0) {
+                    S.downloader.consoleLog('Added <b>' + data.d + '</b> URL(s) to the download queue.');
+                }
+                S.downloader.updateDownloadQueue(0);
+                if (S.downloader.downloading == false) {
+                    S.downloader.buttons.startDownloads();
+                }
+        });
+        S.downloader.startQueueChecker();
+    },
+
+    consoleLog: function (msg) {
+        if ($('.console .contents > div').length > 200) {
+            $('.console .contents > div').first().remove();
+        }
+        var time = new Date();
+        var hrs = time.getHours() % 12;
+        var mins = time.getMinutes();
+        var secs = time.getSeconds();
+        hrs = (hrs ? hrs : 12);
+        mins = (mins < 10 ? '0' + mins : mins);
+        secs = (secs < 10 ? '0' + secs : secs);
+        $('.console .contents').append('<div><span class="time">' + (hrs + ':' + mins + ':' + secs) + '</span><div class="msg">' + msg + '</div></div>');
+    },
+
+    stopQueueChecker: function () {
+        clearTimeout(S.downloader.timerQueue);
     }
 }
 

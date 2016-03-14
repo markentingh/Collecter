@@ -17,7 +17,11 @@ namespace Collector
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCaching();
-            services.AddSession();
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.CookieName = ".Collector";
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -58,13 +62,11 @@ namespace Collector
             app.Run(async (context) =>
             {
                 var strings = new Utility.Str(null);
-                var requestStart = DateTime.Now;
-                DateTime requestEnd;
-                TimeSpan tspan;
                 var path = context.Request.Path.ToString();
                 var paths = path.Split("/"[0]).Skip(1).ToArray();
-                string requestType = "";
                 var extension = strings.getFileExtension(path);
+                var requestType = "";
+                server.requestStart = DateTime.Now;
                 server.requestCount += 1;
                 Console.WriteLine("--------------------------------------------");
                 Console.WriteLine("{0} GET {1}", DateTime.Now.ToString("hh:mm:ss"), context.Request.Path);
@@ -108,13 +110,10 @@ namespace Collector
 
                 if(requestType == "") {
                     context.Response.ContentType = "text/html";
-                    await context.Response.WriteAsync("Collector - an email template builder.");
+                    await context.Response.WriteAsync("Collector - A place to store knowledge.");
                 }
 
-                requestEnd = DateTime.Now;
-                tspan = requestEnd - requestStart;
-                server.requestTime += (tspan.Seconds);
-                Console.WriteLine("END GET {0} {1} ms {2}", context.Request.Path, tspan.Milliseconds, requestType);
+                Console.WriteLine("END GET {0} {1} ms {2}", context.Request.Path, server.requestTime.Milliseconds, requestType);
                 Console.WriteLine("");
             });
         }

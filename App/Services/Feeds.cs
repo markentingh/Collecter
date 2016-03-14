@@ -25,6 +25,8 @@ namespace Collector.Services
         {
         }
 
+        public bool KeepAlive() { return true; }
+
         public Inject AddFeed(string title, string url)
         {
             var inject = new Inject();

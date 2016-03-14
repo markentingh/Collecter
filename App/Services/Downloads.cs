@@ -16,6 +16,10 @@ namespace Collector.Services
             public int status;
         }
 
+        private string[] commonQueryKeys = new string[] { "ie", "utm_source", "utm_medium", "utm_campaign" };
+
+        private List<structDownloadInfo> _downloadList = new List<structDownloadInfo>();
+
         public Downloads(Core CollectorCore, string[] paths) : base(CollectorCore, paths)
         {
         }
@@ -131,6 +135,10 @@ namespace Collector.Services
             var nextIndex = index + 1;
             var minusIndex = 1;
             var serverId = 0;
+            var downloadedUrl = "";
+            var msg = "";
+            var title = "";
+            var filesize = "";
             //get download server Id
             if (S.Session.Keys.Contains("downloadServerId"))
             {
@@ -145,18 +153,33 @@ namespace Collector.Services
             if (S.Session.Keys.Contains("downloadQueue"))
             {
                 list = (List<structDownloadInfo>)S.Util.Serializer.ReadObject(S.Util.Str.GetString(S.Session.Get("downloadQueue")), typeof(List<structDownloadInfo>));
-                if(index < list.Count)
+                if(_downloadList.Count > 0) { list = _downloadList; }
+                if (index < list.Count)
                 {
                     //download next html web page using PhantomJS) in the list
-                    var url = list[index].url;
+                    var url = S.Util.Str.CleanUrl(list[index].url, true, false, commonQueryKeys);
+                    var downloaded = true;
+                    downloadedUrl = url;
                     var d = S.Util.Web.DownloadFromPhantomJS(url);
-                    if(d.html.Length > 0)
+                    if(d.html == null)
                     {
+                        downloaded = false;
+                    }
+                    else
+                    {
+                        if (d.html.Trim().Length == 0)
+                        {
+                            downloaded = false;
+                        }
+                    }
+                    
+                    if(downloaded == true) { 
                         url = d.url;
+                        downloadedUrl = url;
                         var html = d.html;
-                        var title = "";
                         var articles = new Articles(S, S.Page.Url.paths);
                         var article = articles.SetupAnalyzedArticle(url, html);
+                        filesize = Math.Round(article.rawHtml.Length / 1024.0, 2) + "KB";
 
                         //set feedId for article
                         article.feedId = list[index].feedId;
@@ -174,6 +197,7 @@ namespace Collector.Services
                             }
                         }
                         if (title == "") { title = "Unknown Title from " + S.Util.Str.GetDomainName(url); }
+                        title = title.Replace("\r", "").Replace("\n", "").Trim();
                         article.pageTitle = title;
                         article.title = title;
                         var id = S.Sql.ExecuteScalar("EXEC GetArticleByUrl @url='" + article.url + "'");
@@ -192,6 +216,7 @@ namespace Collector.Services
                     {
                         //update download queue status to "fail"
                         S.Sql.ExecuteNonQuery("EXEC UpdateDownload @qid=" + list[index].queueId + ", @status=2");
+                        msg = "Failed to download " + downloadedUrl + ".";
                     }
                 }
                 else
@@ -200,14 +225,14 @@ namespace Collector.Services
                     nextIndex = 0;
                     minusIndex = 0;
                     S.Sql.ExecuteNonQuery("EXEC AddDownloadDistribution @serverId=" + serverId);
-                    list = (List<structDownloadInfo>)S.Util.Serializer.ReadObject(S.Util.Str.GetString(S.Session.Get("downloadQueue")), typeof(List<structDownloadInfo>));
-                    LoadDistributionList(serverId);
+                    _downloadList = LoadDistributionList(serverId);
+                    return Download(0);
                 }
 
                 //prep javascript to request next download in distribution list
                 if(list.Count > 0)
                 {
-                    S.Page.RegisterJS("dl", "S.downloads.download(" + nextIndex + ", " + minusIndex + ");");
+                    S.Page.RegisterJS("dl", "S.downloads.download(" + nextIndex + ", " + minusIndex + ", '" + downloadedUrl + "', '" + msg + "', '" + filesize + "', '" + S.Server.requestTime.Seconds + "', '" + title.Replace("'","\\'") + "');");
                 }
                 else
                 {
@@ -219,7 +244,7 @@ namespace Collector.Services
             return response;
         }
 
-        public void LoadDistributionList(int serverId)
+        public List<structDownloadInfo> LoadDistributionList(int serverId)
         {
             //get download distribution list for this server
             var reader = new SqlReader();
@@ -238,6 +263,12 @@ namespace Collector.Services
                 }
             }
             S.Session.Set("downloadQueue", S.Util.Serializer.WriteObject(list));
+            return list;
+        }
+
+        public int CheckQueue()
+        {
+            return (int)S.Sql.ExecuteScalar("EXEC CheckDownloadQueue");
         }
         #endregion
     }

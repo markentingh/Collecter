@@ -17,7 +17,7 @@ namespace Collector
 
         public bool isLocal = false;
         public int requestCount = 0;
-        public float requestTime = 0;
+        public DateTime requestStart;
         public string sqlActive = "Azure";
         public string sqlConnection = "";
         public string saltPrivateKey = "?";
@@ -63,9 +63,10 @@ namespace Collector
         {
             return Uri.EscapeDataString(strPath.Replace(" ","+"));
         }
-        
+
         #endregion
 
+        #region "Cached Files"
         public string OpenFile(string file)
         {
             if(Cache.ContainsKey(file) == true && !isLocal)
@@ -95,6 +96,18 @@ namespace Collector
                 File.WriteAllText(MapPath(file), data);
             }
         }
+        #endregion
+
+        #region "Properties"
+        public TimeSpan requestTime
+        {
+            get{
+                TimeSpan tspan;
+                tspan = DateTime.Now - requestStart;
+                return tspan;
+            }
+        }
+        #endregion
     }
 
 

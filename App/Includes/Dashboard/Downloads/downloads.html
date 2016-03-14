@@ -9,6 +9,15 @@
     .download-queue { padding-top: 50px; }
     .row .total{float:right; max-width:200px; font-size:24px; text-align:right;}
 
+    .console .contents > div{padding:10px 0 10px 0; overflow:hidden; border-bottom:1px solid #004E47;}
+    .console .contents > div:hover{background-color:#4A2649;}
+    .console .time{float:left; display:inline-block; color:#01C1C1; font-weight:300; width:80px; }
+    .console .request-time{color:#e1d486;}
+    .console .msg{float:left; width:calc(100% - 80px); box-sizing:border-box;}
+    .console .filesize{color:#01B6B7; padding-right:5px; display:inline-block;}
+    .console .page-title{display:block; padding-top:4px; color:#fff;}
+    .console a.url{display:block; padding:4px 0 0 0;}
+
     .server{position:relative; padding:10px 20px;}
     .server:hover{background-color:#4A2649;}
     .server .title{font-size:20px; color:#efefef}
@@ -68,6 +77,15 @@
         <div class="title expanded">Download Queue</div>
         <div class="box expanded">
             <div class="contents">{{queue}}</div>
+        </div>
+    </div>
+</div>
+
+<div class="console">
+    <div class="accordion">
+        <div class="title expanded">Console</div>
+        <div class="box expanded">
+            <div class="contents"></div>
         </div>
     </div>
 </div>

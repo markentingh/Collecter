@@ -155,6 +155,8 @@
     <Build Include="Stored Procedures\DestroyCollection.sql" />
     <Build Include="Indexes\IndexArticleScore.sql" />
     <Build Include="Stored Procedures\GetArticlesForSubjects.sql" />
+    <Build Include="Tables\VarDates.sql" />
+    <Build Include="Stored Procedures\CheckDownloadQueue.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

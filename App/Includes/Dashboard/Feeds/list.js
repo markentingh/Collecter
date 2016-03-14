@@ -1,6 +1,6 @@
 ﻿S.feeds = {
-    list: [], urlCount: 0, cancelcheck: false, checkingfeeds: false,
-    countdown: 0, timer: null, timerStart: null, timerEnd: null, timerCurrent: null,
+    list: [], urlCount: 0, cancelcheck: false, checkingfeeds: false, countdown: 0, keepAliveMins: 2,
+    timer: null, timerStart: null, timerEnd: null, timerCurrent: null, timerKeepAlive: null,
 
     load: function () {
         $('#btnaddfeed').off().on('click', S.feeds.buttons.showAddFeed);
@@ -45,6 +45,7 @@
             $('.form-feedscheck .settings').show();
             $('.form-feedscheck .checking').hide();
             $('#btncheckfeeds').show();
+            S.feeds.stopKeepAlive();
         },
 
         checkFeeds: function () {
@@ -61,6 +62,7 @@
             S.feeds.timerStart = new Date();
             S.feeds.timerEnd = new Date(S.feeds.timerStart.getTime() + S.feeds.countdown * 60000);
             S.feeds.countdownFeeds();
+            S.feeds.startKeepAlive();
         },
 
         checkFeed: function (index) {
@@ -97,6 +99,20 @@
         }
     },
 
+    stopKeepAlive: function(){
+        clearTimeout(S.feeds.timerKeepAlive);
+    },
+
+    startKeepAlive: function(){
+        clearTimeout(S.feeds.timerKeepAlive);
+        S.ajax.post('/api/Feeds/KeepAlive', {}, function () {
+            S.feeds.timerKeepAlive = setTimeout(function () {
+                S.feeds.startKeepAlive();
+                console.log('keep alive ' + new Date());
+            }, 60000 * S.feeds.keepAliveMins);
+        });
+    },
+
     updateFeedStatus: function (domain, total, index) {
         S.feeds.urlCount += total;
         $('.feeds-status .progress-msg')[0].innerHTML = "added " + total + " url(s) from " + domain + ".";
@@ -108,7 +124,7 @@
         $('.feeds-status .progress-msg')[0].innerHTML = S.feeds.urlCount + " total url(s) collected from " + S.feeds.list.length + " feed(s).";
         $('.feeds-status .progress').css({ width: '100%' });
         //refresh list of feeds with new chart data
-        S.ajax.post('/api/Feeds/LoadFeedsUI', { index: index, more: more }, function (data) { $('.feeds-list .contents')[0].innerHTML = data.d; });
+        S.ajax.post('/api/Feeds/LoadFeedsUI', {}, function (data) { $('.feeds-list .contents')[0].innerHTML = data.d; });
         S.feeds.checkingfeeds = false;
     },
 

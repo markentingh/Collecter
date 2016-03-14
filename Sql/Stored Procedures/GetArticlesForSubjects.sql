@@ -97,18 +97,16 @@ AS
 
 	/* get subjects from array */
 
-	SELECT subjectId INTO #subjects FROM 
-		(SELECT ROW_NUMBER() OVER(ORDER BY breadcrumb) AS rownum, subjectId FROM Subjects
+	SELECT subjectId, title INTO #subjects FROM 
+		(SELECT ROW_NUMBER() OVER(ORDER BY breadcrumb) AS rownum, subjectId, title FROM Subjects
 		WHERE subjectId IN (SELECT valueInt FROM dbo.SplitArray(@subjectIds, ',')) 
 		OR subjectId = CASE WHEN @subjectIds = '' THEN subjectId ELSE -1 END) AS tbl
 	WHERE rownum >= @subjectStart AND rownum < @subjectStart + @subjectLength
 	
 	/* get articles that match a search term */
-	IF(@search <> '') BEGIN
-		SELECT * INTO #search FROM dbo.SplitArray(@search, ',')
-		SELECT wordId INTO #wordids FROM Words WHERE word IN (SELECT value FROM #search)
-		SELECT articleId INTO #searchedarticles FROM ArticleWords WHERE wordId IN (SELECT * FROM #wordids)
-	END
+	SELECT * INTO #search FROM dbo.SplitArray(@search, ',')
+	SELECT wordId INTO #wordids FROM Words WHERE word IN (SELECT value FROM #search)
+	SELECT articleId INTO #searchedarticles FROM ArticleWords WHERE wordId IN (SELECT * FROM #wordids)
 	
 	/* first, get subjects list //////////////////////////////////////////////////////////////////////////////////////////// */
 	SET @cursor1 = CURSOR FOR

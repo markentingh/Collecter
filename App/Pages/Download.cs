@@ -24,6 +24,7 @@ namespace Collector.Pages
 
             //render page
             scaffold.Data["script"] = S.Page.RenderJS();
+            scaffold.Data["server-name"] = host;
             return scaffold.Render();
         }
     }

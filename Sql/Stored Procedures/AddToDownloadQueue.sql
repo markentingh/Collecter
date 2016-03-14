@@ -5,7 +5,7 @@ AS
 IF (SELECT COUNT(*) FROM DownloadQueue WHERE url=@url) = 0 BEGIN
 	IF (SELECT COUNT(*) FROM Articles WHERE url=@url) = 0 BEGIN
 		DECLARE @qid INT = NEXT VALUE FOR SequenceDownloadQueue
-		INSERT INTO DownloadQueue (qid, url, feedId, serverId, [status]) VALUES (@qid, @url, @feedId, 0, 0)
+		INSERT INTO DownloadQueue (qid, url, feedId, serverId, [status], datecreated) VALUES (@qid, @url, @feedId, 0, 0, GETDATE())
 		SELECT 1
 	END ELSE BEGIN SELECT 0 END
 END ELSE BEGIN SELECT 0 END

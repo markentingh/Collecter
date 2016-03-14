@@ -176,11 +176,18 @@
 <script type="text/javascript" src="/scripts/core/view.js"></script>
 <script type="text/javascript">
     S.downloads = {
-        download: function (index, minus) {
+        download: function (index, minus, url, msg, filesize, time, title) {
+            console.log(arguments);
+            var more = true;
             $('.sk-fading-circle').removeClass('change, downloaded').addClass('change');
             setTimeout(function () { $('.sk-fading-circle').addClass('downloaded'); }, 500);
             setTimeout(function () { $('.sk-fading-circle').removeClass('change downloaded'); }, 4000);
-            if (window.parent.S.downloader.updateDownloadQueue(minus) == true) {
+            more = window.parent.S.downloader.updateDownloadQueue(minus, (url != null && url != '' && (msg == null || msg == '') ?
+                '{{server-name}} Downloaded <span class="filesize">(' + filesize + ')</span> <span class="request-time">(' + time + ' sec)</span>: ' +
+                '<span class="page-title">' + title + '</span><a href="/dashboard/articles/analyze?url=' + encodeURIComponent(url) + '" target="_blank" class="url">' + url + '</a>'
+                : (msg == '' ? 'Starting downloads for server: {{server-name}}' : msg)
+                ));
+            if (more == true) {
                 S.ajax.post('/api/Downloads/Download', { index: index }, function () { S.ajax.callback.inject(arguments[0]); });
             }
         },
@@ -190,6 +197,6 @@
         }
     }
     //start downloading the first url in the distribution list
-    S.downloads.download(0, 0); 
+    S.downloads.download(0, 0, '', ''); 
 </script>
 <script type="text/javascript">{{script}}</script>

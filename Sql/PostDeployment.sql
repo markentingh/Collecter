@@ -16,6 +16,11 @@ IF (SELECT COUNT(*) FROM Users WHERE userId=1) = 0 BEGIN
 	(1, 'admin@localhost', CONVERT(VARCHAR(32), HashBytes('MD5', 'admin@localhost'+@saltKey+'development'), 2), @date, 1, 0)
 END
 
+/* Setup Initial Variables */
+IF (SELECT COUNT(*) FROM VarDates) = 0 BEGIN
+	INSERT INTO VarDates (id, name, value) VALUES (1, 'download queue', GETDATE())
+END
+
 /* Add Empty Feed to represent articles that don't belong to a feed */
 IF (SELECT COUNT(*) FROM Feeds WHERE feedId=0) = 0 BEGIN
 	/* Create Default User (admin) account */

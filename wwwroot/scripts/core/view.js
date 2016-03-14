@@ -426,7 +426,7 @@ var S = {
                 dataType: "json",
                 url: url,
                 contentType: "text/plain; charset=utf-8",
-                success: function (d) { S.ajax.runQueue(); callback(d); S.events.ajax.complete(d); },
+                success: function (d) { callback(d); S.events.ajax.complete(d); S.ajax.runQueue(); },
                 error: function (xhr, status, err) { S.events.ajax.error(status, err); S.ajax.runQueue(); }
             }
             S.ajax.queue.push(options);
