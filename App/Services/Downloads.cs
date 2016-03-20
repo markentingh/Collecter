@@ -137,6 +137,7 @@ namespace Collector.Services
             var serverId = 0;
             var downloadedUrl = "";
             var msg = "";
+            var classes = "";
             var title = "";
             var filesize = "";
             //get download server Id
@@ -217,6 +218,7 @@ namespace Collector.Services
                         //update download queue status to "fail"
                         S.Sql.ExecuteNonQuery("EXEC UpdateDownload @qid=" + list[index].queueId + ", @status=2");
                         msg = "Failed to download " + downloadedUrl + ".";
+                        classes = "failed";
                     }
                 }
                 else
@@ -232,7 +234,7 @@ namespace Collector.Services
                 //prep javascript to request next download in distribution list
                 if(list.Count > 0)
                 {
-                    S.Page.RegisterJS("dl", "S.downloads.download(" + nextIndex + ", " + minusIndex + ", '" + downloadedUrl + "', '" + msg + "', '" + filesize + "', '" + S.Server.requestTime.Seconds + "', '" + title.Replace("'","\\'") + "');");
+                    S.Page.RegisterJS("dl", "S.downloads.download(" + nextIndex + ", " + minusIndex + ", '" + downloadedUrl + "', '" + msg + "', '" + classes + "', '" + filesize + "', '" + S.Server.requestTime.Seconds + "', '" + title.Replace("'","\\'") + "');");
                 }
                 else
                 {

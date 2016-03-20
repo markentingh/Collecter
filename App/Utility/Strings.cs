@@ -218,10 +218,18 @@ namespace Collector.Utility
                     var newkeys = "";
                     foreach(var k in kv)
                     {
-                        k2v = k.Split(new char[] { '=' }, 2);
-                        if (!removeFromQuery.Contains(k2v[0])){
-                            newkeys += (newkeys.Length > 0 ? "&" : "") + k2v[0] + "=" + k2v[1];
+                        if(k != "")
+                        {
+                            if(k.IndexOf('=') > 0)
+                            {
+                                k2v = k.Split(new char[] { '=' }, 2);
+                                if (!removeFromQuery.Contains(k2v[0]))
+                                {
+                                    newkeys += (newkeys.Length > 0 ? "&" : "") + k2v[0] + "=" + k2v[1];
+                                }
+                            }
                         }
+                        
                     }
                     if(newkeys != "") { newkeys = "?" + newkeys; }
                     result = u[0] + newkeys;

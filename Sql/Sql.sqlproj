@@ -157,6 +157,7 @@
     <Build Include="Stored Procedures\GetArticlesForSubjects.sql" />
     <Build Include="Tables\VarDates.sql" />
     <Build Include="Stored Procedures\CheckDownloadQueue.sql" />
+    <Build Include="Indexes\IndexDownloadQueueRand.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

@@ -47,9 +47,24 @@ namespace Collector.Utility
                 }
                 if (File.Exists(file))
                 {
-                    htm = File.ReadAllText(file);
+                    i = 0;
+ReadFile:
+                    try
+                    {
+                        htm = File.ReadAllText(file);
+                    }catch(Exception ex)
+                    {
+                        System.Threading.Thread.Sleep(250);
+                        i++;
+                        if(i < 10) { goto ReadFile; }
+                    }
                     System.Threading.Thread.Sleep(250);
-                    File.Delete(file);
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (Exception ex) { }
+                    
                 }
                 
                 return htm;

@@ -87,10 +87,10 @@
         container[0].innerHTML = '<iframe frameborder="0" scrolling="no" src="' + url + '"></iframe>';
     },
 
-    updateDownloadQueue: function (minus, msg) {
+    updateDownloadQueue: function (minus, msg, classes) {
         if (S.downloader.downloading == false) { return false;}
         if (minus != 0) { S.downloader.totalDownloads -= minus; }
-        if (msg != null) { S.downloader.consoleLog(msg); }
+        if (msg != null) { S.downloader.consoleLog(msg, classes); }
         $('.servers .total')[0].innerHTML = S.util.math.numberWithCommas(S.downloader.totalDownloads);
         return true;
     },
@@ -98,7 +98,7 @@
     finishDownloads: function () {
         $('.downloading').html('');
         $('.form-downloader .checking-msg')[0].innerHTML = "Finished downloading all articles in the queue.";
-        S.downloader.consoleLog('Finished downloading all articles in the queue. Waiting for new articles to download...');
+        S.downloader.consoleLog('Finished downloading all articles in the queue. Waiting for new articles to download...', 'finished');
         S.downloader.downloading = false;
     },
 
@@ -112,7 +112,7 @@
             function (data) {
                 S.downloader.totalDownloads += data.d;
                 if (data.d > 0) {
-                    S.downloader.consoleLog('Added <b>' + data.d + '</b> URL(s) to the download queue.');
+                    S.downloader.consoleLog('Added <b>' + data.d + '</b> URL(s) to the download queue.', 'added-queue');
                 }
                 S.downloader.updateDownloadQueue(0);
                 if (S.downloader.downloading == false) {
@@ -122,9 +122,9 @@
         S.downloader.startQueueChecker();
     },
 
-    consoleLog: function (msg) {
+    consoleLog: function (msg, classes) {
         if ($('.console .contents > div').length > 200) {
-            $('.console .contents > div').first().remove();
+            $('.console .contents > div').remove();
         }
         var time = new Date();
         var hrs = time.getHours() % 12;
@@ -133,7 +133,7 @@
         hrs = (hrs ? hrs : 12);
         mins = (mins < 10 ? '0' + mins : mins);
         secs = (secs < 10 ? '0' + secs : secs);
-        $('.console .contents').append('<div><span class="time">' + (hrs + ':' + mins + ':' + secs) + '</span><div class="msg">' + msg + '</div></div>');
+        $('.console .contents').append('<div><span class="time">' + (hrs + ':' + mins + ':' + secs) + '</span><div class="msg ' + classes + '">' + msg + '</div></div>');
     },
 
     stopQueueChecker: function () {

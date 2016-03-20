@@ -176,17 +176,24 @@
 <script type="text/javascript" src="/scripts/core/view.js"></script>
 <script type="text/javascript">
     S.downloads = {
-        download: function (index, minus, url, msg, filesize, time, title) {
-            console.log(arguments);
+        download: function (index, minus, url, msg, classes, filesize, time, title) {
             var more = true;
             $('.sk-fading-circle').removeClass('change, downloaded').addClass('change');
             setTimeout(function () { $('.sk-fading-circle').addClass('downloaded'); }, 500);
             setTimeout(function () { $('.sk-fading-circle').removeClass('change downloaded'); }, 4000);
-            more = window.parent.S.downloader.updateDownloadQueue(minus, (url != null && url != '' && (msg == null || msg == '') ?
+            if (url != null && url != '' && (msg == null || msg == '')) {
+                //show download message
+                more = window.parent.S.downloader.updateDownloadQueue(minus,
                 '{{server-name}} Downloaded <span class="filesize">(' + filesize + ')</span> <span class="request-time">(' + time + ' sec)</span>: ' +
                 '<span class="page-title">' + title + '</span><a href="/dashboard/articles/analyze?url=' + encodeURIComponent(url) + '" target="_blank" class="url">' + url + '</a>'
-                : (msg == '' ? 'Starting downloads for server: {{server-name}}' : msg)
-                ));
+                ,'downloaded');
+            } else if (msg != '' && msg != null) {
+                //show custom message
+                more = window.parent.S.downloader.updateDownloadQueue(minus, msg, classes);
+            } else {
+                //show starting message
+                more = window.parent.S.downloader.updateDownloadQueue(minus, 'Starting downloads for server: {{server-name}}', 'starting');
+            }
             if (more == true) {
                 S.ajax.post('/api/Downloads/Download', { index: index }, function () { S.ajax.callback.inject(arguments[0]); });
             }

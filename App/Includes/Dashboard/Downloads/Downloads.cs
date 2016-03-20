@@ -26,7 +26,7 @@
                 scaffold.Data["servers"] = downloads.LoadServersUI();
                 scaffold.Data["host"] = S.Request.Host.ToString();
                 scaffold.Data["queue"] = downloads.LoadQueueUI();
-                S.Page.RegisterJS("downloads", "setTimeout(function(){S.downloader.consoleLog('Collector (v" + S.Version + ") Download Queue Console: >');},100);");
+                S.Page.RegisterJS("downloads", "setTimeout(function(){S.downloader.consoleLog('Collector (v" + S.Version + ") Download Queue Console: >', 'startup');},100);");
                 S.Page.RegisterJSFromFile("/app/includes/dashboard/downloads/downloads.js");
             }
             return scaffold.Render();
