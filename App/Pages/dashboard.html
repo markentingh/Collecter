@@ -1,18 +1,19 @@
 ﻿<div class="dashboard">
     <div class="row bottom">
         {{menu}}
-        <div class="menu dash-menu">
-            <nav>
-                <ul>
-                    <li><a href="/dashboard/search">Search</a></li>
-                    <li><a href="/dashboard/subjects">Subjects</a></li>
-                    <li><a href="/dashboard/articles">Articles</a></li>
-                    <li><a href="/dashboard/feeds">Feeds</a></li>
-                    <li><a href="/dashboard/downloads">Downloads</a></li>
-                    <li><a href="/dashboard/analyzer">Analyzer</a></li>
-                </ul>
-            </nav>
-        </div>
+        {{dash-menu (block)}}
+        <nav>
+            <ul>
+                <li><a href="/dashboard/search">Search</a></li>
+                <li><a href="/dashboard/subjects">Subjects</a></li>
+                <li><a href="/dashboard/topics">Topics</a></li>
+                <li><a href="/dashboard/articles">Articles</a></li>
+                <li><a href="/dashboard/feeds">Feeds</a></li>
+                <li><a href="/dashboard/downloads">Downloads</a></li>
+                <li><a href="/dashboard/analyzer">Analyzer</a></li>
+            </ul>
+        </nav>
+        {{/dash-menu}}
     </div>
 
     <div class="section">

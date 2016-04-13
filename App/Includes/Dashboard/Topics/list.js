@@ -7,6 +7,7 @@
     },
 
     load: function () {
+        $('#btnaddtopic').off().on('click', S.topics.buttons.showAddTopic);
         $('#btnsaveaddtopic').off().on('click', S.topics.buttons.saveAddTopic);
         $('#btncanceladdtopic').off().on('click', S.topics.buttons.hideAddTopic);
     },
@@ -25,7 +26,10 @@
         saveAddTopic: function () {
             var title = $('#txtaddtopictitle').val();
             var description = $('#txtaddtopicdesc').val();
-            S.ajax.post('/api/Topics/AddTopic', { element: S.topics.newTopic.element, subjectId: S.topics.newTopic.subjectId, title: title, description: description }, function () { S.ajax.callback.inject(arguments[0]); });
+            var breadcrumb = $('#txtaddtopicsubject').val();
+            var search = '';
+            var sort = 0;
+            S.ajax.post('/api/Topics/AddTopic', { breadcrumb: breadcrumb, title: title, description: description, search: search, sort: sort }, function (data) { $('.topics .contents').html(data.d); });
             $('#txtaddtopictitle').val('');
             $('#txtaddtopicdesc').val('');
             S.topics.buttons.hideAddTopic();

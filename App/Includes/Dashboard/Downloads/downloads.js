@@ -124,7 +124,7 @@
 
     consoleLog: function (msg, classes) {
         if ($('.console .contents > div').length > 200) {
-            $('.console .contents > div').remove();
+            $('.console .contents > div').first().remove();
         }
         var time = new Date();
         var hrs = time.getHours() % 12;

@@ -79,13 +79,13 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:h
 }
 
 /* interface */
-.interface > header{width:100%; background-color:#2095C1; color:#fff; padding:10px 0; overflow:auto; clear:both; position:relative;}
+.interface > header{width:100%; background-color:#2095C1; color:#fff; padding:10px 0; overflow:auto; clear:both; position:relative; margin:0 auto 20px auto; height:30px;}
 .interface > header .logo{float:left; white-space:nowrap;}
 .interface > header .logo > img{display:inline; position:relative; top:2px; padding:0 10px 0 0;}
 .interface > header .logo > div{display:inline; font-size:20px; }
 .interface > header nav{float:right;}
 .interface > header nav ul{list-style-type:none; white-space:nowrap; padding-top:5px;}
-.interface > header nav ul > li {display:inline-block; padding:0 10px; font-size:14px;}
+.interface > header nav ul > li {display:inline-block; padding:0 10px; font-size:16px;}
 .interface > header nav ul > li a:hover{text-decoration:underline;}
 .interface > header a:link{color:#fff;}
 .interface > header a:visited{color:#fff;}

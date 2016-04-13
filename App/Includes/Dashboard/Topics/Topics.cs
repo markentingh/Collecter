@@ -11,7 +11,7 @@
         {
             Scaffold scaffold = null;
 
-            //setup feeds menu
+            //setup topics menu
             string menu = "<div class=\"menu left\"><nav><ul>" +
                 "<li><a href=\"javascript:\" id=\"btnaddtopic\" class=\"button blue\">Add A Topic</a></li>" +
                 "</ul></nav></div>";
@@ -19,10 +19,10 @@
 
             if (scaffold == null)
             {
-                //get feeds list from web service
+                //get topics list
                 scaffold = new Scaffold(S, "/app/includes/dashboard/topics/list.html", "", new string[] { });
-                Services.Feeds feeds = new Services.Feeds(S, S.Page.Url.paths);
-                scaffold.Data["content"] = feeds.LoadFeedsUI();
+                Services.Topics topics = new Services.Topics(S, S.Page.Url.paths);
+                scaffold.Data["content"] = topics.LoadTopicsUI();
                 S.Page.RegisterJSFromFile("/app/includes/dashboard/topics/list.js");
             }
             return scaffold.Render();

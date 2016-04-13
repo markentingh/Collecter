@@ -12,7 +12,7 @@ namespace Collector.Includes
             return Render("");
         }
 
-        public string Render(string content = "", string cssFile = "", string scriptFiles = "")
+        public string Render(string content = "", string cssFile = "", string scriptFiles = "", string headerMenu = "")
         {
             Scaffold scaffold;
 
@@ -22,6 +22,7 @@ namespace Collector.Includes
             scaffold.Data["cssfile"] = cssFile;
             scaffold.Data["scriptfiles"] = scriptFiles;
             scaffold.Data["script"] = S.Page.RenderJS();
+            scaffold.Data["header-menu"] = headerMenu;
 
             if(S.User.userId == 0)
             {

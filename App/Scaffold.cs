@@ -63,6 +63,8 @@ namespace Collector
                     int[] e = new int[3];
                     string s = "";
                     e[0] = -1;
+
+                    //start the loop and find scaffold placeholder tags {{tag-name}}
                     while(e[0] < 0) { 
                         //find starting tag (optionally with arguments)
                         e[0] = htm.IndexOf("{{" + name);
@@ -161,6 +163,7 @@ namespace Collector
                 //render scaffold with paired Data data
                 List<string> scaff = new List<string>(); string s = "";
                 bool useScaffold = false; List<List<string>> closing = new List<List<string>>();
+                bool hasId = false;
 
                 //remove any unwanted blocks of HTML from scaffold
                 for (var x = 0; x < scaffold.parts.Count; x++)
@@ -177,8 +180,19 @@ namespace Collector
                                 closed.Add(scaffold.parts[x].name);
                                 closed.Add(x.ToString());
                                 closed.Add(y.ToString());
-
-                                if (Data.ContainsKey(scaffold.parts[x].name) == true)
+                                hasId = false;
+                                for (var t = 0; t < scaffold.parts[x].args.Length; t++)
+                                {
+                                    if (scaffold.parts[x].args[t] == "block" || scaffold.parts[x].args[t] == "hide")
+                                    {
+                                        //found internal tag attribute "id", used specifically
+                                        //for retrieving a group of html code instead of
+                                        //injecting it onto the page
+                                        hasId = true;
+                                    }
+                                }
+                                
+                                if (Data.ContainsKey(scaffold.parts[x].name) == true && hasId == false)
                                 {
                                     //check if user wants to include HTML 
                                     //that is between start & closing tag   
@@ -260,6 +274,14 @@ namespace Collector
                 return String.Join("", scaff.ToArray());
             }
             return "";
+        }
+
+        public string Get(string name)
+        {
+            var part = scaffold.parts[scaffold.parts.FindIndex(c => c.name == "/" + name) - 1];
+            var html = part.htm;
+            
+            return html;
         }
     }
 }

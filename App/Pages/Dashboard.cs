@@ -17,6 +17,7 @@ namespace Collector.Pages
             Scaffold scaffold = new Scaffold(S, "/app/pages/dashboard.html", "", new string[] { "content", "menu", "dev-menu", "admin-menu"});
 
             //load dashboard section
+            var headerMenu = scaffold.Get("dash-menu");
             string sect = "Articles";
             if(Url.paths.Length > 1) { sect = S.Util.Str.Capitalize(Url.paths[1]); }
             string className = "Collector.Includes." + sect;
@@ -39,7 +40,7 @@ namespace Collector.Pages
             //load website interface
             Includes.Interface iface = new Includes.Interface(S, scaffold);
 
-            return iface.Render(scaffold.Render(), "dashboard.css", section.scriptFiles);
+            return iface.Render(scaffold.Render(), "dashboard.css", section.scriptFiles, headerMenu);
         }
     }
 }

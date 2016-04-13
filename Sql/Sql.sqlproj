@@ -158,6 +158,7 @@
     <Build Include="Tables\VarDates.sql" />
     <Build Include="Stored Procedures\CheckDownloadQueue.sql" />
     <Build Include="Indexes\IndexDownloadQueueRand.sql" />
+    <Build Include="Stored Procedures\AddTopicByBreadcrumb.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

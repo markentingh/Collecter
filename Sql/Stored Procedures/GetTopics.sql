@@ -21,8 +21,9 @@ AS
 		SELECT ROW_NUMBER() OVER(ORDER BY 
 		CASE WHEN @orderby = 1 THEN t.datecreated END ASC,
 		CASE WHEN @orderby = 2 THEN t.datecreated END DESC
-		) AS rownum, t.* 
-		FROM Topics t 
+		) AS rownum, t.* , s.title AS subjectTitle, s.breadcrumb, s.hierarchy, s.parentId
+		FROM Topics t
+		LEFT JOIN Subjects s ON s.subjectId = t.subjectId 
 		WHERE
 		(
 			t.topicId IN (SELECT * FROM #subjecttopics)
