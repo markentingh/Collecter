@@ -15,6 +15,7 @@
 .accordion > .title.expanded:hover{background-color:#00b1ca;}
 .accordion > .title.hide{max-height:0; border-bottom-width:0; padding:0 15px;}
 .accordion > .box{background-color:#222; color:#aaa; max-height:0px; transition: max-height 0.3s, padding 0.3s; box-sizing:border-box; overflow:hidden;}
+.accordion > .white{background-color:#fff; color:#111;}
 .accordion > .box.expanded{padding:20px; max-height:800px; overflow:auto;}
 .accordion > .box > .content{white-space:nowrap;}
 .accordion > .box a:link{color:#d83a8d;}

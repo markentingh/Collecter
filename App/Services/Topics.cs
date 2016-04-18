@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Xml;
+using System.Text;
 
 namespace Collector.Services
 {
@@ -9,6 +12,24 @@ namespace Collector.Services
 
         public Topics(Core CollectorCore, string[] paths):base(CollectorCore, paths)
         {
+        }
+
+        private struct topicInfo
+        {
+            public int topicId;
+            public int subjectId;
+            public string title;
+            public string subjectTitle;
+            public string hierarchy;
+            public string breadcrumb;
+            public string topicPath;
+            public DateTime datecreated;
+        }
+
+        private struct sectionInfo
+        {
+            public string title;
+            public string content;
         }
 
         public string LoadTopicsUI(int start=1, int length=50, string subjectIds = "", string search = "", int sort = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
@@ -69,6 +90,103 @@ namespace Collector.Services
             return htm;
         }
 
+        public string LoadTopicsEditorUI(int topicId)
+        {
+            var htm = "";
+            var reader = new SqlReader();
+            reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetTopic @topicId=" + topicId));
+            if(reader.Rows.Count > 0)
+            {
+                var topic = new topicInfo();
+                int i = 1;
+                reader.Read();
+                topic.topicId = topicId;
+                topic.title = S.Sql.Decode(reader.Get("title"));
+                topic.subjectId = reader.GetInt("subjectId");
+                topic.subjectTitle = S.Sql.Decode(reader.Get("subjectTitle"));
+                topic.hierarchy = S.Sql.Decode(reader.Get("hierarchy"));
+                topic.breadcrumb = S.Sql.Decode(reader.Get("breadcrumb"));
+                topic.datecreated = reader.GetDateTime("datecreated");
+                topic.topicPath = "/content/topics/" + topic.hierarchy.Replace(">", "/") + "/";
+                
+                //show topic summary
+                htm += RenderAccordion("Topic", "topic-summary", GetTopicListItem(topic.title, topicId, topic.breadcrumb, topic.hierarchy, topic.subjectId, topic.subjectTitle));
+
+                //open topic json file
+                if(File.Exists(S.Server.MapPath(topic.topicPath + topicId.ToString() + ".json")) == true)
+                {
+                    List<sectionInfo> sections = (List<sectionInfo>)S.Util.Serializer.ReadObject(File.ReadAllText(S.Server.MapPath(topic.topicPath + topicId.ToString() + ".json")), typeof(List<sectionInfo>));
+                    foreach(sectionInfo section in sections)
+                    {
+                        htm += GetTopicEditableAccordion(topic.title, section.title, section.content, "section", "section" + i, topicId, true);
+                        i++;
+                    }
+                }
+                else
+                {
+                    //create first section
+                    htm += GetTopicEditableAccordion(topic.title, topic.title, "", "section", "section1", topicId, true);
+                }
+                S.Page.Items.Add("topic", S.Util.Serializer.WriteObjectAsString(topic));
+            }
+            return htm;
+        }
+
+        private string GetTopicEditableAccordion(string topicTitle, string title, string content, string groupName, string className, int topicId, bool whiteBg = false, bool expanded = true, bool editMode = false)
+        {
+            //register javascript events for the editable form
+            S.Page.RegisterJS(
+                    "topicsection" + className, (!editMode ? (content != "" ? "S.topics.edit.buttons.previewTopic('" + className + "');" : "") : "") +
+                    "$('#" + className + "-btn-edit, #" + className + "-btn-edit2').on('click', function(){S.topics.edit.buttons.editTopic('" + className + "');});" +
+                    "$('#" + className + "-btn-preview').on('click', function(){S.topics.edit.buttons.previewTopic('" + className + "');});");
+            S.Page.RegisterJS(
+                    "topickeydown", "$('.topic-section input, .topic-section textarea').off().on('keydown', function(e){S.topics.edit.texteditor.keyDown(e.target);});" +
+                    "$('.btn-savechanges').off().on('click', function(){S.topics.edit.buttons.saveChanges('" + groupName + "');});" +
+                    "S.topics.edit.texteditor.autoSize();");
+
+
+            //render an accordion with two tabs, one for editing a topic sectionl, the other for previewing
+            return RenderAccordion(title, className,
+                    "<div class=\"topic-section\">" + 
+                        "<div class=\"preview\"" + (editMode ? " style=\"display:none\"" : "") + ">" +
+                            "<div class=\"nopreview\"" + (content == "" ? "" : " style=\"display:none;\"") + ">" + 
+                                "<div class=\"title\">Start writing in new section for the topic '" + topicTitle + "'.</div>" +
+                                "<a href=\"javascript:\" class=\"button green\" id=\"" + className + "-btn-edit\">Edit Section</a>" + 
+                            "</div>" +
+                            "<div class=\"ispreview\"" + (content != "" ? "" : " style=\"display:none;\"") + ">" +
+                                "<div class=\"section-contents\">" + "</div>" + //content + "</div>" +
+                                "<div class=\"buttons\">" +
+                                    "<a href=\"javascript:\" class=\"button green left\" id=\"" + className + "-btn-edit2\">Edit</a>" +
+                                    "<a href=\"javascript:\" class=\"button blue left\" id=\"" + className + "-btn-newsection2\">+ New Section</a>" +
+                                    "<a href=\"javascript:\" class=\"button green right btn-savechanges\" style=\"display:none;\">Save Changes</a>" +
+                                "</div>" +
+                            "</div>" +
+                        "</div>" +
+                        "<div class=\"edit\"" + (editMode ? "" : " style=\"display:none\"") + ">" +
+                            "<div class=\"row column label\">Section Title</div>" +
+                            "<div class=\"row column\"><input type=\"text\" id=\"" + className  + "-title\" value=\"" + title.Replace("\"","\\\"") + "\"></div>" +
+                            "<div class=\"row column label\">Content <span class=\"right\"><a href=\"https://guides.github.com/features/mastering-markdown/\" target=\"_blank\">Markdown</a></span></div>" +
+                            "<div class=\"row column\"><textarea id=\"" + className + "-content\">" + content + "</textarea></div>" +
+                            "<div class=\"row column buttons\">" +
+                                "<a href=\"javascript:\" class=\"button green left\" id=\"" + className + "-btn-preview\">Preview</a>" +
+                                "<a href=\"javascript:\" class=\"button blue left\" id=\"" + className + "-btn-newsection\">+ New Section</a>" +
+                                "<a href=\"javascript:\" class=\"button green right btn-savechanges\" style=\"display:none;\">Save Changes</a>" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>"
+                , expanded, whiteBg);
+        }
+
+        public Inject NewTopicSection(string element, string topicTitle, string title, string content, string groupName, string className, int topicId, bool whiteBg = false, bool expanded = true, bool editMode = false)
+        {
+            var response = new Inject();
+            response.inject = enumInjectTypes.before;
+            response.element = element;
+            response.html = GetTopicEditableAccordion(topicTitle, title, content, groupName, className, topicId, whiteBg, expanded, editMode);
+            response.js = CompileJs();
+            return response;
+        }
+
         public string AddTopic(string breadcrumb = "", string title = "", string description = "", string search = "", int sort = 0)
         {
             if(breadcrumb == "") { return LoadTopicsUI(1, 50, "", search, sort); }
@@ -84,6 +202,17 @@ namespace Collector.Services
             }
             S.Sql.ExecuteNonQuery("EXEC AddTopicByBreadcrumb @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(description) + "', @subject='" + parentTitle + "', @breadcrumb='" + parentBreadcrumb + "'");
             return LoadTopicsUI(1, 50, "", search, sort);
+        }
+
+        public void SaveChanges(string json)
+        {
+            topicInfo topic = (topicInfo)S.Util.Serializer.ReadObject(S.Page.Items.Item("topic"), typeof(topicInfo));
+            if (!S.Util.IsEmpty(topic))
+            {
+                //save changes for loaded topic
+                List<sectionInfo> sections = (List<sectionInfo>)S.Util.Serializer.ReadObject(json, typeof(List<sectionInfo>));
+                S.Util.Serializer.SaveToFile(sections, S.Server.MapPath("/content/topics/" + topic.hierarchy.Replace(">", "/") + "/" + topic.topicId + ".json"));
+            }
         }
     }
 }

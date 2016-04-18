@@ -30,6 +30,11 @@ namespace Collector.Utility
 
         public void SaveToFile(object obj, string file, Formatting formatting = Formatting.Indented)
         {
+            var path = S.Util.Str.getFolder(file);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
             File.WriteAllText(file, WriteObjectAsString(obj, formatting));
         }
 

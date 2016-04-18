@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Collector
@@ -17,7 +18,7 @@ namespace Collector
         public bool isMobile = false;
         [JsonIgnore]
         public bool isTablet = false;
-        
+
         //Javascript
         [JsonIgnore]
         protected string[] postJSnames = new string[] { }; //used so duplicate JS doesn't get added to the page
@@ -45,6 +46,8 @@ namespace Collector
         }
         public structUrl Url;
 
+        public PageItems Items;
+
         //Web Services
         [JsonIgnore]
         public PageRequest PageRequest;
@@ -57,6 +60,7 @@ namespace Collector
         public void Load(Core CollectorCore)
         {
             S = CollectorCore;
+            if (Items == null) { Items = new PageItems(); }
         }
 
         public virtual string Render()
@@ -70,20 +74,20 @@ namespace Collector
             Url.query = "";
             string path = S.Request.Path.ToString().ToLower().Replace(" ", "+");
             string[] arr = null;
-            if(path.Substring(0,1) == "/") { path = path.Substring(1); }
-            if(path != "")
+            if (path.Substring(0, 1) == "/") { path = path.Substring(1); }
+            if (path != "")
             {
                 arr = path.Split(new char[] { '/' });
                 Url.path = arr[0].Replace("-", " ");
-                if(arr.Length > 1)
+                if (arr.Length > 1)
                 {
                     Url.query = path.Split(new char[] { '/' }, 2)[1]; ;
                 }
                 Url.paths = arr;
-            }else
+            } else
             {
                 Url.path = "home";
-                Url.paths = new string[]{"home"};
+                Url.paths = new string[] { "home" };
             }
 
             //get host
@@ -235,8 +239,8 @@ namespace Collector
 
         public void RegisterCSSfile(string file)
         {
-            string myJs = "(function(){var f=document.createElement(\"link\");" + "f.setAttribute(\"rel\", \"stylesheet\");" + 
-                          "f.setAttribute(\"type\", \"text/css\");" + "f.setAttribute(\"href\", \"" + file + "\");" + 
+            string myJs = "(function(){var f=document.createElement(\"link\");" + "f.setAttribute(\"rel\", \"stylesheet\");" +
+                          "f.setAttribute(\"type\", \"text/css\");" + "f.setAttribute(\"href\", \"" + file + "\");" +
                           "document.getElementsByTagName(\"head\")[0].appendChild(f);})();";
             RegisterJSonce(file, myJs);
         }
@@ -271,5 +275,48 @@ namespace Collector
             return iface.Render(scaffold.Render(), "signin.css");
         }
         #endregion
+    }
+
+    public class PageItems
+    {
+        public List<string> keys;
+        public List<string> values;
+
+        public PageItems()
+        {
+            keys = new List<string>();
+            values = new List<string>();
+        }
+
+        public void Add(string key, string value)
+        {
+            keys.Add(key);
+            values.Add(value);
+        }
+
+        public string Item(string key)
+        {
+            var index = IndexOf(key);
+            if(index >= 0)
+            {
+                return values[index];
+            }
+            return "";
+        }
+
+        public int IndexOf(string key)
+        {
+            return keys.FindIndex(k => k == key);
+        }
+
+        public void Remove(string key)
+        {
+            int index = IndexOf(key);
+            if(index >= 0)
+            {
+                keys.RemoveAt(index);
+                values.RemoveAt(index);
+            }
+        }
     }
 }

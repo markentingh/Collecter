@@ -120,5 +120,15 @@ namespace Collector
             }
 
         }
+
+        protected string RenderAccordion(string title, string className, string contents, bool expanded = true, bool whiteBg = false)
+        {
+            return "<div class=\"accordion " + className + "\">" +
+                            "<div class=\"title " + (expanded ? "expanded" : "") + "\">" + title + "</div>" +
+                            "<div class=\"box " + (expanded ? "expanded" : "") + (whiteBg == true ? " white" : "") + "\">" +
+                                "<div class=\"contents\">" + contents + "</div>" +
+                            "</div>" +
+                        "</div>";
+        }
     }
 }

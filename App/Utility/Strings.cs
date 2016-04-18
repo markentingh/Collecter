@@ -388,6 +388,13 @@ namespace Collector.Utility
             return "";
         }
 
+        public string getFolder(string filename)
+        {
+            var paths = filename.Replace("/","\\").Split('\\').ToList();
+            paths.RemoveAt(paths.Count - 1);
+            return string.Join("\\", paths.ToArray()) + "\\";
+        }
+
         public string GetDomainName(string url)
         {
             string[] tmpDomain = GetSubDomainAndDomain(url).Split(new char[] { '.' },3);

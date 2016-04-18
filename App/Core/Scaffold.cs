@@ -28,7 +28,7 @@ namespace Collector
             get { return scaffold.arguments; }
         }
 
-        public Scaffold(Core CollectorCore, string file, string name, string[] vars = null)
+        public Scaffold(Core CollectorCore, string file, string name = "", string[] vars = null)
         {
             S = CollectorCore;
             if (vars == null)

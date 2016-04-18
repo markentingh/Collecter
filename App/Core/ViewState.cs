@@ -15,7 +15,7 @@ namespace Collector
     {
         [IgnoreDataMember]
         private Core S;
-        public Page Page;
+        public Page Page; //only store the page class within viewstate
 
         public void Load(Core CollectorCore)
         {
