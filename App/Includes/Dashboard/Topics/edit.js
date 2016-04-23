@@ -1,6 +1,10 @@
 ﻿S.topics.edit = {
     edited: false,
 
+    load: function(){
+        $('#btnaddsection').on('click', function () { S.topics.edit.buttons.addSection('section', 0); });
+    },
+
     buttons: {
         editTopic: function (className) {
             $('.accordion.' + className + ' .preview').hide();
@@ -39,6 +43,25 @@
                 } else { break; }
             }
             S.ajax.post('/api/Topics/SaveChanges', { sections: JSON.stringify(sections) }, function () { });
+        },
+
+        addSection: function (group, index) {
+            var sections = $('.topic-section');
+            console.log(sections);
+            console.log(arguments);
+            var section = $('.section' + index + ' .topic-section');
+            console.log(section);
+            var count = sections.length;
+            var element = '.' + group + (index + 1);
+            var after = false;
+            if (section[0] == sections[sections.length - 1]) { after = true; element = '.' + group + index; }
+            var options = { element: element, after: after, title: "New Section", content: "", index: index, count: count };
+            S.ajax.post('/api/Topics/NewTopicSection', options, function () {
+                S.ajax.callback.inject(arguments[0]);
+                $('html, body').animate({
+                    scrollTop: $('.' + group + (count + 1)).offset().top
+                }, 700);
+            });
         }
     },
 
@@ -74,3 +97,5 @@
         }
     }
 };
+
+S.topics.edit.load();

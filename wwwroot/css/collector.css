@@ -79,7 +79,7 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:h
 }
 
 /* interface */
-.interface > header{width:100%; background-color:#2095C1; color:#fff; padding:10px 0; overflow:auto; clear:both; position:relative; margin:0 auto 20px auto; height:30px;}
+.interface > header{width:100%; background-color:#2095C1; color:#fff; padding:10px 0; overflow:auto; clear:both; position:relative; margin:0 auto; height:30px; }
 .interface > header .logo{float:left; white-space:nowrap;}
 .interface > header .logo > img{display:inline; position:relative; top:2px; padding:0 10px 0 0;}
 .interface > header .logo > div{display:inline; font-size:20px; }
@@ -122,6 +122,8 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:h
 
 .row.label{padding:15px 0 4px 0; font-size:16px; width:100%; box-sizing:border-box;}
 .row.label:nth-child(1){padding:0 0 4px 0;}
+
+.row.options {background-color: #e0e0e0; padding: 10px 20px 8px 20px; }
 
 .spreadsheet > .row:nth-child(2n+1){background-color:#eeeeee;}
 .spreadsheet > .row:nth-child(2n+2){background-color:#e8e8e8;}

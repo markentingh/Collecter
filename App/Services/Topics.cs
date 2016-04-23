@@ -118,29 +118,31 @@ namespace Collector.Services
                     List<sectionInfo> sections = (List<sectionInfo>)S.Util.Serializer.ReadObject(File.ReadAllText(S.Server.MapPath(topic.topicPath + topicId.ToString() + ".json")), typeof(List<sectionInfo>));
                     foreach(sectionInfo section in sections)
                     {
-                        htm += GetTopicEditableAccordion(topic.title, section.title, section.content, "section", "section" + i, topicId, true);
+                        htm += GetTopicEditableAccordion(topic.title, section.title, section.content, "section", "section" + i, topicId, i, true);
                         i++;
                     }
                 }
                 else
                 {
                     //create first section
-                    htm += GetTopicEditableAccordion(topic.title, topic.title, "", "section", "section1", topicId, true);
+                    htm += GetTopicEditableAccordion(topic.title, topic.title, "", "section", "section1", topicId, 1, true);
                 }
                 S.Page.Items.Add("topic", S.Util.Serializer.WriteObjectAsString(topic));
             }
             return htm;
         }
 
-        private string GetTopicEditableAccordion(string topicTitle, string title, string content, string groupName, string className, int topicId, bool whiteBg = false, bool expanded = true, bool editMode = false)
+        private string GetTopicEditableAccordion(string topicTitle, string title, string content, string groupName, string className, int topicId, int index, bool whiteBg = false, bool expanded = true, bool editMode = false)
         {
             //register javascript events for the editable form
-            S.Page.RegisterJS(
-                    "topicsection" + className, (!editMode ? (content != "" ? "S.topics.edit.buttons.previewTopic('" + className + "');" : "") : "") +
-                    "$('#" + className + "-btn-edit, #" + className + "-btn-edit2').on('click', function(){S.topics.edit.buttons.editTopic('" + className + "');});" +
-                    "$('#" + className + "-btn-preview').on('click', function(){S.topics.edit.buttons.previewTopic('" + className + "');});");
-            S.Page.RegisterJS(
-                    "topickeydown", "$('.topic-section input, .topic-section textarea').off().on('keydown', function(e){S.topics.edit.texteditor.keyDown(e.target);});" +
+            S.Page.RegisterJS("topicsection" + className, 
+                (!editMode ? (content != "" ? "S.topics.edit.buttons.previewTopic('" + className + "');" : "") : "") +
+                    "$('." + className + "-btn-edit').on('click', function(){S.topics.edit.buttons.editTopic('" + className + "');});" +
+                    "$('." + className + "-btn-preview').on('click', function(){S.topics.edit.buttons.previewTopic('" + className + "');});" +
+                    "$('." + className + "-btn-newsection').on('click', function(){S.topics.edit.buttons.addSection('"+ groupName + "'," + index + ");});");
+
+            S.Page.RegisterJS("topickeydown", 
+                    "$('.topic-section input, .topic-section textarea').off().on('keydown', function(e){S.topics.edit.texteditor.keyDown(e.target);});" +
                     "$('.btn-savechanges').off().on('click', function(){S.topics.edit.buttons.saveChanges('" + groupName + "');});" +
                     "S.topics.edit.texteditor.autoSize();");
 
@@ -156,8 +158,8 @@ namespace Collector.Services
                             "<div class=\"ispreview\"" + (content != "" ? "" : " style=\"display:none;\"") + ">" +
                                 "<div class=\"section-contents\">" + "</div>" + //content + "</div>" +
                                 "<div class=\"buttons\">" +
-                                    "<a href=\"javascript:\" class=\"button green left\" id=\"" + className + "-btn-edit2\">Edit</a>" +
-                                    "<a href=\"javascript:\" class=\"button blue left\" id=\"" + className + "-btn-newsection2\">+ New Section</a>" +
+                                    "<a href=\"javascript:\" class=\"button green left " + className + "-btn-editsection\">Edit</a>" +
+                                    "<a href=\"javascript:\" class=\"button blue left " + className + "-btn-newsection\">+ New Section</a>" +
                                     "<a href=\"javascript:\" class=\"button green right btn-savechanges\" style=\"display:none;\">Save Changes</a>" +
                                 "</div>" +
                             "</div>" +
@@ -168,8 +170,8 @@ namespace Collector.Services
                             "<div class=\"row column label\">Content <span class=\"right\"><a href=\"https://guides.github.com/features/mastering-markdown/\" target=\"_blank\">Markdown</a></span></div>" +
                             "<div class=\"row column\"><textarea id=\"" + className + "-content\">" + content + "</textarea></div>" +
                             "<div class=\"row column buttons\">" +
-                                "<a href=\"javascript:\" class=\"button green left\" id=\"" + className + "-btn-preview\">Preview</a>" +
-                                "<a href=\"javascript:\" class=\"button blue left\" id=\"" + className + "-btn-newsection\">+ New Section</a>" +
+                                "<a href=\"javascript:\" class=\"button green left " + className + "-btn-preview\">Preview</a>" +
+                                "<a href=\"javascript:\" class=\"button blue left " + className + "-btn-newsection\">+ New Section</a>" +
                                 "<a href=\"javascript:\" class=\"button green right btn-savechanges\" style=\"display:none;\">Save Changes</a>" +
                             "</div>" +
                         "</div>" +
@@ -177,12 +179,14 @@ namespace Collector.Services
                 , expanded, whiteBg);
         }
 
-        public Inject NewTopicSection(string element, string topicTitle, string title, string content, string groupName, string className, int topicId, bool whiteBg = false, bool expanded = true, bool editMode = false)
+        public Inject NewTopicSection(string element, bool after, string title, string content, int index, int count)
         {
+            topicInfo topic = (topicInfo)S.Util.Serializer.ReadObject(S.Page.Items.Item("topic"), typeof(topicInfo));
+            string className = "section" + (count + 1);
             var response = new Inject();
-            response.inject = enumInjectTypes.before;
+            response.inject = after ? enumInjectTypes.after : enumInjectTypes.before;
             response.element = element;
-            response.html = GetTopicEditableAccordion(topicTitle, title, content, groupName, className, topicId, whiteBg, expanded, editMode);
+            response.html = GetTopicEditableAccordion(topic.title, title, content, "section", className, topic.topicId, (count + 1), true, true, true);
             response.js = CompileJs();
             return response;
         }

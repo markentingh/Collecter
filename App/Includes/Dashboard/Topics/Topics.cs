@@ -34,7 +34,7 @@
                             Services.Topics topics = new Services.Topics(S, S.Page.Url.paths);
                             scaffold.Data["content"] = topics.LoadTopicsEditorUI(int.Parse(S.Request.Query["topic"]));
                             menu = "<div class=\"menu left\"><nav><ul>" +
-                                        "<li><a href=\"javascript:\" id=\"btnaddtopic\" class=\"button blue\">+ New Section</a></li>" +
+                                        "<li><a href=\"javascript:\" id=\"btnaddsection\" class=\"button blue\">+ New Section</a></li>" +
                                     "</ul></nav></div>" +
                                     "<div class=\"menu right\"><nav><ul>" +
                                         "<li class=\"li-savechanges\" style=\"display:none;\"><a href=\"javascript:\" class=\"button green btn-savechanges\">Save Changes</a></li>" +
