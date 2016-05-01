@@ -1,12 +1,43 @@
 ﻿S.topics.edit = {
     edited: false,
+    dropzone: null,
 
-    load: function(){
+    load: function () {
         $('#btnaddsection').on('click', function () { S.topics.edit.buttons.addSection('section', 0); });
+
+        //init dropzone library
+        Dropzone.autoDiscover = false;
+
+        S.topics.edit.dropzone = new Dropzone(document.body, {
+            url: '/api/Topics/Upload?v=' + S.ajax.viewstateId,
+            previewsContainer: ".topic-media .upload-list",
+            clickable: ".topic-media .btn-upload",
+            paramName: 'file',
+            maxFilesize: 4,
+            uploadMultiple: true,
+            thumbnailWidth:100,
+            thumbnailHeight: 80,
+            parallelUploads: 1
+                    , init: function () {
+                        this.on('sending', function () {
+                            $('.topic-media .dropzone').addClass('uploading');
+                        });
+
+                        this.on('complete', function (file) {
+                            this.removeFile(file);
+                        });
+
+                        this.on('queuecomplete', function () {
+                            S.ajax.post('/api/Topics/SaveUpload', {}, S.ajax.callback.inject);
+                            $('.topic-media .dropzone').addClass('uploaded').removeClass('uploading');
+                        });
+                    }
+        });
     },
 
     buttons: {
         editTopic: function (className) {
+            console.log(className);
             $('.accordion.' + className + ' .preview').hide();
             $('.accordion.' + className + ' .edit').show();
             autosize.update($('#' + className + '-content'));

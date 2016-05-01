@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using System.Text;
+using Microsoft.AspNet.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Collector.Services
 {
@@ -23,6 +24,7 @@ namespace Collector.Services
             public string hierarchy;
             public string breadcrumb;
             public string topicPath;
+            public string[] media;
             public DateTime datecreated;
         }
 
@@ -31,6 +33,10 @@ namespace Collector.Services
             public string title;
             public string content;
         }
+
+        private topicInfo _topic = new topicInfo();
+
+        #region "List"
 
         public string LoadTopicsUI(int start=1, int length=50, string subjectIds = "", string search = "", int sort = 0, DateTime dateStart = new DateTime(), DateTime dateEnd = new DateTime())
         {
@@ -90,9 +96,13 @@ namespace Collector.Services
             return htm;
         }
 
+        #endregion
+
+        #region "Edit"
+
         public string LoadTopicsEditorUI(int topicId)
         {
-            var htm = "";
+            var htm = new StringBuilder();
             var reader = new SqlReader();
             reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetTopic @topicId=" + topicId));
             if(reader.Rows.Count > 0)
@@ -108,28 +118,35 @@ namespace Collector.Services
                 topic.breadcrumb = S.Sql.Decode(reader.Get("breadcrumb"));
                 topic.datecreated = reader.GetDateTime("datecreated");
                 topic.topicPath = "/content/topics/" + topic.hierarchy.Replace(">", "/") + "/";
-                
+                topic.media = S.Sql.Decode(reader.Get("media")).Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
+                //save topic to view-state
+                Topic = topic;
+
                 //show topic summary
-                htm += RenderAccordion("Topic", "topic-summary", GetTopicListItem(topic.title, topicId, topic.breadcrumb, topic.hierarchy, topic.subjectId, topic.subjectTitle));
+                htm.Append(RenderAccordion("Topic", "topic-summary", GetTopicListItem(topic.title, topicId, topic.breadcrumb, topic.hierarchy, topic.subjectId, topic.subjectTitle)));
+
+                //show topic media (photos & videos)
+                htm.Append(RenderAccordion("Media", "topic-media", GetTopicMediaList()));
 
                 //open topic json file
-                if(File.Exists(S.Server.MapPath(topic.topicPath + topicId.ToString() + ".json")) == true)
+                if (File.Exists(S.Server.MapPath(topic.topicPath + topicId.ToString() + ".json")) == true)
                 {
-                    List<sectionInfo> sections = (List<sectionInfo>)S.Util.Serializer.ReadObject(File.ReadAllText(S.Server.MapPath(topic.topicPath + topicId.ToString() + ".json")), typeof(List<sectionInfo>));
+                    List<sectionInfo> sections = (List<sectionInfo>)S.Util.Serializer.ReadObject(S.Server.OpenFile(topic.topicPath + topicId.ToString() + ".json"), typeof(List<sectionInfo>));
                     foreach(sectionInfo section in sections)
                     {
-                        htm += GetTopicEditableAccordion(topic.title, section.title, section.content, "section", "section" + i, topicId, i, true);
+                        htm.Append(GetTopicEditableAccordion(topic.title, section.title, section.content, "section", "section" + i, topicId, i, true, (i == 1 ? true : false)));
                         i++;
                     }
                 }
                 else
                 {
                     //create first section
-                    htm += GetTopicEditableAccordion(topic.title, topic.title, "", "section", "section1", topicId, 1, true);
+                    htm.Append(GetTopicEditableAccordion(topic.title, topic.title, "", "section", "section1", topicId, 1, true));
                 }
-                S.Page.Items.Add("topic", S.Util.Serializer.WriteObjectAsString(topic));
+                
             }
-            return htm;
+            return htm.ToString();
         }
 
         private string GetTopicEditableAccordion(string topicTitle, string title, string content, string groupName, string className, int topicId, int index, bool whiteBg = false, bool expanded = true, bool editMode = false)
@@ -137,7 +154,7 @@ namespace Collector.Services
             //register javascript events for the editable form
             S.Page.RegisterJS("topicsection" + className, 
                 (!editMode ? (content != "" ? "S.topics.edit.buttons.previewTopic('" + className + "');" : "") : "") +
-                    "$('." + className + "-btn-edit').on('click', function(){S.topics.edit.buttons.editTopic('" + className + "');});" +
+                    "$('." + className + "-btn-edit').on('click', function(){console.log('wtf');S.topics.edit.buttons.editTopic('" + className + "');});" +
                     "$('." + className + "-btn-preview').on('click', function(){S.topics.edit.buttons.previewTopic('" + className + "');});" +
                     "$('." + className + "-btn-newsection').on('click', function(){S.topics.edit.buttons.addSection('"+ groupName + "'," + index + ");});");
 
@@ -158,7 +175,7 @@ namespace Collector.Services
                             "<div class=\"ispreview\"" + (content != "" ? "" : " style=\"display:none;\"") + ">" +
                                 "<div class=\"section-contents\">" + "</div>" + //content + "</div>" +
                                 "<div class=\"buttons\">" +
-                                    "<a href=\"javascript:\" class=\"button green left " + className + "-btn-editsection\">Edit</a>" +
+                                    "<a href=\"javascript:\" class=\"button green left " + className + "-btn-edit\">Edit</a>" +
                                     "<a href=\"javascript:\" class=\"button blue left " + className + "-btn-newsection\">+ New Section</a>" +
                                     "<a href=\"javascript:\" class=\"button green right btn-savechanges\" style=\"display:none;\">Save Changes</a>" +
                                 "</div>" +
@@ -179,14 +196,31 @@ namespace Collector.Services
                 , expanded, whiteBg);
         }
 
+        private topicInfo Topic
+        {
+            get {
+                if (_topic.topicId == 0)
+                {
+                    _topic = (topicInfo)S.Util.Serializer.ReadObject(S.Page.Items.Item("topic"), typeof(topicInfo));
+                }
+                return _topic;
+            }
+            set {
+                if(S.Page.Items.IndexOf("topic") >= 0){
+                    S.Page.Items.Remove("topic");
+                }
+                S.Page.Items.Add("topic", S.Util.Serializer.WriteObjectAsString(value));
+                
+            }
+        }
+
         public Inject NewTopicSection(string element, bool after, string title, string content, int index, int count)
         {
-            topicInfo topic = (topicInfo)S.Util.Serializer.ReadObject(S.Page.Items.Item("topic"), typeof(topicInfo));
             string className = "section" + (count + 1);
             var response = new Inject();
             response.inject = after ? enumInjectTypes.after : enumInjectTypes.before;
             response.element = element;
-            response.html = GetTopicEditableAccordion(topic.title, title, content, "section", className, topic.topicId, (count + 1), true, true, true);
+            response.html = GetTopicEditableAccordion(Topic.title, title, content, "section", className, Topic.topicId, (count + 1), true, true, true);
             response.js = CompileJs();
             return response;
         }
@@ -218,5 +252,128 @@ namespace Collector.Services
                 S.Util.Serializer.SaveToFile(sections, S.Server.MapPath("/content/topics/" + topic.hierarchy.Replace(">", "/") + "/" + topic.topicId + ".json"));
             }
         }
+
+        #endregion
+
+        #region "Media"
+
+        private string GetTopicMediaList()
+        {
+            //display list of images
+            var htm = new StringBuilder();
+            htm.Append("<div class=\"media-list\">");
+            for (var x = 0; x < Topic.media.Length; x++)
+            {
+                if(Topic.media[x] != "")
+                {
+                    htm.Append("<div class=\"img img-" + x + "\"><img src=\"/topics/" + Topic.hierarchy.Replace(">", "/") + "/sm_" + Topic.media[x] + "\"/></div>");
+                }
+            }
+            htm.Append("</div>");
+
+            //add drop zone for uploading images
+            htm.Append(
+                "<div class=\"upload-list\"></div>" + 
+                "<div class=\"dropzone\">" +
+                    "<div class=\"buttons\">" +
+                        "<a href=\"javascript:\" class=\"button green btn-upload left\">Upload An Image</a>" +
+                    "</div>" +
+                "<span class=\"drop-here\">Drop Images Here</span>" +
+                "</div>");
+            return htm.ToString();
+        }
+
+        public WebRequest Upload()
+        {
+            WebRequest wr = new WebRequest();
+            if (Files.Count > 0)
+            {
+                string folder = S.Request.Query["folder"];
+                if (folder == null) { folder = ""; }
+                if (folder != "") { folder += "/"; }
+                string path = "/wwwroot/topics/" + Topic.hierarchy.Replace(">", "/") + "/";
+                folder = folder.Replace("/", "");
+                string ext = ""; string name = ""; string filename = ""; string filenew = ""; 
+                Utility.Images image = new Utility.Images(S);
+
+                foreach (IFormFile file in Files)
+                {
+                    filename = S.Util.Str.replaceAll(ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"'), "",
+                        new string[] { "-", "_", "!", "@", "#", "$", "%", "&", "*", "+", "=", ",", "?", " " });
+
+                    ext = S.Util.Str.getFileExtension(filename).ToLower();
+                    name = filename.ToLower().Replace(ext,"");
+                    if (name.Length > 20) { name = name.Substring(0, 20); }
+
+                    switch (ext)
+                    {
+                        case "jpg":
+                        case "jpeg":
+                        case "png":
+                        case "gif":
+                            if (!Directory.Exists(S.Server.MapPath(path)))
+                            {
+                                //create directory
+                                Directory.CreateDirectory(S.Server.MapPath(path));
+                            }
+
+                            //save original photo to disk
+                            filenew = name + "." + ext;
+                            if(File.Exists(S.Server.MapPath(path + filenew)))
+                            {
+                                try
+                                {
+                                    File.Delete(S.Server.MapPath(path + filenew));
+                                }catch(Exception ex){ }
+                                
+                            }
+                            try
+                            {
+                                file.SaveAs(S.Server.MapPath(path + filenew));
+                            }catch(Exception ex){ }
+
+                            if(File.Exists(S.Server.MapPath(path + filenew)))
+                            {
+                                //save thumbnail version of image
+                                image.Shrink(path + filenew, path + "sm_" + filenew, 100);
+
+                                //get photo dimensions
+                                Utility.structImage photo = image.Load(path, filenew);
+
+                                //save photo to database
+                                var topic = Topic;
+                                var media = topic.media.ToList();
+                                if (!media.Contains(filenew))
+                                {
+                                    media.Add(filenew);
+                                    topic.media = media.ToArray();
+
+                                    //save topic to view-state
+                                    Topic = topic;
+
+                                    //save to database
+                                    S.Sql.ExecuteNonQuery("UPDATE Topics SET media='" + S.Sql.Encode(string.Join(",", topic.media)) + "' WHERE topicId=" + topic.topicId);
+                                }
+                            }
+                            break;
+                    }
+
+                }
+            }
+            return wr;
+        }
+
+        public Inject SaveUpload()
+        {
+            var inject = new Inject();
+
+            S.Page.RegisterJS("saveup", "$('.topic-media .dropzone').removeClass('uploaded');");
+            inject.element = ".topic-media .contents";
+            inject.inject = enumInjectTypes.replace;
+            inject.html = GetTopicMediaList();
+            inject.js = CompileJs();
+            return inject;
+        }
+        #endregion
     }
 }

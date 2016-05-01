@@ -1,4 +1,5 @@
 /// Collector Platform : view.js ///
+/// Originally taken from sister project: Websilk (http://www.github.com/websilk/home)
 var S = {
     init: function (viewstateid, title) {
         S.ajax.viewstateId = viewstateid;

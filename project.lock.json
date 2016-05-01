@@ -681,6 +681,34 @@
           "lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll": {}
         }
       },
+      "Nine.Imaging/1.1.0-alpha3": {
+        "type": "package",
+        "dependencies": {
+          "SharpZipLib.Portable": "0.86.0.3",
+          "System.Collections": "4.0.10",
+          "System.ComponentModel": "4.0.0",
+          "System.Linq": "4.0.0",
+          "System.Reflection.Extensions": "4.0.0",
+          "System.Runtime": "4.0.20",
+          "System.Runtime.Extensions": "4.0.10",
+          "System.Threading": "4.0.10"
+        },
+        "compile": {
+          "lib/dnxcore50/Nine.Imaging.dll": {}
+        },
+        "runtime": {
+          "lib/dnxcore50/Nine.Imaging.dll": {}
+        }
+      },
+      "SharpZipLib.Portable/0.86.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.dll": {}
+        }
+      },
       "System.AppContext/4.0.0": {
         "type": "package",
         "dependencies": {
@@ -2282,6 +2310,25 @@
           "lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll": {}
         }
       },
+      "Nine.Imaging/1.1.0-alpha3": {
+        "type": "package",
+        "dependencies": {
+          "SharpZipLib.Portable": "0.86.0.3",
+          "System.Collections": "4.0.10",
+          "System.ComponentModel": "4.0.0",
+          "System.Linq": "4.0.0",
+          "System.Reflection.Extensions": "4.0.0",
+          "System.Runtime": "4.0.20",
+          "System.Runtime.Extensions": "4.0.10",
+          "System.Threading": "4.0.10"
+        },
+        "compile": {
+          "lib/dnxcore50/Nine.Imaging.dll": {}
+        },
+        "runtime": {
+          "lib/dnxcore50/Nine.Imaging.dll": {}
+        }
+      },
       "runtime.any.System.Linq.Expressions/4.0.11-beta-23516": {
         "type": "package",
         "dependencies": {
@@ -2691,6 +2738,15 @@
         "type": "package",
         "native": {
           "runtimes/win7-x86/native/sni.dll": {}
+        }
+      },
+      "SharpZipLib.Portable/0.86.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
@@ -4519,6 +4575,25 @@
           "lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll": {}
         }
       },
+      "Nine.Imaging/1.1.0-alpha3": {
+        "type": "package",
+        "dependencies": {
+          "SharpZipLib.Portable": "0.86.0.3",
+          "System.Collections": "4.0.10",
+          "System.ComponentModel": "4.0.0",
+          "System.Linq": "4.0.0",
+          "System.Reflection.Extensions": "4.0.0",
+          "System.Runtime": "4.0.20",
+          "System.Runtime.Extensions": "4.0.10",
+          "System.Threading": "4.0.10"
+        },
+        "compile": {
+          "lib/dnxcore50/Nine.Imaging.dll": {}
+        },
+        "runtime": {
+          "lib/dnxcore50/Nine.Imaging.dll": {}
+        }
+      },
       "runtime.any.System.Linq.Expressions/4.0.11-beta-23516": {
         "type": "package",
         "dependencies": {
@@ -4928,6 +5003,15 @@
         "type": "package",
         "native": {
           "runtimes/win7-x64/native/sni.dll": {}
+        }
+      },
+      "SharpZipLib.Portable/0.86.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
@@ -6710,6 +6794,21 @@
         "tools/install.ps1"
       ]
     },
+    "Nine.Imaging/1.1.0-alpha3": {
+      "type": "package",
+      "sha512": "PmePwtJq5uPD4Eq16bRoHwR+yka/9aTfqVOo3uL0pg2pgSgOxcsUyaAf4jKyo1uVgJkI95pPWLMOHm8WtTszmg==",
+      "files": [
+        "lib/dnx451/Nine.Imaging.dll",
+        "lib/dnx451/Nine.Imaging.xml",
+        "lib/dnxcore50/Nine.Imaging.dll",
+        "lib/dnxcore50/Nine.Imaging.xml",
+        "lib/dotnet/Nine.Imaging.dll",
+        "lib/dotnet/Nine.Imaging.xml",
+        "Nine.Imaging.1.1.0-alpha3.nupkg",
+        "Nine.Imaging.1.1.0-alpha3.nupkg.sha512",
+        "Nine.Imaging.nuspec"
+      ]
+    },
     "runtime.any.System.Linq.Expressions/4.0.11-beta-23516": {
       "type": "package",
       "serviceable": true,
@@ -7018,6 +7117,18 @@
         "runtime.win7-x86.System.Data.SqlClient.sni.4.0.0-beta-23516.nupkg.sha512",
         "runtime.win7-x86.System.Data.SqlClient.sni.nuspec",
         "runtimes/win7-x86/native/sni.dll"
+      ]
+    },
+    "SharpZipLib.Portable/0.86.0.3": {
+      "type": "package",
+      "sha512": "VKiWPBLGtbkFKBj2RZOW2xHHelJK/XRWMNm7tQD6E8ltES3e+LuROFCUAyrJZsUptXLBr7h8gldzxOMRJtCK4w==",
+      "files": [
+        "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.dll",
+        "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.pdb",
+        "lib/portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10/ICSharpCode.SharpZipLib.Portable.xml",
+        "SharpZipLib.Portable.0.86.0.3.nupkg",
+        "SharpZipLib.Portable.0.86.0.3.nupkg.sha512",
+        "SharpZipLib.Portable.nuspec"
       ]
     },
     "System.AppContext/4.0.0": {
@@ -10185,7 +10296,8 @@
       "System.Xml.XmlSerializer >= 4.0.11-beta-23516",
       "System.Runtime.Serialization.Xml >= 4.1.0-beta-23516",
       "System.Net.Http >= 4.0.1-beta-23516",
-      "Newtonsoft.Json >= 8.0.2"
+      "Newtonsoft.Json >= 8.0.2",
+      "Nine.Imaging >= 1.1.0-alpha3"
     ]
   }
 }

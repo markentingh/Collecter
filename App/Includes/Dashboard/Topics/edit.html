@@ -24,8 +24,32 @@
    .section-contents th{text-align:left; background-color:#a8e6e8; padding:4px 10px;}
    .section-contents td{text-align:left; padding:4px 10px; box-sizing:border-box; border-right:1px solid #ddd; border-bottom:1px solid #ddd;}
    .section-contents blockquote{background-color:#eee; padding:10px 20px 7px 20px;}
+
+   .topic-media .dropzone{border:3px dashed #555; width:100%; padding: 20px 10px; height:75px; text-align:center; box-sizing:border-box;}
+   .topic-media .drop-here{padding-top:7px; display:inline-block; color:#666;}
+   .topic-media .uploading{animation: media-uploading 2s ease-in-out;}
+   .topic-media .uploaded{animation: media-uploaded 2s ease-in-out;}
+   .topic-media .buttons{float:left;}
+   .topic-media .upload-list{width:100%; padding:10px;}
+   .media-list{overflow-x:auto; overflow-y:hidden; white-space:nowrap; }
+   .media-list .img{display:inline-block; padding:7px; height:80px; overflow:hidden;}
+
+   @keyframes media-uploading {
+      0%   { background-color: #086f46; }
+      50%  { background-color: #111111; }
+      100% { background-color: #086f46; }
+    }
+
+   @keyframes media-uploaded {
+      0%   { background-color: #09701b; }
+      50%  { background-color: #111111; }
+      100% { background-color: #09701b; }
+    }
 </style>
 
 {{content}}
+
+<link type="text/css" href="/css/dropzone.css" rel="stylesheet" />
+<script type="text/javascript" src="/scripts/utility/dropzone.js"></script>
 <script type="text/javascript" src="/scripts/utility/marked.js"></script>
 <script type="text/javascript" src="/scripts/utility/autosize.min.js"></script>

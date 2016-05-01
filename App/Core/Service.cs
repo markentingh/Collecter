@@ -35,6 +35,7 @@ namespace Collector
 
     public class WebRequest
     {
+        //a page request via web service that returns html
         public string html = "";
         public string contentType = "text/html";
     }
