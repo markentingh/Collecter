@@ -1,7 +1,7 @@
 ﻿
-namespace Collector.Includes
+namespace Collector.PageViews
 {
-    public class Interface : Include
+    public class Interface : PageView
     {
         public Interface(Core CollectorCore, Scaffold ParentScaffold) : base(CollectorCore, ParentScaffold)
         {
@@ -17,7 +17,7 @@ namespace Collector.Includes
             Scaffold scaffold;
 
             //setup scaffolding variables
-            scaffold = new Scaffold(S, "/app/includes/interface.html", "", new string[] { "content", "cssfile", "signin", "script", "foot" });
+            scaffold = new Scaffold(S, "/app/pageviews/interface.html", "", new string[] { "content", "cssfile", "signin", "script", "foot" });
             scaffold.Data["content"] = content;
             scaffold.Data["cssfile"] = cssFile;
             scaffold.Data["scriptfiles"] = scriptFiles;

@@ -38,14 +38,14 @@
     buttons: {
         editTopic: function (className) {
             console.log(className);
-            $('.accordion.' + className + ' .preview').hide();
+            $('.accordion.' + className + ' .preview, .' + className + ' .btn-cancel').hide();
             $('.accordion.' + className + ' .edit').show();
             autosize.update($('#' + className + '-content'));
         },
 
         previewTopic: function (className) {
-            var title = $('#' + className + '-title').val();
-            var content = $('#' + className + '-content').val();
+            var title = $('.accordion.' + className + ' .txt-title').val();
+            var content = $('.accordion.' + className + ' .txt-content').val();
             var htm = marked(content
                     .replace(/\n{3,}/g, '\n\n!b!\n\n')
                     .replace(/\n{3,}/g, '\n\n!b!\n\n')
@@ -56,32 +56,9 @@
             $('.accordion.' + className + ' > .title').html(title);
         },
 
-        saveChanges: function (groupName) {
-            if(S.topics.edit.edited == false){return;}
-            var i = 1;
-            var sections = new Array();
-            var obj;
-            $('.btn-savechanges').hide();
-            S.topics.edit.edited = false;
-            while (i > 0) {
-                obj = $('#' + groupName + i + '-title');
-                if (obj.length == 1) {
-                    sections.push({
-                        title: obj.val(),
-                        content: $('#' + groupName + i + '-content').val()
-                    });
-                    i++;
-                } else { break; }
-            }
-            S.ajax.post('/api/Topics/SaveChanges', { sections: JSON.stringify(sections) }, function () { });
-        },
-
         addSection: function (group, index) {
             var sections = $('.topic-section');
-            console.log(sections);
-            console.log(arguments);
-            var section = $('.section' + index + ' .topic-section');
-            console.log(section);
+            var section = $('.' + group + index + ' .topic-section');
             var count = sections.length;
             var element = '.' + group + (index + 1);
             var after = false;
@@ -93,6 +70,47 @@
                     scrollTop: $('.' + group + (count + 1)).offset().top
                 }, 700);
             });
+        },
+
+        removeSection: function (group, index) {
+            if (confirm('Do you really want to delete this section?')) {
+                $('.section' + index).remove();
+                S.ajax.post('/api/Topics/RemoveSection', {index: index}, S.ajax.callback.inject);
+            }
+            
+        },
+
+        saveChanges: function (groupName) {
+            if (S.topics.edit.edited == false) { return; }
+            var i = 1;
+            var e = 0;
+            var data = new Array();
+            var obj;
+            var sections = $('.topic-section');
+            var section;
+            var id = '';
+            var title = '';
+            $('.btn-savechanges').hide();
+            S.topics.edit.edited = false;
+            console.log(sections);
+            for (var s = 0; s < sections.length; s++) {
+                console.log(s);
+                section = sections[s];
+                console.log(section);
+                id = section.className.replace('topic-section id-' + groupName, '');
+                title = $(section).find('.txt-title').val();
+                console.log('id = ' + id);
+                data.push({
+                    title: title,
+                    content: $(section).find('.txt-content').val(),
+                    id: id
+                });
+                //update title
+                $('.' + groupName + id + ' > .title').html(title);
+            }
+
+            console.log(data);
+            S.ajax.post('/api/Topics/SaveTopic', { sections: JSON.stringify(data) }, function () { });
         }
     },
 
@@ -115,16 +133,6 @@
 
             //add new autosizes to all textareas on the page
             autosize($('textarea'));
-        }
-    },
-
-    sections: {
-        addAt: function (index) {
-
-        },
-
-        moveTo: function (index, above) {
-
         }
     }
 };

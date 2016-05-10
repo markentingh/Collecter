@@ -533,6 +533,48 @@ var S = {
                 }, 700);
             }
         }
+    },
+    
+    popup: {
+        element: null,
+        elementContainer: null,
+
+        show: function (element) {
+            //generate popup interface on-the-fly and move element contents into popup container
+            S.popup.hide();
+            S.popup.elementContainer = $(element).parent()[0];
+            var bg = document.createElement("div");
+            var pop = document.createElement("div");
+            bg.className = 'popup-bg';
+            pop.className = 'popup-container';
+            $('body').prepend(bg);
+            $('body').prepend(pop);
+            $('body > .popup-container').append(element);
+            S.popup.element = $('body > .popup-container')[0].children[0];
+            S.events.doc.resize.callback.add($('.popup-container')[0], null, S.popup.resize, S.popup.resize, S.popup.resize, null);
+            $('.popup-bg').on('click', S.popup.hide);
+            S.popup.resize();
+        },
+
+        resize: function () {
+            //resize popup container to align center with window
+            var win = $(window);
+            var c = $('.popup-container');
+            var x = Math.max(0, (win.width() - c.outerWidth()) / 2);
+            var y = Math.max(0, (win.height() - c.outerHeight()) / 2);
+            c.css({ top: y, left: x});
+        },
+
+        hide: function () {
+            //destroy popup interface and move popup contents back to original container
+            if ($('body > .popup-container').children.length > 0) {
+                //move element back
+                $(S.popup.elementContainer).append(S.popup.element);
+            }
+            $('.popup-bg').off('click');
+            S.events.doc.resize.callback.remove($('.popup-container')[0]);
+            $('body > .popup-bg, body > .popup-container').remove();
+        }
     }
 }
 

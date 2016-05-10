@@ -1,6 +1,6 @@
-﻿namespace Collector.Includes
+﻿namespace Collector.PageViews
 {
-    public class Downloads : Include
+    public class Downloads : PageView
     {
         public Downloads(Core CollectorCore, Scaffold ParentScaffold) : base(CollectorCore, ParentScaffold)
         {
@@ -21,13 +21,13 @@
             if (scaffold == null)
             {
                 //get feeds list from web service
-                scaffold = new Scaffold(S, "/app/includes/dashboard/downloads/downloads.html", "", new string[] { });
+                scaffold = new Scaffold(S, "/app/pageviews/dashboard/downloads/downloads.html", "", new string[] { });
                 Services.Downloads downloads = new Services.Downloads(S, S.Page.Url.paths);
                 scaffold.Data["servers"] = downloads.LoadServersUI();
                 scaffold.Data["host"] = S.Request.Host.ToString();
                 scaffold.Data["queue"] = downloads.LoadQueueUI();
                 S.Page.RegisterJS("downloads", "setTimeout(function(){S.downloader.consoleLog('Collector (v" + S.Version + ") Download Queue Console: >', 'startup');},100);");
-                S.Page.RegisterJSFromFile("/app/includes/dashboard/downloads/downloads.js");
+                S.Page.RegisterJSFromFile("/app/pageviews/dashboard/downloads/downloads.js");
             }
             return scaffold.Render();
         }

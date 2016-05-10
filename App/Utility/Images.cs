@@ -27,29 +27,38 @@ namespace Collector.Utility
 
         public structImage Load(string path, string filename)
         {
-            Image image = new Image(File.OpenRead(S.Server.MapPath(path + filename)));
-            structImage newImg = new structImage();
-            newImg.bitmap = image;
-            newImg.filename = filename;
-            newImg.path = path;
-            newImg.width = image.PixelWidth;
-            newImg.height = image.PixelHeight;
-            return newImg;
+            try
+            {
+                Image image = new Image(File.OpenRead(S.Server.MapPath(path + filename)));
+                structImage newImg = new structImage();
+                newImg.bitmap = image;
+                newImg.filename = filename;
+                newImg.path = path;
+                newImg.width = image.PixelWidth;
+                newImg.height = image.PixelHeight;
+                return newImg;
+            }
+            catch (Exception ex) { }
+            return new structImage();
         }
 
         public void Shrink(string filename, string outfile, int width)
         {
-            FileStream fs = File.OpenRead(S.Server.MapPath(filename));
-            Image image = new Image(fs);
-
-            //int h = height;
-            if (image.PixelWidth > width)
+            try
             {
-                //if(h <= 0) { h = (image.PixelHeight / (image.PixelWidth / width)); }
-                image = image.Resize(width);
-            }
-            Save(outfile, image);
-            fs.Dispose();
+                FileStream fs = File.OpenRead(S.Server.MapPath(filename));
+                Image image = new Image(fs);
+
+                //int h = height;
+                if (image.PixelWidth > width)
+                {
+                    //if(h <= 0) { h = (image.PixelHeight / (image.PixelWidth / width)); }
+                    image = image.Resize(width);
+                }
+                Save(outfile, image);
+                fs.Dispose();
+            }catch(Exception ex) { }
+            
         }
 
         public void Save(string filename, Image image)

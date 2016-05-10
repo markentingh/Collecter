@@ -32,7 +32,8 @@
     .article{font-size:20px;}
     .article p{padding-bottom:30px; overflow:hidden; clear:both;}
     .article h1, .article h2, .article h3, .article h4, .article h5, .article h6{overflow:hidden; clear:both;}
-    .article .word{float:left; display:block; padding:4px 5px 4px 0; }
+    .article .word{float:left; display:block; padding:4px 0 4px 0; }
+    .article .word.space, .article a .word{padding-right:5px;}
     .article .word.selected{background-color:#870149;}
     .article a{float:left;}
     .article a:hover span{text-decoration:underline;}
@@ -92,8 +93,34 @@
     .bugs .contents .title{width:100%; font-size:20px; color:#eee;}
     .bugs .contents .date{width:100%; font-size:14px; color:#666; padding-bottom:7px;}
     .bugs .contents .description{width:100%; font-size:20px; color:#aaa; padding-bottom:30px;}
+
+    .popups{display:none;}
+    .popup-sentence{width:100%; max-width:500px;}
+    .txt-sentence{width:489px !important; height:70px;}
+    .test-type{width:auto;}
 </style>
 <link type="text/css" rel="/scripts/ace/ace.css"/>
+
+<div class="popups">
+    <div class="popup-sentence">
+        <div class="row title bottom">Sentence Options</div>
+        <div class="row top bottom">
+            <div class="column"><textarea class="txt-sentence"></textarea></div>
+        </div>
+
+        <div class="row label">Training Type</div>
+        <div class="row field bottom">
+            <select class="test-type">
+                <option value="1">Valid</option>
+                <option value="2">Invalid</option>
+            </select>
+        </div>
+
+        <div class="row top">
+            <div class="button green btn-add-training">Add To Neural Network</div>
+        </div>
+    </div>
+</div>
 
 <div class="accordion listing">
     <div class="title expanded">Listing</div>

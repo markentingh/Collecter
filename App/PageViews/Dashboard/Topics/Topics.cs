@@ -1,6 +1,6 @@
-﻿namespace Collector.Includes
+﻿namespace Collector.PageViews
 {
-    public class Topics : Include
+    public class Topics : PageView
     {
         public Topics(Core CollectorCore, Scaffold ParentScaffold) : base(CollectorCore, ParentScaffold)
         {
@@ -18,8 +18,8 @@
             
 
             //setup container for topics section
-            var scaffold2 = new Scaffold(S, "/app/includes/dashboard/topics/container.html");
-            S.Page.RegisterJSFromFile("/app/includes/dashboard/topics/container.js");
+            var scaffold2 = new Scaffold(S, "/app/pageviews/dashboard/topics/container.html");
+            S.Page.RegisterJSFromFile("/app/pageviews/dashboard/topics/container.js");
 
             if (S.Page.Url.paths.Length > 2)
             {
@@ -29,8 +29,8 @@
                         //load topic editor
                         if (S.Request.Query.ContainsKey("topic"))
                         {
-                            S.Page.RegisterJSFromFile("/app/includes/dashboard/topics/edit.js");
-                            scaffold = new Scaffold(S, "/app/includes/dashboard/topics/edit.html");
+                            S.Page.RegisterJSFromFile("/app/pageviews/dashboard/topics/edit.js");
+                            scaffold = new Scaffold(S, "/app/pageviews/dashboard/topics/edit.html");
                             Services.Topics topics = new Services.Topics(S, S.Page.Url.paths);
                             scaffold.Data["content"] = topics.LoadTopicsEditorUI(int.Parse(S.Request.Query["topic"]));
                             menu = "<div class=\"menu left\"><nav><ul>" +
@@ -46,10 +46,10 @@
             if (scaffold == null)
             {
                 //get topics list
-                scaffold = new Scaffold(S, "/app/includes/dashboard/topics/list.html");
+                scaffold = new Scaffold(S, "/app/pageviews/dashboard/topics/list.html");
                 Services.Topics topics = new Services.Topics(S, S.Page.Url.paths);
                 scaffold.Data["content"] = topics.LoadTopicsUI();
-                S.Page.RegisterJSFromFile("/app/includes/dashboard/topics/list.js");
+                S.Page.RegisterJSFromFile("/app/pageviews/dashboard/topics/list.js");
             }
             parentScaffold.Data["menu"] = menu;
             scaffold2.Data["content"] = scaffold.Render();

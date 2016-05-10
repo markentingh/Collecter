@@ -5,9 +5,9 @@ using System.Linq;
 using Collector.Utility.DOM;
 
 
-namespace Collector.Includes
+namespace Collector.PageViews
 {
-    public class Search : Include
+    public class Search : PageView
     {
         public Search(Core CollectorCore, Scaffold ParentScaffold) : base(CollectorCore, ParentScaffold)
         {
@@ -17,8 +17,6 @@ namespace Collector.Includes
         public override string Render()
         {
             Scaffold scaffold = null;
-            SqlClasses.Dashboard sqlDash;
-            SqlReader reader;
 
             //setup dashboard menu
             string menu = "<div class=\"left\"><ul><li><a href=\"/dashboard/search/history\" class=\"button blue\">History</a></li></ul></div>";
@@ -44,8 +42,8 @@ namespace Collector.Includes
                 if (scaffold == null)
                 {
                     //get article list from web service
-                    scaffold = new Scaffold(S, "/app/includes/dashboard/search/search.html", "", new string[] { "content" });
-                    S.Page.RegisterJSFromFile("/app/includes/dashboard/search/search.js");
+                    scaffold = new Scaffold(S, "/app/pageviews/dashboard/search/search.html", "", new string[] { "content" });
+                    S.Page.RegisterJSFromFile("/app/pageviews/dashboard/search/search.js");
                 }
                 
             }
@@ -57,7 +55,7 @@ namespace Collector.Includes
         private Scaffold LoadHistory()
         {
             //load article creation form
-            var scaffold = new Scaffold(S, "/app/includes/dashboard/search/history.html", "", new string[] { "content" });
+            var scaffold = new Scaffold(S, "/app/pageviews/dashboard/search/history.html", "", new string[] { "content" });
 
             return scaffold;
         }

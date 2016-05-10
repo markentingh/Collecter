@@ -1,7 +1,7 @@
 ﻿
 namespace Collector
 {
-    public class Include
+    public class PageView
     {
 
         protected Core S;
@@ -9,7 +9,7 @@ namespace Collector
 
         public string scriptFiles = "";
 
-        public Include(Core CollectorCore, Scaffold ParentScaffold)
+        public PageView(Core CollectorCore, Scaffold ParentScaffold)
         {
             S = CollectorCore;
             parentScaffold = ParentScaffold;

@@ -85,6 +85,20 @@
             return "";
         }
         #endregion
-        
+
+        #region "Numbers"
+        public double FormatNumber(double num, double decimals = 2)
+        {
+            var n = "";
+            for(var x = 1; x <= decimals; x++)
+            {
+                n += "#";
+            }
+            var s = num.ToString("#." + n);
+            if(s == "") { return 0; }
+            return double.Parse(s);
+        }
+        #endregion
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -75,9 +76,13 @@ namespace Collector
             }
             else
             {
-                string data = File.ReadAllText(MapPath(file));
-                if (!isLocal) { Cache.Add(file, data); }
-                return data;
+                if (File.Exists(MapPath(file)))
+                {
+                    string data = File.ReadAllText(MapPath(file));
+                    if (!isLocal) { Cache.Add(file, data); }
+                    return data;
+                }
+                return "";
             }
         }
 
@@ -93,6 +98,14 @@ namespace Collector
             }
             if(saveToDisk == true)
             {
+                var paths = file.Split('/').ToList();
+                paths.RemoveAt(paths.Count - 1);
+
+                var folder = string.Join("/", paths.ToArray());
+                if (!Directory.Exists(MapPath(folder)))
+                {
+                    Directory.CreateDirectory(MapPath(folder));
+                }
                 File.WriteAllText(MapPath(file), data);
             }
         }

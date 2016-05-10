@@ -10,7 +10,7 @@ namespace Collector.Pages
         public override string Render()
         {
             Scaffold scaffold;
-            Includes.Interface iface;
+            PageViews.Interface iface;
             bool err = false;
 
             if(S.User.userId > 0)
@@ -20,7 +20,7 @@ namespace Collector.Pages
                 scaffold = new Scaffold(S, "/app/pages/signin/already.html", "", new string[] { });
 
                 //load website interface
-                iface = new Includes.Interface(S, scaffold);
+                iface = new PageViews.Interface(S, scaffold);
 
                 return iface.Render(scaffold.Render(), "signin.css");
             }
@@ -49,7 +49,7 @@ namespace Collector.Pages
                             scaffold = new Scaffold(S, "/app/pages/signin/success.html", "", new string[] { });
 
                             //load website interface
-                            iface = new Includes.Interface(S, scaffold);
+                            iface = new PageViews.Interface(S, scaffold);
 
                             return iface.Render(scaffold.Render(), "signin.css");
                         }
@@ -70,7 +70,7 @@ namespace Collector.Pages
                 }
 
                 //load website interface
-                iface = new Includes.Interface(S, scaffold);
+                iface = new PageViews.Interface(S, scaffold);
 
                 return iface.Render(scaffold.Render(), "signin.css");
             }

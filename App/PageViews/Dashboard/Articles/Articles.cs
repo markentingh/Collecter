@@ -6,9 +6,9 @@ using Collector.Utility.DOM;
 using Collector.Services;
 
 
-namespace Collector.Includes
+namespace Collector.PageViews
 {
-    public class Articles : Include
+    public class Articles : PageView
     {
         private string[] separatorExceptions = new string[]{"'", "\""};
 
@@ -83,21 +83,21 @@ namespace Collector.Includes
 
         private Scaffold LoadArticleList()
         {
-            var scaffold = new Scaffold(S, "/app/includes/dashboard/articles/list.html", "", new string[] { "content" });
+            var scaffold = new Scaffold(S, "/app/pageviews/dashboard/articles/list.html", "", new string[] { "content" });
             Services.Articles articles = new Services.Articles(S, S.Page.Url.paths);
             scaffold.Data["content"] = string.Join("\n", articles.GetArticlesUI().html);
-            S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/list.js");
+            S.Page.RegisterJSFromFile("/app/pageviews/dashboard/articles/list.js");
             return scaffold;
         }
 
         private Scaffold LoadCreateArticleForm()
         {
             //load article creation form
-            return new Scaffold(S, "/app/includes/dashboard/articles/create.html", "", new string[] { "categories" });
+            return new Scaffold(S, "/app/pageviews/dashboard/articles/create.html", "", new string[] { "categories" });
         }
 
         private Scaffold LoadAnalyzedArticle(string url) {
-            Scaffold scaffold = new Scaffold(S, "/app/includes/dashboard/articles/analyzed.html", "", new string[] { "name", "id" });
+            Scaffold scaffold = new Scaffold(S, "/app/pageviews/dashboard/articles/analyzed.html", "", new string[] { "name", "id" });
             if (url != "")
             {
                 //analyze an article ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,6 +124,7 @@ namespace Collector.Includes
                 };
                 var endTags = "";
                 var startTags = "";
+                var hasSpace = false;
                 DomElement elemTag;
                 DomElement elem;
                 DomElement specialTag;
@@ -155,6 +156,7 @@ namespace Collector.Includes
                     elem = article.elements[bod];
                     containerChangedType = containerType;
 
+                    //check for container (p, h1, h2, h3, etc)
                     foreach (string tag in tagTypes)
                     {
                         tagIndex = elem.hierarchyTags.ToList().LastIndexOf(tag);
@@ -234,6 +236,7 @@ namespace Collector.Includes
                         if (containerType != "") { body.Add("<" + containerType + ">"); }
                         oldType = containerType;
                     }
+
 
                     if (x < article.body.Count - 1)
                     {
@@ -361,27 +364,52 @@ namespace Collector.Includes
 
                             //separate each word into a span tag
                             parWords = "";
-                            foreach (var w in wordlist)
+                            var a = "";
+                            for (var u = 0; u < wordlist.Length; u++)
                             {
+                                a = wordlist[u];
                                 wordClasses = "";
-                                if (w.Length == 1)
+                                if (a.Length == 1)
                                 {
-                                    if (serveArticles.isSentenceSeparator(w, separatorExceptions))
+                                    if (serveArticles.isSentenceSeparator(a, separatorExceptions))
                                     {
                                         wordClasses += " separator";
                                     }
                                 }
+                                hasSpace = false;
+                                if (u < wordlist.Length - 1)
+                                {
+                                    //check for adding an extra space after this tag (for grammar)
+                                    switch (wordlist[u + 1].Substring(0, 1))
+                                    {
+                                        case ".": case ":": case ";": case ",": case "!":
+                                        case "?": case "'": case "/": case "\\":
+                                        case ")": case "]": case "}":
+                                            break;
+                                        default:
+                                            hasSpace = true;
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    hasSpace = true;
+                                }
+                                switch(a.Substring(a.Length - 1))
+                                {
+                                    case "(": case "[": case "{":
+                                        hasSpace = false;
+                                        break;
+                                }
 
-                                        
-                                parWords += "<span class=\"word sentence" + sentenceIndex + " " + parTypeName + wordClasses + sentenceClasses + "\">" + w + "</span>\n";
+                                parWords += "<span class=\"word sentence" + sentenceIndex + " " + parTypeName + wordClasses + sentenceClasses + (hasSpace ? " space" : "") + "\">" + a + (hasSpace ? " " : "") + "</span>\n";
                             }
                             paragraph += parWords;
 
                             //check for end of sentence
                             switch (sentenceEnding)
                             {
-                                case ".": case ":": case ")": case "}":
-                                case "]": case "\"": case "?": case "!":
+                                case ".": case "?": case "!":
                                     //last word is a sentence ending marker
                                     sentenceIndex += 1;
                                     break;
@@ -389,7 +417,6 @@ namespace Collector.Includes
                                         
                         }
                     }
-                    if(1 == 0) { paraEnd = "<div class=\"para-end\"></div>"; }
 
 
                     //TODO: figure out if current body element is the end of a paragraph
@@ -559,7 +586,7 @@ namespace Collector.Includes
 
                 //load javascript file
                 scriptFiles += "<script type=\"text/javascript\" src=\"/scripts/ace/ace.js\"></script>";
-                S.Page.RegisterJSFromFile("/app/includes/dashboard/articles/analyzed.js");
+                S.Page.RegisterJSFromFile("/app/pageviews/dashboard/articles/analyzed.js");
                 S.Page.RegisterJS("articleid", "S.analyzed.articleId=" + article.id);
             }
 
@@ -567,7 +594,7 @@ namespace Collector.Includes
             //create new article from posted form
             //sqlDash = new SqlClasses.Dashboard(S);
             //int articleId = sqlDash.AddArticle(S.Request.Form["title"], S.Request.Form["description"], int.Parse(S.Request.Form["category"]));
-            //scaffold = new Scaffold(S, "/app/includes/dashboard/articles/created.html", "", new string[] { "name", "id" });
+            //scaffold = new Scaffold(S, "/app/pageviews/dashboard/articles/created.html", "", new string[] { "name", "id" });
             //scaffold.Data["name"] = S.Request.Form["title"];
             //scaffold.Data["id"] = articleId.ToString();
             //scaffold.Data["content"] = scaffold.Render();

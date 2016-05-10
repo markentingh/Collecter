@@ -14,7 +14,7 @@ namespace Collector.Pages
             Scaffold scaffold = new Scaffold(S, "/app/pages/home.html", "", new string[] { });
 
             //load website interface
-            Includes.Interface iface = new Includes.Interface(S, scaffold);
+            PageViews.Interface iface = new PageViews.Interface(S, scaffold);
 
             return iface.Render(scaffold.Render(), "home.css");
         }

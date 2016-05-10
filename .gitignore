@@ -7,10 +7,12 @@
 *.sln.docstates
 content/articles
 content/searchterms
+content/neurons
 wwwroot/content
 wwwroot/images/screenshots
 wwwroot/images/workflow
 wwwroot/tests
+wwwroot/topics
 *.bak
 
 # Build results

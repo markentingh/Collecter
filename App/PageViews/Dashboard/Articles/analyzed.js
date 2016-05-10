@@ -6,8 +6,10 @@
         $('.words-sorted .box .word, .phrases .phrase').on('click', S.analyzed.buttons.toggleWord);
         $('.article .word').on('mouseenter', S.analyzed.buttons.onArticleWordHover);
         $('.article .word').on('mouseleave', S.analyzed.buttons.onArticleWordLeave);
+        $('.article .word').on('click', S.analyzed.buttons.onArticleWordClick);
         $('#btnsubmitbug').on('click', S.analyzed.buttons.saveBugReport);
         S.analyzed.buttons.changeWordType(S.elem.get('lstwordtype'));
+        $('.btn-add-training').on('click', S.analyzed.buttons.addTrainingSentence);
     },
 
     loadAce: function () {
@@ -90,8 +92,38 @@
             S.analyzed.buttons.timerWords = setTimeout(function () { $('.article .word').removeClass('selected'); }, 300);
         },
 
+        onArticleWordClick: function () {
+            S.popup.show($('.popup-sentence'));
+            var classes = $(this)[0].className.split(' ');
+            var sentence = '';
+            //build sentence from word elements
+            for (var x = 0; x < classes.length; x++) {
+                if (classes[x].substring(0, 8) == 'sentence') {
+                    //found sentence class
+                    var words = $('.article .' + classes[x]);
+                    for (var y = 0; y < words.length; y++) {
+                        var add = true;
+                        var word = $.trim(words[y].innerText);
+                        if (y >= words.length - 3) {
+                            switch (word.substring(word.length - 1)) {
+                                case '.': case '?': case '!':
+                                    word = word.substring(0, word.length - 1);
+                                    break;
+                            }
+                        }
+                        if (word == '') { add = false;}
+                        if (add == true) {
+                            sentence += word + (words[y].className.indexOf('space') >= 0 ? ' ' : ''); //optionally, add space after the word
+                        }
+                    }
+                    $('.txt-sentence').val(sentence);
+                    break;
+                }
+            }
+            $('.txt-sentence').val()
+        },
+
         changeWordType: function (elem) {
-            console.log(elem);
             var type = $(elem).val();
             $('.words-sorted .menu .option-field').hide();
             $('.words-sorted .menu .wordtype-' + type).show();
@@ -103,6 +135,16 @@
             S.ajax.post('/api/Articles/AddBugReport', { articleId: S.analyzed.articleId, title: title, description: description }, function () { S.ajax.callback.inject(arguments[0]); });
             $('#txtbugtitle').val('');
             $('#txtbugdescription').val('');
+        },
+
+        addTrainingSentence: function () {
+            S.ajax.post('/api/Neurons/AddTrainingSentence',
+                {
+                    sentence: $('.txt-sentence').val(),
+                    valid: $('.test-type').val() == '1' ? true : false
+                },
+                function () {});
+            S.popup.hide();
         }
     }
 };

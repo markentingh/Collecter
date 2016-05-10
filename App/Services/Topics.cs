@@ -32,6 +32,7 @@ namespace Collector.Services
         {
             public string title;
             public string content;
+            public int id;
         }
 
         private topicInfo _topic = new topicInfo();
@@ -96,9 +97,53 @@ namespace Collector.Services
             return htm;
         }
 
+        public string AddTopic(string breadcrumb = "", string title = "", string description = "", string search = "", int sort = 0)
+        {
+            if(breadcrumb == "") { return LoadTopicsUI(1, 50, "", search, sort); }
+            var hier = breadcrumb.ToLower().Replace(" > ", ">").Replace("> ", ">").Replace(" >", ">").Split('>');
+            var parentTitle = "";
+            var parentBreadcrumb = "";
+            if (hier.Length > 0)
+            {
+                var parentHier = hier.ToList();
+                parentTitle = hier[hier.Length - 1];
+                parentHier.RemoveAt(parentHier.Count - 1);
+                parentBreadcrumb = string.Join(">", parentHier);
+            }
+            S.Sql.ExecuteNonQuery("EXEC AddTopicByBreadcrumb @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(description) + "', @subject='" + parentTitle + "', @breadcrumb='" + parentBreadcrumb + "'");
+            return LoadTopicsUI(1, 50, "", search, sort);
+        }
+
         #endregion
 
         #region "Edit"
+
+        private topicInfo Topic
+        {
+            get {
+                if (_topic.topicId == 0)
+                {
+                    _topic = (topicInfo)S.Util.Serializer.ReadObject(S.Page.Items.Item("topic"), typeof(topicInfo));
+                }
+                return _topic;
+            }
+            set {
+                if(S.Page.Items.IndexOf("topic") >= 0){
+                    S.Page.Items.Remove("topic");
+                }
+                S.Page.Items.Add("topic", S.Util.Serializer.WriteObjectAsString(value));
+                
+            }
+        }
+
+        private List<sectionInfo> OpenTopicJson()
+        {
+            if (File.Exists(S.Server.MapPath(Topic.topicPath + Topic.topicId.ToString() + ".json")) == true)
+            {
+                return (List<sectionInfo>)S.Util.Serializer.ReadObject(S.Server.OpenFile(Topic.topicPath + Topic.topicId.ToString() + ".json"), typeof(List<sectionInfo>));
+            }
+            return new List<sectionInfo>();
+        }
 
         public string LoadTopicsEditorUI(int topicId)
         {
@@ -130,10 +175,9 @@ namespace Collector.Services
                 htm.Append(RenderAccordion("Media", "topic-media", GetTopicMediaList()));
 
                 //open topic json file
-                if (File.Exists(S.Server.MapPath(topic.topicPath + topicId.ToString() + ".json")) == true)
-                {
-                    List<sectionInfo> sections = (List<sectionInfo>)S.Util.Serializer.ReadObject(S.Server.OpenFile(topic.topicPath + topicId.ToString() + ".json"), typeof(List<sectionInfo>));
-                    foreach(sectionInfo section in sections)
+                List<sectionInfo> sections = OpenTopicJson();
+                if(sections.Count > 0) { 
+                    foreach (sectionInfo section in sections)
                     {
                         htm.Append(GetTopicEditableAccordion(topic.title, section.title, section.content, "section", "section" + i, topicId, i, true, (i == 1 ? true : false)));
                         i++;
@@ -149,14 +193,15 @@ namespace Collector.Services
             return htm.ToString();
         }
 
-        private string GetTopicEditableAccordion(string topicTitle, string title, string content, string groupName, string className, int topicId, int index, bool whiteBg = false, bool expanded = true, bool editMode = false)
+        private string GetTopicEditableAccordion(string topicTitle, string title, string content, string groupName, string className, int topicId, int index, bool whiteBg = false, bool expanded = true, bool editMode = false, bool isNew = false)
         {
             //register javascript events for the editable form
             S.Page.RegisterJS("topicsection" + className, 
                 (!editMode ? (content != "" ? "S.topics.edit.buttons.previewTopic('" + className + "');" : "") : "") +
-                    "$('." + className + "-btn-edit').on('click', function(){console.log('wtf');S.topics.edit.buttons.editTopic('" + className + "');});" +
-                    "$('." + className + "-btn-preview').on('click', function(){S.topics.edit.buttons.previewTopic('" + className + "');});" +
-                    "$('." + className + "-btn-newsection').on('click', function(){S.topics.edit.buttons.addSection('"+ groupName + "'," + index + ");});");
+                    "$('." + className + "-btn-edit').on('click', function(){S.topics.edit.buttons.editTopic('" + className + "');});" +
+                    "$('." + className + "-btn-preview').on('click ', function(){S.topics.edit.buttons.previewTopic('" + className + "');});" +
+                    "$('." + className + "-btn-newsection').on('click', function(){S.topics.edit.buttons.addSection('"+ groupName + "'," + index + ");});" +
+                    "$('." + className + "-btn-remove').on('click', function(){S.topics.edit.buttons.removeSection('" + groupName + "'," + index + ");});");
 
             S.Page.RegisterJS("topickeydown", 
                     "$('.topic-section input, .topic-section textarea').off().on('keydown', function(e){S.topics.edit.texteditor.keyDown(e.target);});" +
@@ -166,11 +211,12 @@ namespace Collector.Services
 
             //render an accordion with two tabs, one for editing a topic sectionl, the other for previewing
             return RenderAccordion(title, className,
-                    "<div class=\"topic-section\">" + 
+                    "<div class=\"topic-section id-section" + index + "\">" + 
+                        //live preview
                         "<div class=\"preview\"" + (editMode ? " style=\"display:none\"" : "") + ">" +
                             "<div class=\"nopreview\"" + (content == "" ? "" : " style=\"display:none;\"") + ">" + 
                                 "<div class=\"title\">Start writing in new section for the topic '" + topicTitle + "'.</div>" +
-                                "<a href=\"javascript:\" class=\"button green\" id=\"" + className + "-btn-edit\">Edit Section</a>" + 
+                                "<a href=\"javascript:\" class=\"button green " + className + "-btn-edit\">Edit Section</a>" + 
                             "</div>" +
                             "<div class=\"ispreview\"" + (content != "" ? "" : " style=\"display:none;\"") + ">" +
                                 "<div class=\"section-contents\">" + "</div>" + //content + "</div>" +
@@ -178,90 +224,130 @@ namespace Collector.Services
                                     "<a href=\"javascript:\" class=\"button green left " + className + "-btn-edit\">Edit</a>" +
                                     "<a href=\"javascript:\" class=\"button blue left " + className + "-btn-newsection\">+ New Section</a>" +
                                     "<a href=\"javascript:\" class=\"button green right btn-savechanges\" style=\"display:none;\">Save Changes</a>" +
+                                "<a href=\"javascript:\" class=\"button left " + className + "-btn-remove\">Remove</a>" +
                                 "</div>" +
                             "</div>" +
                         "</div>" +
+                        //editable form used for markdown
                         "<div class=\"edit\"" + (editMode ? "" : " style=\"display:none\"") + ">" +
                             "<div class=\"row column label\">Section Title</div>" +
-                            "<div class=\"row column\"><input type=\"text\" id=\"" + className  + "-title\" value=\"" + title.Replace("\"","\\\"") + "\"></div>" +
+                            "<div class=\"row column\"><input type=\"text\" class=\"txt-title\" value=\"" + title.Replace("\"","\\\"") + "\"></div>" +
                             "<div class=\"row column label\">Content <span class=\"right\"><a href=\"https://guides.github.com/features/mastering-markdown/\" target=\"_blank\">Markdown</a></span></div>" +
-                            "<div class=\"row column\"><textarea id=\"" + className + "-content\">" + content + "</textarea></div>" +
+                            "<div class=\"row column\"><textarea class=\"txt-content\">" + content + "</textarea></div>" +
                             "<div class=\"row column buttons\">" +
                                 "<a href=\"javascript:\" class=\"button green left " + className + "-btn-preview\">Preview</a>" +
                                 "<a href=\"javascript:\" class=\"button blue left " + className + "-btn-newsection\">+ New Section</a>" +
-                                "<a href=\"javascript:\" class=\"button green right btn-savechanges\" style=\"display:none;\">Save Changes</a>" +
+                                "<a href=\"javascript:\" class=\"button green left btn-savechanges\" style=\"display:none;\">Save Changes</a>" +
+                                "<a href=\"javascript:\" class=\"button left " + className + "-btn-remove\">Remove</a>" +
                             "</div>" +
                         "</div>" +
                     "</div>"
                 , expanded, whiteBg);
         }
 
-        private topicInfo Topic
-        {
-            get {
-                if (_topic.topicId == 0)
-                {
-                    _topic = (topicInfo)S.Util.Serializer.ReadObject(S.Page.Items.Item("topic"), typeof(topicInfo));
-                }
-                return _topic;
-            }
-            set {
-                if(S.Page.Items.IndexOf("topic") >= 0){
-                    S.Page.Items.Remove("topic");
-                }
-                S.Page.Items.Add("topic", S.Util.Serializer.WriteObjectAsString(value));
-                
-            }
-        }
-
         public Inject NewTopicSection(string element, bool after, string title, string content, int index, int count)
         {
-            string className = "section" + (count + 1);
+            List<sectionInfo> sections = OpenTopicJson();
+            //get next incremented ID
+            int id = (sections.Aggregate((a, b) => a.id > b.id ? a : b).id) + 1;
+            string className = "section" + id;
             var response = new Inject();
+
+            //create new section in the json file
+            var section = new sectionInfo();
+            section.title = title;
+            section.content = content;
+            if (after)
+            {
+                if (index + 1 > count)
+                {
+                    sections.Add(section);
+                }
+                else {
+                    sections.Insert(index + 1, section);
+                }
+            }
+            else
+            {
+                sections.Insert(index, section);
+            }
+            
+            SaveTopicList(sections);
+
+            //generate accordion for new topic section
             response.inject = after ? enumInjectTypes.after : enumInjectTypes.before;
             response.element = element;
-            response.html = GetTopicEditableAccordion(Topic.title, title, content, "section", className, Topic.topicId, (count + 1), true, true, true);
+            response.html = GetTopicEditableAccordion(Topic.title, title, content, "section", className, Topic.topicId, id, true, true, true, true);
             response.js = CompileJs();
             return response;
         }
 
-        public string AddTopic(string breadcrumb = "", string title = "", string description = "", string search = "", int sort = 0)
+        private void SaveTopicList(List<sectionInfo> sections)
         {
-            if(breadcrumb == "") { return LoadTopicsUI(1, 50, "", search, sort); }
-            var hier = breadcrumb.ToLower().Replace(" > ", ">").Replace("> ", ">").Replace(" >", ">").Split('>');
-            var parentTitle = "";
-            var parentBreadcrumb = "";
-            if (hier.Length > 0)
-            {
-                var parentHier = hier.ToList();
-                parentTitle = hier[hier.Length - 1];
-                parentHier.RemoveAt(parentHier.Count - 1);
-                parentBreadcrumb = string.Join(">", parentHier);
-            }
-            S.Sql.ExecuteNonQuery("EXEC AddTopicByBreadcrumb @title='" + S.Sql.Encode(title) + "', @summary='" + S.Sql.Encode(description) + "', @subject='" + parentTitle + "', @breadcrumb='" + parentBreadcrumb + "'");
-            return LoadTopicsUI(1, 50, "", search, sort);
+            S.Util.Serializer.SaveToFile(sections, S.Server.MapPath("/content/topics/" + Topic.hierarchy.Replace(">", "/") + "/" + Topic.topicId + ".json"));
         }
 
-        public void SaveChanges(string json)
+        public void SaveTopic(string json)
         {
-            topicInfo topic = (topicInfo)S.Util.Serializer.ReadObject(S.Page.Items.Item("topic"), typeof(topicInfo));
-            if (!S.Util.IsEmpty(topic))
+            //save changes for loaded topic
+            List<sectionInfo> data = (List<sectionInfo>)S.Util.Serializer.ReadObject(json, typeof(List<sectionInfo>));
+            var sections = OpenTopicJson();
+            var i = 0;
+            sectionInfo s;
+            foreach (var d in data)
             {
-                //save changes for loaded topic
-                List<sectionInfo> sections = (List<sectionInfo>)S.Util.Serializer.ReadObject(json, typeof(List<sectionInfo>));
-                S.Util.Serializer.SaveToFile(sections, S.Server.MapPath("/content/topics/" + topic.hierarchy.Replace(">", "/") + "/" + topic.topicId + ".json"));
+                //update each section based on data
+                i = sections.FindIndex(c => c.id == d.id);
+                if(i >= 0)
+                {
+                    s = sections[i];
+                    s.title = d.title;
+                    s.content = d.content;
+                    sections[i] = s;
+                }
+                else
+                {
+                    //create new section
+                    s = new sectionInfo();
+                    s.title = d.title;
+                    s.content = d.content;
+                    s.id = sections.Count > 0 ? (sections.Aggregate((a, b) => a.id > b.id ? a : b).id) + 1 : 1; //increment ID
+                    sections.Add(s);
+                }
             }
+            SaveTopicList(sections);
+        }
+
+        public Inject RemoveSection(int id)
+        {
+            //find section based on id
+            var inject = new Inject();
+            List<sectionInfo> sections = OpenTopicJson();
+            if(sections.Count > 0)
+            {
+                sections.RemoveAt(sections.FindIndex(s => s.id == id));
+                SaveTopicList(sections);
+            }
+            else
+            {
+
+            }
+            inject.js = CompileJs();
+            return inject;
         }
 
         #endregion
 
         #region "Media"
 
-        private string GetTopicMediaList()
+        private string GetTopicMediaList(bool listOnly = false)
         {
             //display list of images
             var htm = new StringBuilder();
-            htm.Append("<div class=\"media-list\">");
+            if(listOnly == false)
+            {
+                htm.Append("<div class=\"media-list\">");
+            }
             for (var x = 0; x < Topic.media.Length; x++)
             {
                 if(Topic.media[x] != "")
@@ -269,17 +355,23 @@ namespace Collector.Services
                     htm.Append("<div class=\"img img-" + x + "\"><img src=\"/topics/" + Topic.hierarchy.Replace(">", "/") + "/sm_" + Topic.media[x] + "\"/></div>");
                 }
             }
-            htm.Append("</div>");
+            if (listOnly == false)
+                {
+                htm.Append("</div>");
 
-            //add drop zone for uploading images
-            htm.Append(
-                "<div class=\"upload-list\"></div>" + 
-                "<div class=\"dropzone\">" +
-                    "<div class=\"buttons\">" +
-                        "<a href=\"javascript:\" class=\"button green btn-upload left\">Upload An Image</a>" +
-                    "</div>" +
-                "<span class=\"drop-here\">Drop Images Here</span>" +
-                "</div>");
+                //add drop zone for uploading images
+                htm.Append(
+                    "<div class=\"upload-list\"></div>" +
+                        "<div class=\"buttons\">" +
+                            "<a href=\"javascript:\" class=\"button green btn-upload left\">Upload Images</a>" +
+                            "<a href=\"javascript:\" class=\"button btn-select-all-images left\">Select All / None</a>" +
+                            "<a href=\"javascript:\" class=\"button btn-delete-selected-images left\">Delete Selected</a>" +
+                            "<a href=\"javascript:\" class=\"button blue btn-gallery-toggle right\">Gallery</a>" +
+                        "</div>" +
+                    "<div class=\"dropzone\">" +
+                    "<span class=\"drop-here\">Drop Images Here</span>" +
+                    "</div>");
+            }
             return htm.ToString();
         }
 
@@ -335,24 +427,28 @@ namespace Collector.Services
                             if(File.Exists(S.Server.MapPath(path + filenew)))
                             {
                                 //save thumbnail version of image
-                                image.Shrink(path + filenew, path + "sm_" + filenew, 100);
+                                image.Shrink(path + filenew, path + "sm_" + filenew, 150);
 
-                                //get photo dimensions
-                                Utility.structImage photo = image.Load(path, filenew);
-
-                                //save photo to database
-                                var topic = Topic;
-                                var media = topic.media.ToList();
-                                if (!media.Contains(filenew))
+                                if (File.Exists(S.Server.MapPath(path + "sm_" + filenew)))
                                 {
-                                    media.Add(filenew);
-                                    topic.media = media.ToArray();
 
-                                    //save topic to view-state
-                                    Topic = topic;
+                                    //get photo dimensions
+                                    //Utility.structImage photo = image.Load(path, filenew);
 
-                                    //save to database
-                                    S.Sql.ExecuteNonQuery("UPDATE Topics SET media='" + S.Sql.Encode(string.Join(",", topic.media)) + "' WHERE topicId=" + topic.topicId);
+                                    //save photo to database
+                                    var topic = Topic;
+                                    var media = topic.media.ToList();
+                                    if (!media.Contains(filenew))
+                                    {
+                                        media.Add(filenew);
+                                        topic.media = media.ToArray();
+
+                                        //save topic to view-state
+                                        Topic = topic;
+
+                                        //save to database
+                                        S.Sql.ExecuteNonQuery("UPDATE Topics SET media='" + S.Sql.Encode(string.Join(",", topic.media)) + "' WHERE topicId=" + topic.topicId);
+                                    }
                                 }
                             }
                             break;
@@ -365,12 +461,12 @@ namespace Collector.Services
 
         public Inject SaveUpload()
         {
+            //executed after all images are uploaded
             var inject = new Inject();
-
             S.Page.RegisterJS("saveup", "$('.topic-media .dropzone').removeClass('uploaded');");
-            inject.element = ".topic-media .contents";
+            inject.element = ".topic-media .media-list";
             inject.inject = enumInjectTypes.replace;
-            inject.html = GetTopicMediaList();
+            inject.html = GetTopicMediaList(true);
             inject.js = CompileJs();
             return inject;
         }

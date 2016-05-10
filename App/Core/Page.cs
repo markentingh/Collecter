@@ -270,7 +270,7 @@ namespace Collector
             scaffold.Data["errmsg"] = "You do not have access to this page. Please sign in to continue.";
 
             //load website interface
-            Includes.Interface iface = new Includes.Interface(S, scaffold);
+            PageViews.Interface iface = new PageViews.Interface(S, scaffold);
 
             return iface.Render(scaffold.Render(), "signin.css");
         }

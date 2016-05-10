@@ -75,6 +75,7 @@ namespace Collector.Services
             public string word;
             public int count;
             public int importance;
+            public bool suspicious;
             public enumWordType type;
             public enumWordCategory category;
             public bool apostrophe;
@@ -264,6 +265,10 @@ namespace Collector.Services
         //http://pubs.acs.org/doi/full/10.1021/ac102172q?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+AnalyticalChemistryA-pages+%28Analytical+Chemistry+News+%26+Features%29
         private string[] commonQueryKeys = new string[] { "ie", "utm_source", "utm_medium", "utm_campaign" };
 
+        private string[] HtmlVerify = new string[] { "<div", "<html", "<a ", "<img ", "<p>" };
+
+        private string[] suspiciousWords = new string[] { "copyright", "posts", "entry", "entries", "article", "articles", "home", "blog", "stories", "menu", "comments", "navigate", "trademark" };
+
         #endregion
 
         public Articles(Core CollectorCore, string[] paths):base(CollectorCore, paths)
@@ -274,13 +279,13 @@ namespace Collector.Services
         public AnalyzedArticle Analyze(string url, string content = "")
         {
             AnalyzedArticle analyzed = SetupAnalyzedArticle(url, "");
-            
+
             //STEP #1 : Get Web Page Contents via disk cache or url download //////////////////////////////////////////////////////////////////////
+            bool isHtm = false;
             string htm = "";
-            bool isCached = false;
             SqlReader reader;
 
-            if(ArticleExist(analyzed.url) == true)
+            if(ArticleExist(analyzed.url) == true && url != "")
             {
                 //check if article is already cached
                 reader = new SqlReader();
@@ -293,17 +298,7 @@ namespace Collector.Services
                     if (File.Exists(path + analyzed.id + ".html"))
                     {
                         htm = File.ReadAllText(path + analyzed.id + ".html");
-                    }
-
-                    //check for cached object in json file format
-                    if (File.Exists(path + analyzed.id + ".json"))
-                    {
-                        var cached = (AnalyzedArticle)S.Util.Serializer.OpenFromFile(typeof(AnalyzedArticle), path + analyzed.id + ".json");
-                        cached = new AnalyzedArticle();
-                        isCached = true;
-                    }
-                    if(htm == "")
-                    {
+                    }else{
                         //file was empty. Final resort, download from url
                         var d = S.Util.Web.DownloadFromPhantomJS(analyzed.url);
                         htm = d.html;
@@ -331,9 +326,15 @@ namespace Collector.Services
             {
                 //use attached content string
                 htm = content.ToString();
+                
+                
             }
 
-
+            //check to see if content is indeed html
+            if (htm.IndexOf("<") >= 0 && htm.IndexOf(">") > 0)
+            {
+                if(HtmlVerify.Where(v => htm.IndexOf(v) >= 0).Count() > 0) { isHtm = true; }
+            }
 
 
             //STEP #2 : Analyze Raw HTML //////////////////////////////////////////////////////////////////////
@@ -341,35 +342,8 @@ namespace Collector.Services
             //save raw html
             analyzed.rawHtml = htm;
 
-            //make sure the html isn't just a 404 error or empty page or some crap
-            var tmp = htm.ToLower();
-            if (tmp.Split(new string[] { "error" }, StringSplitOptions.None).Length >= 10)
-            {
-            }
-            if (tmp.Length <= 200)
-            {
-                if(tmp.IndexOf("error") >= 0)
-                {
-                    return analyzed;
-                }
-                if (tmp.IndexOf("fail") >= 0)
-                {
-                    return analyzed;
-                }
-                if (tmp.IndexOf("exit") >= 0)
-                {
-                    return analyzed;
-                }
-                if (tmp.IndexOf("dump") >= 0)
-                {
-                    return analyzed;
-                }
-            }
             //remove spaces, line breaks, & tabs
             htm = htm.Replace("\n", " ").Replace("\r"," ").Replace("  ", " ").Replace("  ", " ").Replace("	","").Replace(" "," ");
-
-
-
 
             //STEP #3 : Create DOM Hierarchy from HTML Tags //////////////////////////////////////////////////////////////////////
 
@@ -484,6 +458,18 @@ namespace Collector.Services
             analyzed.elements = parsed.Elements;
             analyzed.tagNames = tagNamesOrdered;
 
+            if(isHtm == false && analyzed.elements.Count == 0)
+            {
+                analyzed.elements = new List<DomElement>();
+                var elemraw = new DomElement(parsed);
+                elemraw.index = 0;
+                elemraw.isClosing = false;
+                elemraw.isSelfClosing = true;
+                elemraw.tagName = "#text";
+                elemraw.text = analyzed.rawHtml;
+                analyzed.elements.Add(elemraw);
+            }
+
             //setup analyzed headers
             var headers = new List<int>();
             foreach (DomElement header in headersOrdered)
@@ -512,6 +498,8 @@ namespace Collector.Services
             var i = -1;
             var allWords = new List<AnalyzedWord>();
             var words = new List<AnalyzedWord>();
+
+
             foreach (DomElement element in textOrdered)
             {
                 
@@ -726,6 +714,14 @@ namespace Collector.Services
             DomElement hElem;
             DomElement elem;
 
+
+
+            if (isHtm == false) {
+                //content is not html, get single element as body text
+                bodyText.Add(0);
+                goto EndBodyText;
+            }
+
             for (var x = sortedArticleParents.Count - 1; x >= 0; x--)
             {
                 //all elements are a part of this parent element
@@ -879,6 +875,7 @@ namespace Collector.Services
                 //if(isFound == true || isEnd == true) { break; }
             }
 
+EndBodyText:
             bodyText.Sort();
             analyzed.body = bodyText;
 
@@ -1084,6 +1081,12 @@ namespace Collector.Services
                         
                     }
                     if(word.word == domainName) { word.importance = 2; }
+
+                    //check for suspicious words that indicate it is not a part of the article
+                    if (suspiciousWords.Contains(word.word))
+                    {
+                        word.suspicious = true;
+                    }
                     
                     //check for year
                     if(S.Util.Str.IsNumeric(word.word) == true)
@@ -1159,6 +1162,7 @@ namespace Collector.Services
                             phraseCreated = new List<string>();
                             foreach (var p in phraseFound)
                             {
+                                if(x + e >= texts.Length) { break; }
                                 txt1 = texts[x + e].Trim().ToLower();
                                 if (p.IndexOf(txt1) != 0 && txt1.IndexOf(p) != 0)
                                 {
@@ -1828,7 +1832,7 @@ namespace Collector.Services
             analyzed.totalParagraphs = 0;
             analyzed.totalSentences = 0;
             analyzed.totalWords = 0;
-            analyzed.url = S.Util.Str.CleanUrl(url, true, false, commonQueryKeys);
+            analyzed.url = url != "" ? S.Util.Str.CleanUrl(url, true, false, commonQueryKeys) : "";
             analyzed.words = new List<AnalyzedWord>();
             analyzed.yearEnd = 0;
             analyzed.yearStart = 0;

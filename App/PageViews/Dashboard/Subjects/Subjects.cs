@@ -1,6 +1,6 @@
-﻿namespace Collector.Includes
+﻿namespace Collector.PageViews
 {
-    public class Subjects : Include
+    public class Subjects : PageView
     {
         public Subjects(Core CollectorCore, Scaffold ParentScaffold) : base(CollectorCore, ParentScaffold)
         {
@@ -21,10 +21,10 @@
             if (scaffold == null)
             {
                 //get subjects list from web service
-                scaffold = new Scaffold(S, "/app/includes/dashboard/subjects/list.html", "", new string[] { "content" });
+                scaffold = new Scaffold(S, "/app/pageviews/dashboard/subjects/list.html", "", new string[] { "content" });
                 Services.Subjects subjects = new Services.Subjects(S, S.Page.Url.paths);
                 scaffold.Data["content"] = subjects.LoadSubjectsUI(0);
-                S.Page.RegisterJSFromFile("/app/includes/dashboard/subjects/list.js");
+                S.Page.RegisterJSFromFile("/app/pageviews/dashboard/subjects/list.js");
             }
             return scaffold.Render();
         }
