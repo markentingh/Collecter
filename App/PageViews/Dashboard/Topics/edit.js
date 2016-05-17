@@ -4,6 +4,9 @@
 
     load: function () {
         $('#btnaddsection').on('click', function () { S.topics.edit.buttons.addSection('section', 0); });
+        $('.btn-select-all-images').on('click', S.topics.edit.media.toggleSelect);
+        $('.btn-gallery-toggle').on('click', S.topics.edit.media.toggleGallery);
+        S.topics.edit.media.refresh();
 
         //init dropzone library
         Dropzone.autoDiscover = false;
@@ -133,6 +136,56 @@
 
             //add new autosizes to all textareas on the page
             autosize($('textarea'));
+        }
+    },
+
+    media: {
+        refresh: function () {
+            //updates media items
+            $('.media-list .chk').off().on('click', S.topics.edit.media.check);
+        },
+
+        check: function () {
+            //select a media item
+            var chk = $(this).find('input[type=checkbox]');
+            if (chk.is(":checked") == true) {
+                $(this).addClass('checked');
+            } else {
+                $(this).removeClass('checked');
+            }
+            S.topics.edit.media.selected();
+        },
+
+        selected: function () {
+            //check if any other images are selected
+            if ($('.media-list .chk input[type=checkbox]:checked').length > 0) {
+                $('.btn-delete-selected-images').show();
+            } else {
+                $('.btn-delete-selected-images').hide();
+            }
+        },
+
+        toggleSelect: function(){
+            if ($('.media-list .chk input[type=checkbox]:checked').length > 0) {
+                //deselect
+                $('.media-list .chk input[type=checkbox]:checked').prop("checked", false);
+                $('.media-list .chk').removeClass('checked');
+            } else {
+                //select all
+                $('.media-list .chk input[type=checkbox]').prop("checked", true);
+                $('.media-list .chk').removeClass('checked').addClass('checked');
+            }
+            S.topics.edit.media.selected();
+        },
+
+        toggleGallery: function () {
+            var list = $('.media-list');
+            if(list.hasClass('gallery')){
+                list.removeClass('gallery');
+            } else {
+                list.addClass('gallery');
+            }
+            
         }
     }
 };

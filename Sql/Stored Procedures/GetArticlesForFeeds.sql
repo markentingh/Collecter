@@ -20,6 +20,7 @@ AS
 		isfeed BIT NULL DEFAULT 0,
 		feedTitle NVARCHAR(100) NULL DEFAULT '', 
 		feedUrl NVARCHAR(100) NULL DEFAULT '', 
+		feedCheckIntervals INT DEFAULT 1440,
 		feedLastChecked DATETIME NULL, 
 		feedFilter NVARCHAR(MAX) NULL DEFAULT '',
 		articleId INT NULL DEFAULT 0, 
@@ -64,6 +65,7 @@ AS
 	@feedId2 int,
 	@feedTitle nvarchar(100),
 	@feedUrl nvarchar(100),
+	@feedcheckIntervals int,
 	@feedLastChecked datetime,
 	@feedFilter nvarchar(MAX),
 	@articleId INT,
@@ -120,15 +122,15 @@ AS
 	SELECT * FROM #feeds
 	OPEN @cursor1
 	FETCH FROM @cursor1 INTO
-	@feedId1, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter
+	@feedId1, @feedTitle, @feedUrl, @feedcheckIntervals, @feedLastChecked, @feedFilter
 
 	WHILE @@FETCH_STATUS = 0 BEGIN
 		/* get a list of feeds */
-		INSERT INTO @results (feedId, isfeed, feedTitle, feedUrl, feedLastChecked, feedFilter)
-		VALUES (@feedId1, 1, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter)
+		INSERT INTO @results (feedId, isfeed, feedTitle, feedUrl, feedCheckIntervals, feedLastChecked, feedFilter)
+		VALUES (@feedId1, 1, @feedTitle, @feedUrl, @feedcheckIntervals, @feedLastChecked, @feedFilter)
 		
 		FETCH FROM @cursor1 INTO
-		@feedId1, @feedTitle, @feedUrl, @feedLastChecked, @feedFilter
+		@feedId1, @feedTitle, @feedUrl, @feedcheckIntervals, @feedLastChecked, @feedFilter
 	END
 	CLOSE @cursor1
 	DEALLOCATE @cursor1

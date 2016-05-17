@@ -32,8 +32,16 @@
    .topic-media .buttons{overflow:hidden; padding-bottom:10px;}
    .topic-media .buttons a{margin-right:10px;}
    .topic-media .upload-list{width:100%; padding:10px;}
+   .topic-media .btn-delete-selected-images{display:none;}
    .media-list{overflow-x:auto; overflow-y:hidden; white-space:nowrap; }
-   .media-list .img{display:inline-block; padding:0 14px 0 0; width:150px; height:120px; overflow:hidden;}
+   .media-list.gallery{overflow-x:hidden; overflow-y:auto; max-height:360px;}
+   .media-list.gallery .img{float:left; padding:0 11px 0 0 !important;}
+   .media-list .img{position:relative; display:inline-block; padding:0 14px 0 0; width:150px; height:120px; overflow:hidden; z-index:100;}
+   .media-list .chk{position:absolute; left:5px; top:5px; padding:4px 4px 1px 5px; background:#111111; z-index:101; display:none; border-radius:3px;}
+   .media-list .chk input[type="checkbox"]{margin:0px; cursor:pointer;}
+   .media-list .img:hover .chk{display:block;}
+   .media-list .chk.checked{display:block; background:#3EBB30;}
+
 
    @keyframes media-uploading {
       0%   { background-color: #086f46; }

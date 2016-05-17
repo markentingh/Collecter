@@ -8,6 +8,7 @@ AS
 	@feedId int,
 	@title nvarchar(100),
 	@url nvarchar(100),
+	@checkIntervals int = 720,
 	@lastChecked datetime,
 	@filter nvarchar(MAX),
 	@logfeedId INT,
@@ -18,6 +19,7 @@ AS
 		feedId int NOT NULL,
 		title nvarchar(100) NULL,
 		url nvarchar(100) NULL,
+		checkIntervals int,
 		lastChecked datetime NULL,
 		filter nvarchar(MAX) NULL,
 		loglinks smallint NULL,
@@ -26,14 +28,14 @@ AS
 
 
 	SET @cursor1 = CURSOR FOR 
-	SELECT * FROM feeds WHERE feedId > 0 ORDER BY title ASC
+	SELECT * FROM feeds WHERE feedId > 0 ORDER BY checkIntervals ASC, title ASC
 	OPEN @cursor1
 	FETCH FROM @cursor1 INTO
-	@feedId, @title, @url, @lastChecked, @filter
+	@feedId, @title, @url, @checkIntervals, @lastChecked, @filter
 	WHILE @@FETCH_STATUS = 0 BEGIN
 		/*add feed to results table */
-		INSERT INTO @tblresults (feedId, title, url, lastChecked, filter)
-		VALUES (@feedId, @title, @url, @lastChecked, @filter)
+		INSERT INTO @tblresults (feedId, title, url, checkIntervals, lastChecked, filter)
+		VALUES (@feedId, @title, @url, @checkIntervals, @lastChecked, @filter)
 
 		/* get log data for each feed */
 		SET @cursor2 = CURSOR FOR 
@@ -57,7 +59,7 @@ AS
 		DEALLOCATE @cursor2
 
 		FETCH FROM @cursor1 INTO
-		@feedId, @title, @url, @lastChecked, @filter
+		@feedId, @title, @url, @checkIntervals, @lastChecked, @filter
 	END
 	CLOSE @cursor1
 	DEALLOCATE @cursor1

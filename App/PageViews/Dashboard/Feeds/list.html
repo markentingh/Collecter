@@ -4,6 +4,11 @@
     .feed:hover{background-color:#4A2649;}
     .feed .title{font-size:20px; color:#efefef}
     .feed .url{font-size:14px;}
+    .feed .intervals{font-size:13px; color:#8CD076;}
+    .feed .intervals a:link{color:#76D0AB;}
+    .feed .intervals a:visited{color:#76D0AB;}
+    .feed .intervals a:hover{color:#59FBB8; text-decoration:underline;}
+    .feed .intervals a:active{color:#59FBB8; text-decoration:underline;}
     .feed .btn{float:right; padding-left:10px; width:70px; height:40px; opacity:0.3; }
     .feed:hover .btn{opacity:1;}
     .feed.checking{background-color:#014938;}
@@ -11,6 +16,7 @@
     .list-feedtype{width:190px; padding-bottom:7px !important;}
     .text-feedtitle{width:calc(50% - 260px) !important;}
     .text-feedurl{width:calc(50% - 117px) !important;}
+    #txtaddfeedinterval{width:80px;}
     #feedupload{width:250px; height:45px;}
     .option-feedupload{width:300px;}
     .form-feedscheck{display:none ;}
@@ -55,6 +61,10 @@
             <div class="column label">Url: </div>
             <div class="column input text-feedurl">
                 <input type="text" id="txtaddfeedurl" />
+            </div>
+            <div class="column label">Intervals: </div>
+            <div class="column input text-feedintervals">
+                <input type="text" id="txtaddfeedinterval" value="1440" /> minutes
             </div>
         </div>
         <div class="column input option-feedupload" style="display:none;">

@@ -8,6 +8,8 @@ namespace Collector.Services
     public class Feeds : Service
     {
 
+        #region "Feeds"
+
         private struct structFeedList
         {
             public int id;
@@ -20,19 +22,90 @@ namespace Collector.Services
             public DateTime date;
         }
 
-        #region "Feeds"
         public Feeds(Core CollectorCore, string[] paths) : base(CollectorCore, paths)
         {
+        }
+        
+        public string LoadFeedsUI()
+        {
+            var htm = "";
+            var js = "";
+            var reader = new SqlReader();
+            var feeds = new List<structFeedList>();
+            var logdata = new List<structFeedLogData>();
+            var days = 5;
+            var feedId = 0;
+            reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetFeedsAndLogs @dateStart='" + DateTime.Now.AddDays(0-(days-1)).ToString("yyyy-MM-dd HH:mm:ss") + "', @days=" + days));
+            if(reader.Rows.Count > 0)
+            {
+                js += "setTimeout(function(){ S.feeds.list = [";
+                var i = 0;
+                while (reader.Read())
+                {
+                    if(reader.Get("title") != "")
+                    {
+                        //new feed
+                        feedId = reader.GetInt("feedid");
+                        if (i > 0)
+                        {
+                            //render log data chart
+                            htm = htm.Replace("{{chart}}", GetFeedChartFromData(feedId, days, logdata)) + "</div>";
+                            
+                        }
+                        htm += "<div class=\"row feed feed" + i + "\">" +
+                        
+                        //check button
+                        "<div class=\"btn\"><a href=\"javascript:\" onclick=\"S.feeds.buttons.checkFeed(" + i + ")\" class=\"button green\">Check</a></div>" +
+                        
+                        //include chart
+                        "{{chart}}" +
+                        
+                        //title & url
+                        "<div class=\"title\">" + reader.Get("title") + "</div>" +
+                        "<div class=\"url\">" + reader.Get("url") + "</div>" +
+                        "<div class=\"intervals\">runs every <a href=\"javascript:\" class=\"lnk-intervals\">" + Math.Round(reader.GetInt("checkIntervals") / 60.0) + " hours</a>, next run is on " + (reader.GetDateTime("lastChecked").AddMinutes(reader.GetInt("checkIntervals")).ToString("dddd, h:mm:ss tt")) + "</div>";
+
+                        if (i > 0) { js += ","; }
+                        js += "'" + reader.Get("url") + "'";
+                        var newfeed = new structFeedList();
+                        newfeed.id = feedId;
+                        newfeed.url = reader.Get("url");
+                        feeds.Add(newfeed);
+
+                        logdata = new List<structFeedLogData>();
+                        i++;
+                    }
+                    else
+                    {
+                        //add log data for chart
+                        var newlog = new structFeedLogData();
+                        newlog.count = reader.GetInt("loglinks");
+                        newlog.date = reader.GetDateTime("logdatechecked");
+                        logdata.Add(newlog);
+                    }
+                }
+                i--;
+                //render log data chart for last feed item
+                if (i >= 0) { htm = htm.Replace("{{chart}}", GetFeedChartFromData(feedId, days, logdata)) + "</div>"; }
+
+                js += "];}, 1000);";
+                S.Page.RegisterJS("feedlist", js);
+            }
+
+            //save feeds list to session
+            S.Session.Set("feedlist", S.Util.Serializer.WriteObject(feeds));
+
+            return htm;
         }
 
         public bool KeepAlive() { return true; }
 
-        public Inject AddFeed(string title, string url)
+        public Inject AddFeed(string title, string url, int intervals)
         {
             var inject = new Inject();
 
             //save new feed into database
-            S.Sql.ExecuteNonQuery("EXEC AddFeed @title='" + S.Sql.Encode(title) + "', @url='" + S.Sql.Encode(url) + "'");
+            S.Sql.ExecuteNonQuery("EXEC AddFeed @title='" + S.Sql.Encode(title) + "', @url='" + S.Sql.Encode(url) + "', @checkIntervals=" + intervals);
             S.Page.RegisterJS("addfeed", "alert('Feed added successfully');");
 
             //setup response
@@ -87,7 +160,7 @@ namespace Collector.Services
             if (S.Session.Keys.Contains("feedlist") == true)
             {
                 feeds = (List<structFeedList>)S.Util.Serializer.ReadObject(S.Util.Str.GetString(S.Session.Get("feedlist")), feeds.GetType());
-                if(index == feeds.Count && checkMore == true)
+                if (index == feeds.Count && checkMore == true)
                 {
                     //no more feeds to check
                     js += "S.feeds.checkedAllFeeds();";
@@ -133,77 +206,6 @@ namespace Collector.Services
                 }
             }
             return total;
-        }
-        
-        public string LoadFeedsUI()
-        {
-            var htm = "";
-            var js = "";
-            var reader = new SqlReader();
-            var feeds = new List<structFeedList>();
-            var logdata = new List<structFeedLogData>();
-            var days = 5;
-            var feedId = 0;
-            reader.ReadFromSqlClient(S.Sql.ExecuteReader("EXEC GetFeedsAndLogs @dateStart='" + DateTime.Now.AddDays(0-(days-1)).ToString("yyyy-MM-dd HH:mm:ss") + "', @days=" + days));
-            if(reader.Rows.Count > 0)
-            {
-                js += "setTimeout(function(){ S.feeds.list = [";
-                var i = 0;
-                while (reader.Read())
-                {
-                    if(reader.Get("title") != "")
-                    {
-                        //new feed
-                        feedId = reader.GetInt("feedid");
-                        if (i > 0)
-                        {
-                            //render log data chart
-                            htm = htm.Replace("{{chart}}", GetFeedChartFromData(feedId, days, logdata)) + "</div>";
-                            
-                        }
-                        htm += "<div class=\"row feed feed" + i + "\">" +
-                        
-                        //check button
-                        "<div class=\"btn\"><a href=\"javascript:\" onclick=\"S.feeds.buttons.checkFeed(" + i + ")\" class=\"button green\">Check</a></div>" +
-                        
-                        //include chart
-                        "{{chart}}" +
-                        
-                        //title & url
-                        "<div class=\"title\">" + reader.Get("title") + "</div>" +
-                        "<div class=\"url\">" + reader.Get("url") + "</div>";
-
-                        if (i > 0) { js += ","; }
-                        js += "'" + reader.Get("url") + "'";
-                        var newfeed = new structFeedList();
-                        newfeed.id = feedId;
-                        newfeed.url = reader.Get("url");
-                        feeds.Add(newfeed);
-
-                        logdata = new List<structFeedLogData>();
-                        i++;
-                    }
-                    else
-                    {
-                        //add log data for chart
-                        var newlog = new structFeedLogData();
-                        newlog.count = reader.GetInt("loglinks");
-                        newlog.date = reader.GetDateTime("logdatechecked");
-                        logdata.Add(newlog);
-                    }
-                }
-                i--;
-                //render log data chart for last feed item
-                if (i >= 0) { htm = htm.Replace("{{chart}}", GetFeedChartFromData(feedId, days, logdata)) + "</div>"; }
-
-                js += "];}, 1000);";
-                S.Page.RegisterJS("feedlist", js);
-            }
-
-            //save feeds list to session
-            S.Session.Set("feedlist", S.Util.Serializer.WriteObject(feeds));
-
-            return htm;
         }
 
         public string GetFeedChartFromData(int feedId, int days, List<structFeedLogData> logData)

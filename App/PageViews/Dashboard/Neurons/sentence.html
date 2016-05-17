@@ -8,6 +8,7 @@
     .test-sentence{width:calc(100% - 120px) !important;}
     .run-test{width:auto !important;}
     .inputs{overflow:hidden;}
+    .test-info{float:left; width:50%; box-sizing:border-box;}
     .test-results{float:right; width:50%; box-sizing:border-box;}
 </style>
 
@@ -30,12 +31,15 @@
                 </div>
                 
             </div>
-            <div class="row top">
-                <div class="column title">Training Data</div>
+            <div class="test-info">
+                <div class="row top">
+                    <div class="column title">Training Data</div>
+                </div>
+                <div class="training-data">
+                    {{training-data}}
+                </div>
             </div>
-            <div class="training-data">
-                {{training-data}}
-            </div>
+            
 
             <div class="test-results"></div>
             
@@ -67,11 +71,11 @@
                     <div class="column input"><input type="text" class="input-small-int txt-1" value="0" /></div>
                 </div>
                 <div class="row bottom">
-                    <div class="column label">Words</div>
+                    <div class="column label">Elements</div>
                     <div class="column input"><input type="text" class="input-small-int txt-2" value="0" /></div>
                 </div>
                 <div class="row bottom">
-                    <div class="column label">Related Words</div>
+                    <div class="column label">Keywords</div>
                     <div class="column input"><input type="text" class="input-small-int txt-3" value="0" /></div>
                 </div>
                 <div class="row bottom">
@@ -83,28 +87,36 @@
                     <div class="column input"><input type="text" class="input-small-int txt-5" value="0" /></div>
                 </div>
                 <div class="row bottom">
-                    <div class="column label">Periods</div>
+                    <div class="column label">Web UI Words</div>
                     <div class="column input"><input type="text" class="input-small-int txt-6" value="0" /></div>
                 </div>
                 <div class="row bottom">
-                    <div class="column label">Commas</div>
+                    <div class="column label">Numbers</div>
                     <div class="column input"><input type="text" class="input-small-int txt-7" value="0" /></div>
                 </div>
                 <div class="row bottom">
-                    <div class="column label">Spaces</div>
+                    <div class="column label">Periods</div>
                     <div class="column input"><input type="text" class="input-small-int txt-8" value="0" /></div>
                 </div>
                 <div class="row bottom">
-                    <div class="column label">Parenthesis</div>
+                    <div class="column label">Commas</div>
                     <div class="column input"><input type="text" class="input-small-int txt-9" value="0" /></div>
                 </div>
                 <div class="row bottom">
-                    <div class="column label">Source Code</div>
+                    <div class="column label">Spaces</div>
                     <div class="column input"><input type="text" class="input-small-int txt-10" value="0" /></div>
                 </div>
                 <div class="row bottom">
-                    <div class="column label">Other Symbols</div>
+                    <div class="column label">Parenthesis</div>
                     <div class="column input"><input type="text" class="input-small-int txt-11" value="0" /></div>
+                </div>
+                <div class="row bottom">
+                    <div class="column label">Source Code</div>
+                    <div class="column input"><input type="text" class="input-small-int txt-12" value="0" /></div>
+                </div>
+                <div class="row bottom">
+                    <div class="column label">Other Symbols</div>
+                    <div class="column input"><input type="text" class="input-small-int txt-13" value="0" /></div>
                 </div>
             </div>
 

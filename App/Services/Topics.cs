@@ -33,6 +33,9 @@ namespace Collector.Services
             public string title;
             public string content;
             public int id;
+
+            //types of content: markdown, map, gallery, group
+            public string type;
         }
 
         private topicInfo _topic = new topicInfo();
@@ -257,6 +260,7 @@ namespace Collector.Services
             var section = new sectionInfo();
             section.title = title;
             section.content = content;
+            section.type = "markdown";
             if (after)
             {
                 if (index + 1 > count)
@@ -311,6 +315,7 @@ namespace Collector.Services
                     s = new sectionInfo();
                     s.title = d.title;
                     s.content = d.content;
+                    s.type = "markdown";
                     s.id = sections.Count > 0 ? (sections.Aggregate((a, b) => a.id > b.id ? a : b).id) + 1 : 1; //increment ID
                     sections.Add(s);
                 }
@@ -352,7 +357,10 @@ namespace Collector.Services
             {
                 if(Topic.media[x] != "")
                 {
-                    htm.Append("<div class=\"img img-" + x + "\"><img src=\"/topics/" + Topic.hierarchy.Replace(">", "/") + "/sm_" + Topic.media[x] + "\"/></div>");
+                    htm.Append(
+                        "<div class=\"img img-" + x + "\">" + 
+                            "<div class=\"chk\"><input type=\"checkbox\"/></div>" + 
+                            "<img src=\"/topics/" + Topic.hierarchy.Replace(">", "/") + "/sm_" + Topic.media[x] + "\"/></div>");
                 }
             }
             if (listOnly == false)
@@ -365,8 +373,8 @@ namespace Collector.Services
                         "<div class=\"buttons\">" +
                             "<a href=\"javascript:\" class=\"button green btn-upload left\">Upload Images</a>" +
                             "<a href=\"javascript:\" class=\"button btn-select-all-images left\">Select All / None</a>" +
-                            "<a href=\"javascript:\" class=\"button btn-delete-selected-images left\">Delete Selected</a>" +
-                            "<a href=\"javascript:\" class=\"button blue btn-gallery-toggle right\">Gallery</a>" +
+                            "<a href=\"javascript:\" class=\"button btn-delete-selected-images red left\">Delete Selected</a>" +
+                            "<a href=\"javascript:\" class=\"button blue btn-gallery-toggle right\">View As Gallery</a>" +
                         "</div>" +
                     "<div class=\"dropzone\">" +
                     "<span class=\"drop-here\">Drop Images Here</span>" +

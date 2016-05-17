@@ -1952,7 +1952,7 @@ EndBodyText:
             return reader;
         }
 
-        public Inject GetArticlesUI(string element = "", int start = 1, int length = 5, int groupby = 1, int sortby = 2, int viewby = 0, 
+        public Inject GetArticlesUI(string element = "", int start = 1, int length = 5, int groupby = 0, int sortby = 4, int viewby = 0, 
             int feedId = -1, int subjectId = 0, string subjectIds = "", string search = "", int isActive = 2, bool isDeleted = false, 
             int minImages = 0, string dateStart = "", string dateEnd = "")
         {
@@ -2030,8 +2030,8 @@ EndBodyText:
                                 {
                                     newfeed.html = 
                                         "<div class=\"accordion articles feed" + reader.GetInt("feedId") + "\">" +
-                                            "<div class=\"title" + expand + "\">" + S.Sql.Decode(reader.Get("feedtitle")) + "</div>" +
-                                            "<div class=\"box" + expand + "\">" +
+                                            "<div class=\"title\">" + S.Sql.Decode(reader.Get("feedtitle")) + "</div>" +
+                                            "<div class=\"box\">" +
                                                 "<div class=\"contents\">{{list}}</div>" +
                                             "</div>" +
                                         "</div>";

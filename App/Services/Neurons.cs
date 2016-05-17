@@ -8,11 +8,17 @@ namespace Collector.Services
     public class Neurons : Service
     {
         private string[] otherSymbols = new string[] { "~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "-", "_", "+", "=", ":", "\"", "'", "<", ">", "?", "/", "\\" };
+        private string[] webUIwords = new string[] {
+            "menu", "blog", "posts", "entries", "contact", "customer service", "rss", "gmail.com",
+            "next post", "more posts", "prev post", "previous post",
+            "next entry", "more entires", "prev entry", "previous entry",
+            "more..", "view", "submit", "comments", "comment", "sign up", "login", "edit"
+        };
         private Neural.Network _NN_1 = null;
 
         public Neurons (Core CollectorCore, string[] paths) : base(CollectorCore, paths) { }
 
-        #region "Neural Networking App"
+        #region "Neural Networks"
         public Neural.Network NN_Sentences
         {
             get
@@ -29,18 +35,14 @@ namespace Collector.Services
                         //load new neural network into memory
                         int[] hiddenLayers = new int[1];
                         hiddenLayers[0] = 30; //number of neurons in 1st hidden layer
-                        _NN_1 = new Neural.Network(11, hiddenLayers, 1); //# of input neurons, hidden layers, and output neurons
+                        _NN_1 = new Neural.Network(13, hiddenLayers, 1); //# of input neurons, hidden layers, and output neurons
 
                         //load existing weight data
-                        var weightData = "";
-                        if (File.Exists(S.Server.MapPath("/content/neurons/sentences_weights.json")))
-                        {
-                            weightData = File.ReadAllText(S.Server.MapPath("/content/neurons/sentences_weights.json"));
-                        }
-                        if(weightData != "")
+                        var weights = GetNeuralNetworkState("sentences");
+                        if(weights.Length >= 3)
                         {
                             //weight data exists
-                            NN_Sentences.Weights = (double[][][])S.Util.Serializer.ReadObject(weightData, typeof(double[][][]));
+                            NN_Sentences.Weights = weights;
                         }
                         else
                         {
@@ -50,12 +52,16 @@ namespace Collector.Services
                             training.Concat(GetTrainingData("sentences", false)); //add invalid sentences to training list
                             NN_Sentences.Train(training, 2000);
 
-                            //save weight data to disk
-                            S.Util.Serializer.SaveToFile(NN_Sentences.Weights, S.Server.MapPath("/content/neurons/sentences_weights.json"));
+                            //save neural network to disk
+                            SaveNeuralNetworkState("sentences", NN_Sentences);
                         }
                     }
                 }
                 return _NN_1;
+            }
+            set
+            {
+                _NN_1 = value;
             }
         }
         #endregion
@@ -63,13 +69,16 @@ namespace Collector.Services
         #region "Training"
         private double[] TranslateSentenceToInput(string sentence)
         {
-            var nums = new double[11];
+            var nums = new double[13];
             var articles = new Articles(S, S.Page.Url.paths);
             var article = articles.Analyze("", sentence);
             
             //count facts about sentence
             int commonWords = 0;
             int suspicious = 0;
+            int webUI = webUIwords.Where(c => sentence.IndexOf(c) >= 0).Count();
+            var numlist = S.Util.Str.GetNumbersFromText(sentence);
+            int numbers = numlist.Length;
             int periods = article.rawHtml.Split('.').Length - 1;
             int commas = article.rawHtml.Split(',').Length - 1;
             int spaces = article.rawHtml.Split(' ').Length - 1;
@@ -99,12 +108,14 @@ namespace Collector.Services
             nums[2] = article.totalImportantWords / 10.0;
             nums[3] = commonWords / 10.0;
             nums[4] = suspicious / 10.0;
-            nums[5] = periods / 10.0;
-            nums[6] = commas / 10.0;
+            nums[5] = webUI / 10.0;
+            nums[6] = numbers / 10.0;
             nums[7] = spaces / 10.0;
-            nums[8] = parentheses / 10.0;
-            nums[9] = sourcecode / 10.0;
-            nums[10] = symbols / 10.0;
+            nums[8] = commas / 10.0;
+            nums[9] = spaces / 10.0;
+            nums[10] = parentheses / 10.0;
+            nums[11] = sourcecode / 10.0;
+            nums[12] = symbols / 10.0;
             return nums;
         }
 
@@ -187,10 +198,38 @@ namespace Collector.Services
 
         private List<Neural.DataSet> GetTrainingData(string testName, bool valid = true)
         {
-            var s = S.Server.OpenFile("/content/neurons/" + testName + "_" + (valid ? "" : "in") + "valid.json");
+            var file = "/content/neurons/" + testName + "_" + (valid ? "" : "in") + "valid.json";
+            if (File.Exists(S.Server.MapPath(file)) == false)
+            {
+                //training data is missing, check if raw data exists so we can translate raw data into training input data
+                if (File.Exists(S.Server.MapPath(file.Replace("valid.", "valid_raw."))) == true)
+                {
+                    //raw training data exists, convert to neural network input parameters
+                    var training = new List<Neural.DataSet>();
+                    switch (testName)
+                    {
+                        case "sentences":
+                            //generate training input data list by analyzing sentences
+                            string[] sentences = GetTrainingSentences(valid);
+                            double[] input;
+                            Neural.DataSet d;
+                            foreach (var sentence in sentences)
+                            {
+                                input = TranslateSentenceToInput(sentence);
+                                d = new Neural.DataSet(input, new double[] { valid ? 1 : 0 });
+                                training.Add(d);
+                            }
+                            S.Server.SaveFile(file, S.Util.Serializer.WriteObjectAsString(training.ToArray(), Newtonsoft.Json.Formatting.None).Replace("},", "},\n"));
+                            break;
+                    }
+                    return training;
+                }
+            }
+
+            var s = S.Server.OpenFile(file);
             if(s != "")
             {
-                return (List<Neural.DataSet>)S.Util.Serializer.ReadObject(S.Server.OpenFile("/content/neurons/" + testName + "_" + (valid ? "" : "in") + "valid.json"), typeof(List<Neural.DataSet>));
+                return (List<Neural.DataSet>)S.Util.Serializer.ReadObject(S.Server.OpenFile(file), typeof(List<Neural.DataSet>));
             }
             return new List<Neural.DataSet>();
         }
@@ -200,15 +239,15 @@ namespace Collector.Services
             var training = GetTrainingData(testName, valid);
             var d = new Neural.DataSet(data, new double[] { valid ? 1 : 0 });
             training.Add(d);
-            S.Server.SaveFile("/content/neurons/" + testName + "_" + (valid ? "" : "in") + "valid.json", S.Util.Serializer.WriteObjectAsString(training.ToArray(), Newtonsoft.Json.Formatting.None).Replace("],","],\n"));
+            S.Server.SaveFile("/content/neurons/" + testName + "_" + (valid ? "" : "in") + "valid.json", S.Util.Serializer.WriteObjectAsString(training.ToArray(), Newtonsoft.Json.Formatting.None).Replace("},","},\n"));
         }
 
         private string[] GetTrainingSentences(bool valid = true)
         {
-            var s = S.Server.OpenFile("/content/neurons/sentences_raw_" + (valid ? "" : "in") + "valid.json");
+            var s = S.Server.OpenFile("/content/neurons/sentences_" + (valid ? "" : "in") + "valid_raw.json");
             if (s != "")
             {
-                return (string[])S.Util.Serializer.ReadObject(S.Server.OpenFile("/content/neurons/sentences_raw_" + (valid ? "" : "in") + "valid.json"), typeof(string[]));
+                return (string[])S.Util.Serializer.ReadObject(S.Server.OpenFile("/content/neurons/sentences_" + (valid ? "" : "in") + "valid_raw.json"), typeof(string[]));
             }
             return new string[0] { };
         }
@@ -217,17 +256,24 @@ namespace Collector.Services
         {
             List<string> training = GetTrainingSentences(valid).ToList();
             training.Add(sentence);
-            S.Server.SaveFile("/content/neurons/sentences_raw_" + (valid ? "" : "in") + "valid.json", S.Util.Serializer.WriteObjectAsString(training.ToArray(), Newtonsoft.Json.Formatting.None).Replace("\",", "\",\n"));
+            S.Server.SaveFile("/content/neurons/sentences_" + (valid ? "" : "in") + "valid_raw.json", S.Util.Serializer.WriteObjectAsString(training.ToArray(), Newtonsoft.Json.Formatting.None).Replace("\",", "\",\n"));
         }
 
-        private double[][][] GetNeuralNetworkWeights(string testName)
+        private double[][][][] GetNeuralNetworkState(string testName)
         {
-            return (double[][][])S.Util.Serializer.ReadObject(S.Server.OpenFile("/content/neurons/" + testName + ".json"), typeof(double[][][]));
+            var networkfile = S.Server.OpenFile("/content/neurons/" + testName + "_weights.json");
+            if (File.Exists(networkfile))
+            {
+                return (double[][][][])S.Util.Serializer.ReadObject(networkfile, typeof(double[][][][]));
+            }
+            return new double[0][][][];
         }
 
-        private void SaveNeuralNetworkWeights(string testName, double[][][] data)
+        private void SaveNeuralNetworkState(string testName, Neural.Network network)
         {
-            S.Server.SaveFile("/content/neurons/" + testName + ".json", S.Util.Serializer.WriteObjectAsString(data, Newtonsoft.Json.Formatting.Indented));
+            S.Server.SaveFile("/content/neurons/" + testName + "_weights.json", S.Util.Serializer.WriteObjectAsString(network.Weights, Newtonsoft.Json.Formatting.Indented));
+            S.Server.Cache.Remove("nn_" + testName);
+            S.Server.Cache.Add("nn_" + testName, network);
         }
         #endregion
 
@@ -238,7 +284,8 @@ namespace Collector.Services
             var inputs = TranslateSentenceToInput(sentence);
             var results = NN_Sentences.Query(inputs);
             S.Page.RegisterJS("results",
-                "$('.test-results').html('<h4>Test Results</h4><div class=\"results\">" + results[0] + "</div>');"
+                "$('.test-results').html('<div class=\"row top\"><div class=\"column title\">Test Results</div>" +
+                "</div><div class=\"results\">" + (results[0] < 1 && results[0] > 0 ? "0" : "") + results[0].ToString("#.##") + "</div></div>');"
                 );
 
 

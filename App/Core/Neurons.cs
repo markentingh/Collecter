@@ -29,6 +29,7 @@ namespace Collector.Neural
         #region -- Constructor --
         public Network(int inputSize, int[] hiddenLayers, int outputSize, double learnRate = 0.4, double momentum = 0.9)
         {
+            List<Neuron> parentLayer;
             LearnRate = learnRate;
             Momentum = momentum;
             InputLayer = new List<Neuron>();
@@ -39,13 +40,14 @@ namespace Collector.Neural
             {
                 InputLayer.Add(new Neuron());
             }
-
+            parentLayer = InputLayer;
             for (var i = 0; i < hiddenLayers.Length; i++)
             {
                 HiddenLayer.Add(new List<Neuron>());
+                if(i > 0) { parentLayer = HiddenLayer[i - 1]; }
                 for(var x = 0; x < hiddenLayers[i]; x++)
                 {
-                    HiddenLayer[i].Add(new Neuron(InputLayer));
+                    HiddenLayer[i].Add(new Neuron(parentLayer));
                 }
             }
                 
@@ -122,47 +124,39 @@ namespace Collector.Neural
         }
         #endregion
 
-        #region "-- Query --"
-        public double[] Query(double[][] inputs)
-        {
-            var results = new double[] { };
-
-            return results;
-        }
-        #endregion
-
         #region "-- Memory --"
-        public double[][][] Weights
+        public double[][][][] Weights
         {
             get
             {
                 //get weights (bias, delta) from all neurons
-                var layers = new List<double[][]>();
+                var layers = new List<double[][][]>();
 
                 //get neurons from input layer
-                var neurons = new List<double[]>();
+                var neurons = new List<double[][]>();
+                double[][] n;
                 for (var x = 0; x < InputLayer.Count; x++)
                 {
-                    neurons.Add(new double[] { InputLayer[x].Bias, InputLayer[x].BiasDelta, InputLayer[x].Gradient });
+                    neurons.Add(NeuronWeights(InputLayer[x]));
                 }
                 layers.Add(neurons.ToArray());
 
                 //get neurons from hidden layer(s)
                 for(var x = 0; x < HiddenLayer.Count; x++)
                 {
-                    neurons = new List<double[]>();
+                    neurons = new List<double[][]>();
                     for (var y = 0; y < HiddenLayer[x].Count; y++)
                     {
-                        neurons.Add(new double[] { HiddenLayer[x][y].Bias, HiddenLayer[x][y].BiasDelta, HiddenLayer[x][y].Gradient });
+                        neurons.Add(NeuronWeights(HiddenLayer[x][y]));
                     }
                     layers.Add(neurons.ToArray());
                 }
 
                 //get neurons from output layer
-                neurons = new List<double[]>();
+                neurons = new List<double[][]>();
                 for (var x = 0; x < OutputLayer.Count; x++)
                 {
-                    neurons.Add(new double[] { OutputLayer[x].Bias, OutputLayer[x].BiasDelta, OutputLayer[x].Gradient });
+                    neurons.Add(NeuronWeights(OutputLayer[x]));
                 }
                 layers.Add(neurons.ToArray());
 
@@ -175,12 +169,12 @@ namespace Collector.Neural
                 var e = value.Length - 1;
 
 
-                //looad all input neuron weights
+                //load all input neuron weights
                 for (var x = 0; x < InputLayer.Count; x++)
                 {
-                    InputLayer[x].Bias = value[0][x][0];
-                    InputLayer[x].BiasDelta = value[0][x][1];
-                    InputLayer[x].Gradient = value[0][x][2];
+                    InputLayer[x].Bias = value[0][x][0][0];
+                    InputLayer[x].BiasDelta = value[0][x][0][1];
+                    InputLayer[x].Gradient = value[0][x][0][2];
                 }
 
                 //load neural weights for all hidden layers
@@ -188,20 +182,38 @@ namespace Collector.Neural
                 {
                     for(var y = 0; y < HiddenLayer[x].Count; y++)
                     {
-                        HiddenLayer[x][y].Bias = value[x + 1][y][0];
-                        HiddenLayer[x][y].BiasDelta = value[x + 1][y][1];
-                        HiddenLayer[x][y].Gradient = value[x + 1][y][2];
+                        HiddenLayer[x][y].Bias = value[x + 1][y][0][0];
+                        HiddenLayer[x][y].BiasDelta = value[x + 1][y][0][1];
+                        HiddenLayer[x][y].Gradient = value[x + 1][y][0][2];
                     }
                 }
 
                 //load neural weights for output layer
                 for (var x = 0; x < OutputLayer.Count; x++)
                 {
-                    OutputLayer[x].Bias = value[e][x][0];
-                    OutputLayer[x].BiasDelta = value[e][x][1];
-                    OutputLayer[x].Gradient = value[e][x][2];
+                    OutputLayer[x].Bias = value[e][x][0][0];
+                    OutputLayer[x].BiasDelta = value[e][x][0][1];
+                    OutputLayer[x].Gradient = value[e][x][0][2];
                 }
             }
+        }
+
+        public double[][] NeuronWeights(Neuron neuron)
+        {
+            var weights = new List<double[]>();
+            Synapse synapse;
+            weights.Add(new double[] { CapWeight(neuron.Bias), CapWeight(neuron.BiasDelta), CapWeight(neuron.Gradient) });
+            for(var x = 0; x < neuron.InputSynapses.Count; x++)
+            {
+                synapse = neuron.InputSynapses[x];
+                weights.Add(new double[] { CapWeight(synapse.Weight), CapWeight(synapse.WeightDelta)});
+            }
+            return weights.ToArray();
+        }
+
+        public double CapWeight(double weight)
+        {
+            return double.Parse(weight.ToString("#.##"));
         }
         #endregion
 

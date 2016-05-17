@@ -11,7 +11,7 @@ namespace Collector.Utility
     {
         private Core S;
 
-        public Str(Core CollectorCore){
+        public Str(Core CollectorCore) {
             S = CollectorCore;
         }
 
@@ -19,8 +19,8 @@ namespace Collector.Utility
         public int Asc(string character)
         {
             string c = character.ToString();
-            if(character.Length > 1) { c = c.Substring(0, 1); }
-            
+            if (character.Length > 1) { c = c.Substring(0, 1); }
+
             return Encoding.ASCII.GetBytes(character)[0];
         }
 
@@ -49,7 +49,7 @@ namespace Collector.Utility
         {
             char[] chars = new char[bytes.Length / sizeof(char)];
             Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
-            return string.Join("",chars);
+            return string.Join("", chars);
         }
 
         public string ReadStream(Stream stream)
@@ -61,10 +61,10 @@ namespace Collector.Utility
 
         public double[] GetNumbers(string numberArray)
         {
-            if(numberArray.Length == 0) { return new double[] { }; }
+            if (numberArray.Length == 0) { return new double[] { }; }
             var nums = new List<double>();
             var arr = numberArray.Replace(", ", ",").Replace(" ,", ",").Split(',');
-            foreach(var a in arr)
+            foreach (var a in arr)
             {
                 if (IsNumeric(a))
                 {
@@ -98,7 +98,7 @@ namespace Collector.Utility
 
         public string Left(string str, int len)
         {
-            return str.Substring(0+len);
+            return str.Substring(0 + len);
         }
 
         public string replaceAll(string myStr, string replaceWith, params string[] findList)
@@ -106,7 +106,7 @@ namespace Collector.Utility
             string newStr = myStr.ToString();
             for (int x = 0; x <= findList.Length - 1; x++)
             {
-                newStr = newStr.Replace(findList[x], replaceWith.Replace("{1}",findList[x].Substring(0,1)));
+                newStr = newStr.Replace(findList[x], replaceWith.Replace("{1}", findList[x].Substring(0, 1)));
             }
             return newStr;
         }
@@ -166,9 +166,9 @@ namespace Collector.Utility
             string[] textParts = origText.Split(' ');
             for (int x = 0; x < textParts.Length; x++)
             {
-                if(textParts[x] == "") { continue; }
+                if (textParts[x] == "") { continue; }
                 textParts[x] = textParts[x].Substring(0, 1).ToUpper() + textParts[x].Substring(1);
-                if(textParts[x].Length > 2)
+                if (textParts[x].Length > 2)
                 {
                     if (textParts[x].Substring(0, 2) == "Mc" || textParts[x].Substring(0, 2) == "My")
                     {
@@ -191,7 +191,7 @@ namespace Collector.Utility
             var result = u[0];
             if (queryString == true && u.Length > 1)
             {
-                if(hash == false && u[1].IndexOf("#") >= 0)
+                if (hash == false && u[1].IndexOf("#") >= 0)
                 {
                     result += "?" + u[1].Split('#')[0];
                 }
@@ -199,7 +199,7 @@ namespace Collector.Utility
                 {
                     result += "?" + u[1];
                 }
-            }else
+            } else
             {
                 if (hash == false && u[0].IndexOf("#") >= 0)
                 {
@@ -210,17 +210,17 @@ namespace Collector.Utility
             {
                 //remove specific query keys from url
                 u = result.Split(new char[] { '?' }, 2);
-                if(u.Length == 2)
+                if (u.Length == 2)
                 {
                     //get key values
                     var kv = u[1].ToLower().Split('&');
                     var k2v = new string[] { };
                     var newkeys = "";
-                    foreach(var k in kv)
+                    foreach (var k in kv)
                     {
-                        if(k != "")
+                        if (k != "")
                         {
-                            if(k.IndexOf('=') > 0)
+                            if (k.IndexOf('=') > 0)
                             {
                                 k2v = k.Split(new char[] { '=' }, 2);
                                 if (!removeFromQuery.Contains(k2v[0]))
@@ -229,9 +229,9 @@ namespace Collector.Utility
                                 }
                             }
                         }
-                        
+
                     }
-                    if(newkeys != "") { newkeys = "?" + newkeys; }
+                    if (newkeys != "") { newkeys = "?" + newkeys; }
                     result = u[0] + newkeys;
                 }
             }
@@ -244,7 +244,7 @@ namespace Collector.Utility
             var chars = new string[] { " " };
             var encoded = new string[] { "%20" };
             var url = text.ToString();
-            for(var x = 0;x < chars.Length;x++)
+            for (var x = 0; x < chars.Length; x++)
             {
                 url = url.Replace(chars[x], encoded[x]);
             }
@@ -286,7 +286,7 @@ namespace Collector.Utility
             var chars = new int[] { 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 34, 38, 60, 62, 338, 339, 352, 353, 376, 710, 732, 8194, 8195, 8201, 8204, 8205, 8206, 8207, 8211, 8212, 8216, 8217, 8218, 8220, 8221, 8222, 8224, 8225, 8240, 8249, 8250, 8364, 402, 913, 914, 915, 916, 917, 918, 919, 920, 921, 922, 923, 924, 925, 926, 927, 928, 929, 931, 932, 933, 934, 935, 936, 937, 945, 946, 947, 948, 949, 950, 951, 952, 953, 954, 955, 956, 957, 958, 959, 960, 961, 962, 963, 964, 965, 966, 967, 968, 969, 977, 978, 982, 8226, 8230, 8242, 8243, 8254, 8260, 8472, 8465, 8476, 8482, 8501, 8592, 8593, 8594, 8595, 8596, 8629, 8656, 8657, 8658, 8659, 8660, 8704, 8706, 8707, 8709, 8711, 8712, 8713, 8715, 8719, 8721, 8722, 8727, 8730, 8733, 8734, 8736, 8743, 8744, 8745, 8746, 8747, 8756, 8764, 8773, 8776, 8800, 8801, 8804, 8805, 8834, 8835, 8836, 8838, 8839, 8853, 8855, 8869, 8901, 8968, 8969, 8970, 8971, 9001, 9002, 9674, 9824, 9827, 9829, 9830 };
             var decoded = new string[] { " ", "¡", "¢", "£", "¤", "¥", "¦", "§", "¨", "©", "ª", "«", "¬", "­", "®", "¯", "°", "±", "²", "³", "´", "µ", "¶", "·", "¸", "¹", "º", "»", "¼", "½", "¾", "¿", "À", "Á", "Â", "Ã", "Ä", "Å", "Æ", "Ç", "È", "É", "Ê", "Ë", "Ì", "Í", "Î", "Ï", "Ð", "Ñ", "Ò", "Ó", "Ô", "Õ", "Ö", "×", "Ø", "Ù", "Ú", "Û", "Ü", "Ý", "Þ", "ß", "à", "á", "â", "ã", "ä", "å", "æ", "ç", "è", "é", "ê", "ë", "ì", "í", "î", "ï", "ð", "ñ", "ò", "ó", "ô", "õ", "ö", "÷", "ø", "ù", "ú", "û", "ü", "ý", "þ", "ÿ", "\"", "&", "<", ">", "Œ", "œ", "Š", "š", "Ÿ", "ˆ", "˜", " ", " ", " ", "‌", "‍", "‎", "‏", "–", "—", "‘", "’", "‚", "“", "”", "„", "†", "‡", "‰", "‹", "›", "€", "ƒ", "Α", "Β", "Γ", "Δ", "Ε", "Ζ", "Η", "Θ", "Ι", "Κ", "Λ", "Μ", "Ν", "Ξ", "Ο", "Π", "Ρ", "Σ", "Τ", "Υ", "Φ", "Χ", "Ψ", "Ω", "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "ς", "σ", "τ", "υ", "φ", "χ", "ψ", "ω", "ϑ", "ϒ", "ϖ", "•", "…", "′", "″", "‾", "⁄", "℘", "ℑ", "ℜ", "™", "ℵ", "←", "↑", "→", "↓", "↔", "↵", "⇐", "⇑", "⇒", "⇓", "⇔", "∀", "∂", "∃", "∅", "∇", "∈", "∉", "∋", "∏", "∑", "−", "∗", "√", "∝", "∞", "∠", "∧", "∨", "∩", "∪", "∫", "∴", "∼", "≅", "≈", "≠", "≡", "≤", "≥", "⊂", "⊃", "⊄", "⊆", "⊇", "⊕", "⊗", "⊥", "⋅", "⌈", "⌉", "⌊", "⌋", "⟨", "⟩", "◊", "♠", "♣", "♥", "♦" };
             var htm = html.ToString();
-            for(int x = 0; x < html1.Length; x++)
+            for (int x = 0; x < html1.Length; x++)
             {
                 htm = htm.Replace(html1[x], decoded[x]).Replace(html2[x], decoded[x]);
             }
@@ -300,12 +300,12 @@ namespace Collector.Utility
                 var character = "";
                 do
                 {
-                    if(s2 >= htm.Length) { break; }
+                    if (s2 >= htm.Length) { break; }
                     s = htm.IndexOf("&#", s2);
-                    if(s >= 0)
+                    if (s >= 0)
                     {
                         s2 = htm.IndexOf(";", s + 1);
-                        if(s2 > 0)
+                        if (s2 > 0)
                         {
                             try
                             {
@@ -314,8 +314,8 @@ namespace Collector.Utility
                                 htm = htm.Replace(str, character);
                                 i = 0;
                             }
-                            catch(Exception ex) { }
-                            
+                            catch (Exception ex) { }
+
                         }
                     }
                     else { break; }
@@ -357,7 +357,7 @@ namespace Collector.Utility
 
         public string MaxChars(string str, int max, string trail = "")
         {
-            if(str.Length > max)
+            if (str.Length > max)
             {
                 return str.Substring(0, max) + trail;
             }
@@ -367,8 +367,8 @@ namespace Collector.Utility
         public string RemoveApostrophe(string word)
         {
             var w = word
-                .Replace("'s", "").Replace("’s", "").Replace("'t","{{t}}").Replace("’t", "{{t}}")
-                .Replace("'","").Replace("’", "").Replace("{{t}}", "'t");
+                .Replace("'s", "").Replace("’s", "").Replace("'t", "{{t}}").Replace("’t", "{{t}}")
+                .Replace("'", "").Replace("’", "").Replace("{{t}}", "'t");
             return w;
         }
 
@@ -377,11 +377,11 @@ namespace Collector.Utility
         #region "Extraction"
         public string getFileExtension(string filename)
         {
-            for (int x = filename.Length-1; x >= 0; x += -1)
+            for (int x = filename.Length - 1; x >= 0; x += -1)
             {
                 if (filename.Substring(x, 1) == ".")
                 {
-                    return filename.Substring(x+1);
+                    return filename.Substring(x + 1);
                 }
             }
 
@@ -390,21 +390,21 @@ namespace Collector.Utility
 
         public string getFolder(string filename)
         {
-            var paths = filename.Replace("/","\\").Split('\\').ToList();
+            var paths = filename.Replace("/", "\\").Split('\\').ToList();
             paths.RemoveAt(paths.Count - 1);
             return string.Join("\\", paths.ToArray()) + "\\";
         }
 
         public string GetDomainName(string url)
         {
-            string[] tmpDomain = GetSubDomainAndDomain(url).Split(new char[] { '.' },3);
-            if(tmpDomain.Length == 2)
+            string[] tmpDomain = GetSubDomainAndDomain(url).Split(new char[] { '.' }, 3);
+            if (tmpDomain.Length == 2)
             {
                 return string.Join(".", tmpDomain);
             }
-            else if(tmpDomain.Length == 3)
+            else if (tmpDomain.Length == 3)
             {
-                if(tmpDomain[1] == "co")
+                if (tmpDomain[1] == "co")
                 {
                     return string.Join(".", tmpDomain); ;
                 }
@@ -428,7 +428,7 @@ namespace Collector.Utility
             string subdomain = GetSubDomainAndDomain(url);
             string domain = GetDomainName(subdomain);
             string sub = subdomain.Replace(domain, "").Replace(".", "");
-            if(sub != "")
+            if (sub != "")
             {
                 return new string[] { sub, subdomain.Replace(sub, "") };
             }
@@ -437,14 +437,57 @@ namespace Collector.Utility
 
         public string GetPageTitle(string title)
         {
-            return title.Split(new string[] { " - " },0)[1];
+            return title.Split(new string[] { " - " }, 0)[1];
         }
 
         public string GetWebsiteTitle(string title)
         {
-            return title.Split(new string[] { " - " },0)[0];
+            return title.Split(new string[] { " - " }, 0)[0];
         }
 
+        public double[] GetNumbersFromText(string text)
+        {
+            var isnum = false;
+            var numpart = "";
+            var spart = "";
+            var numberlist = new List<double>();
+            for (var x = 0; x < text.Length; x++)
+            {
+                spart = text.Substring(x, 1);
+                if (S.Util.Str.IsNumeric(spart) || spart == ".")
+                {
+                    //found a number
+                    if (isnum == false)
+                    {
+                        numpart = spart;
+                    }
+                    else
+                    {
+                        numpart += spart;
+                    }
+                }
+                else if (spart == ".")
+                {
+                    //just a period
+                    numpart = "";
+                }
+                else if(numpart != "")
+                {
+                    //end of number
+                    try
+                    {
+                        if (S.Util.Str.IsNumeric(numpart))
+                        {
+                            numberlist.Add(double.Parse(numpart));
+                        }
+                    }
+                    catch (Exception ex) { }
+                    
+                    numpart = "";
+                }
+            }
+            return numberlist.ToArray();
+        }
         #endregion
 
         #region "Generation"

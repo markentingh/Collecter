@@ -4,3 +4,4 @@
 AS
 	INSERT INTO FeedsCheckedLog (feedId, links, datechecked)
 	VALUES (@feedId, @links, GETDATE())
+	UPDATE Feeds SET lastChecked = GETDATE()
