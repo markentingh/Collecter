@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace Collector
 {
@@ -22,6 +23,7 @@ namespace Collector
         public string sqlActive = "Azure";
         public string sqlConnection = "";
         public string saltPrivateKey = "?";
+        public IConfiguration config;
 
         //used to tell which articles have been analyzed by which version of the analyzer class
         public string analyzerVersion = "0.1"; 

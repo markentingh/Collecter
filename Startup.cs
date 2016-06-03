@@ -49,14 +49,14 @@ namespace Collector
             var configBuilder = new ConfigurationBuilder()
                 .AddJsonFile(server.MapPath("config.json"))
                 .AddEnvironmentVariables();
-            IConfiguration config = configBuilder.Build();
+            server.config = configBuilder.Build();
 
-            string active = config.GetSection("Data:Active").Value;
-            string conn = config.GetSection("Data:" + active).Value;
+            string active = server.config.GetSection("Data:Active").Value;
+            string conn = server.config.GetSection("Data:" + active).Value;
             server.sqlActive = active; 
             server.sqlConnection = conn;
 
-            server.analyzerVersion = config.GetSection("analyzer:version").Value;
+            server.analyzerVersion = server.config.GetSection("analyzer:version").Value;
 
             //run application
             app.Run(async (context) =>

@@ -17,7 +17,8 @@ namespace Collector.PageViews
             Scaffold scaffold;
 
             //setup scaffolding variables
-            scaffold = new Scaffold(S, "/app/pageviews/interface.html", "", new string[] { "content", "cssfile", "signin", "script", "foot" });
+            scaffold = new Scaffold(S, "/app/pageviews/interface.html", "", new string[] { });
+            scaffold.Data["title"] = S.Server.config.GetSection("website:title").Value;
             scaffold.Data["content"] = content;
             scaffold.Data["cssfile"] = cssFile;
             scaffold.Data["scriptfiles"] = scriptFiles;

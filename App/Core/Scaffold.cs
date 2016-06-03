@@ -160,7 +160,7 @@ namespace Collector
         {
             if (scaffold.parts.Count > 0)
             {
-                //render scaffold with paired Data data
+                //render scaffold with paired data
                 List<string> scaff = new List<string>(); string s = "";
                 bool useScaffold = false; List<List<string>> closing = new List<List<string>>();
                 bool hasId = false;
@@ -278,8 +278,30 @@ namespace Collector
 
         public string Get(string name)
         {
-            var part = scaffold.parts[scaffold.parts.FindIndex(c => c.name == "/" + name) - 1];
+            var index = scaffold.parts.FindIndex(c => c.name == name);
+            var part = scaffold.parts[index];
             var html = part.htm;
+            for(var x = index+1; x < scaffold.parts.Count; x++)
+            {
+                part = scaffold.parts[x];
+                if(part.name == "/" + name) { break; }
+
+                //add inner scaffold elements
+                if(part.name.IndexOf('/') < 0)
+                {
+                    if (Data.ContainsKey(part.name))
+                    {
+                        if (Data[part.name] == "1" || Data[part.name].ToLower() == "true")
+                        {
+                            html += Get(part.name);
+                        }
+                    }
+                }else
+                {
+                    html += part.htm;
+                }
+                
+            }
             
             return html;
         }

@@ -1,17 +1,17 @@
 ﻿<div class="dashboard">
     <div class="row bottom">
         {{menu}}
-        {{dash-menu (block)}}
+        {{dash-menu}}
         <nav>
             <ul>
-                <li><a href="/dashboard/search">Search</a></li>
-                <li><a href="/dashboard/subjects">Subjects</a></li>
-                <li><a href="/dashboard/topics">Topics</a></li>
-                <li><a href="/dashboard/articles">Articles</a></li>
-                <li><a href="/dashboard/feeds">Feeds</a></li>
-                <li><a href="/dashboard/downloads">Downloads</a></li>
-                <li><a href="/dashboard/analyzer">Analyzer</a></li>
-                <li><a href="/dashboard/neurons">Neurons</a></li>
+                {{item-1}}<li><a href="/dashboard/search">Search</a></li>{{/item-1}}
+                {{item-2}}<li><a href="/dashboard/subjects">Subjects</a></li>{{/item-2}}
+                {{item-3}}<li><a href="/dashboard/topics">Topics</a></li>{{/item-3}}
+                {{item-4}}<li><a href="/dashboard/articles">Articles</a></li>{{/item-4}}
+                {{item-5}}<li><a href="/dashboard/feeds">Feeds</a></li>{{/item-5}}
+                {{item-6}}<li><a href="/dashboard/downloads">Downloads</a></li>{{/item-6}}
+                {{item-7}}<li><a href="/dashboard/analyzer">Analyzer</a></li>{{/item-7}}
+                {{item-8}}<li><a href="/dashboard/neurons">Neurons</a></li>{{/item-8}}
             </ul>
         </nav>
         {{/dash-menu}}

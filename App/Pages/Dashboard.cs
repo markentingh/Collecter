@@ -14,7 +14,17 @@ namespace Collector.Pages
             if (CheckSecurity() == false) { return RenderAccessDenied(); }
 
             //setup scaffolding variables
-            Scaffold scaffold = new Scaffold(S, "/app/pages/dashboard.html", "", new string[] { "content", "menu", "dev-menu", "admin-menu"});
+            Scaffold scaffold = new Scaffold(S, "/app/pages/dashboard.html", "", new string[] {});
+
+            //setup menu
+            if (S.Server.config.GetSection("website:dashboard:search").Value.ToLower() == "true") { scaffold.Data["item-1"] = "1"; }
+            if (S.Server.config.GetSection("website:dashboard:subjects").Value.ToLower() == "true") { scaffold.Data["item-2"] = "1"; }
+            if (S.Server.config.GetSection("website:dashboard:topics").Value.ToLower() == "true") { scaffold.Data["item-3"] = "1"; }
+            if (S.Server.config.GetSection("website:dashboard:articles").Value.ToLower() == "true") { scaffold.Data["item-4"] = "1"; }
+            if (S.Server.config.GetSection("website:dashboard:feeds").Value.ToLower() == "true") { scaffold.Data["item-5"] = "1"; }
+            if (S.Server.config.GetSection("website:dashboard:downloads").Value.ToLower() == "true") { scaffold.Data["item-6"] = "1"; }
+            if (S.Server.config.GetSection("website:dashboard:analyzer").Value.ToLower() == "true") { scaffold.Data["item-7"] = "1"; }
+            if (S.Server.config.GetSection("website:dashboard:neurons").Value.ToLower() == "true") { scaffold.Data["item-8"] = "1"; }
 
             //load dashboard section
             var headerMenu = scaffold.Get("dash-menu");
