@@ -1,7 +1,6 @@
 ﻿CREATE TABLE [dbo].[Topics]
 (
 	[topicId] INT NOT NULL PRIMARY KEY, 
-    [subjectId] INT NULL, 
     [geolat] FLOAT NULL, 
     [geolong] FLOAT NULL, 
     [datecreated] DATETIME NULL, 

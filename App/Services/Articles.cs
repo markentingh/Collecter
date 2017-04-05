@@ -326,9 +326,9 @@ namespace Collector.Services
             {
                 //use attached content string
                 htm = content.ToString();
-                
-                
             }
+
+            if(htm.Trim() == "") { return analyzed; }
 
             //check to see if content is indeed html
             if (htm.IndexOf("<") >= 0 && htm.IndexOf(">") > 0)

@@ -175,7 +175,7 @@ namespace Collector.Services
                 htm.Append(RenderAccordion("Topic", "topic-summary", GetTopicListItem(topic.title, topicId, topic.breadcrumb, topic.hierarchy, topic.subjectId, topic.subjectTitle)));
 
                 //show topic media (photos & videos)
-                htm.Append(RenderAccordion("Media", "topic-media", GetTopicMediaList()));
+                htm.Append(RenderAccordion("Images", "topic-media", GetTopicMediaList()));
 
                 //open topic json file
                 List<sectionInfo> sections = OpenTopicJson();
@@ -253,6 +253,10 @@ namespace Collector.Services
             List<sectionInfo> sections = OpenTopicJson();
             //get next incremented ID
             int id = (sections.Aggregate((a, b) => a.id > b.id ? a : b).id) + 1;
+            if(id == 0) {
+                id = sections.Count;
+                if (id == 0) { id = 1; }
+            }
             string className = "section" + id;
             var response = new Inject();
 
@@ -295,32 +299,7 @@ namespace Collector.Services
         {
             //save changes for loaded topic
             List<sectionInfo> data = (List<sectionInfo>)S.Util.Serializer.ReadObject(json, typeof(List<sectionInfo>));
-            var sections = OpenTopicJson();
-            var i = 0;
-            sectionInfo s;
-            foreach (var d in data)
-            {
-                //update each section based on data
-                i = sections.FindIndex(c => c.id == d.id);
-                if(i >= 0)
-                {
-                    s = sections[i];
-                    s.title = d.title;
-                    s.content = d.content;
-                    sections[i] = s;
-                }
-                else
-                {
-                    //create new section
-                    s = new sectionInfo();
-                    s.title = d.title;
-                    s.content = d.content;
-                    s.type = "markdown";
-                    s.id = sections.Count > 0 ? (sections.Aggregate((a, b) => a.id > b.id ? a : b).id) + 1 : 1; //increment ID
-                    sections.Add(s);
-                }
-            }
-            SaveTopicList(sections);
+            SaveTopicList(data);
         }
 
         public Inject RemoveSection(int id)
@@ -365,7 +344,10 @@ namespace Collector.Services
             }
             if (listOnly == false)
                 {
-                htm.Append("</div>");
+                htm.Append("</div>" + 
+                    "<div class=\"img-details\">" + 
+                    
+                    "</div>");
 
                 //add drop zone for uploading images
                 htm.Append(

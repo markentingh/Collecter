@@ -69,9 +69,6 @@
             var options = { element: element, after: after, title: "New Section", content: "", index: index, count: count };
             S.ajax.post('/api/Topics/NewTopicSection', options, function () {
                 S.ajax.callback.inject(arguments[0]);
-                $('html, body').animate({
-                    scrollTop: $('.' + group + (count + 1)).offset().top
-                }, 700);
             });
         },
 
@@ -95,14 +92,10 @@
             var title = '';
             $('.btn-savechanges').hide();
             S.topics.edit.edited = false;
-            console.log(sections);
             for (var s = 0; s < sections.length; s++) {
-                console.log(s);
                 section = sections[s];
-                console.log(section);
                 id = section.className.replace('topic-section id-' + groupName, '');
                 title = $(section).find('.txt-title').val();
-                console.log('id = ' + id);
                 data.push({
                     title: title,
                     content: $(section).find('.txt-content').val(),
@@ -111,8 +104,6 @@
                 //update title
                 $('.' + groupName + id + ' > .title').html(title);
             }
-
-            console.log(data);
             S.ajax.post('/api/Topics/SaveTopic', { sections: JSON.stringify(data) }, function () { });
         }
     },

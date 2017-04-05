@@ -1,2 +1,2 @@
 ﻿CREATE INDEX [IndexTopicsSubjects]
-	ON [dbo].Topics (subjectId ASC)
+	ON [dbo].Topics (topicId ASC)

@@ -160,6 +160,9 @@
     <Build Include="Indexes\IndexDownloadQueueRand.sql" />
     <Build Include="Stored Procedures\AddTopicByBreadcrumb.sql" />
     <Build Include="Stored Procedures\GetTopic.sql" />
+    <Build Include="Tables\TopicSubjects.sql" />
+    <Build Include="Indexes\IndexTopicSubjects.sql" />
+    <Build Include="Indexes\IndexSubjectTopics.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

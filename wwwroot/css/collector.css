@@ -134,6 +134,9 @@ input[type="button"].blue:hover, input[type="submit"].blue:hover, .button.blue:h
 .spreadsheet > .row:hover:nth-child(2n+2){background-color:#d7eadd;}
 .spreadsheet > .row{box-sizing:border-box; border-bottom:1px solid rgba(150,150,150,0.2);}
 
+/* topic contents */
+.topic-section img{max-width:100%;} 
+
 /* messages */
 .message{border-radius:4px;}
 .row .column.error{color:#bf0000; background-color:#f7c8c8; padding:10px;}

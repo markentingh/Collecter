@@ -10,5 +10,4 @@ AS
 	DECLARE @subjectId int
 	SELECT @subjectId=subjectId FROM Subjects WHERE breadcrumb = @breadcrumb AND title=@subject
 
-	INSERT INTO Topics (topicId, subjectId, title, datecreated, summary, media)
-	VALUES (@topicId, @subjectId, @title, GETDATE(), @summary, @media)
+	EXEC AddTopic @subjectId=@subjectId, @title=@title, @summary=@summary, @media=@media
