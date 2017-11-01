@@ -9,10 +9,11 @@ namespace Collector.Utility
 {
     public class Str
     {
-        private Core S;
+        private Util Util;
 
-        public Str(Core CollectorCore) {
-            S = CollectorCore;
+        public Str(Util util)
+        {
+            Util = util;
         }
 
         #region "Conversion"
@@ -199,14 +200,15 @@ namespace Collector.Utility
                 {
                     result += "?" + u[1];
                 }
-            } else
+            }
+            else
             {
                 if (hash == false && u[0].IndexOf("#") >= 0)
                 {
                     result = u[0].Split('#')[0];
                 }
             }
-            if (S.Util.IsEmpty(removeFromQuery) == false)
+            if (Util.IsEmpty(removeFromQuery) == false)
             {
                 //remove specific query keys from url
                 u = result.Split(new char[] { '?' }, 2);
@@ -307,15 +309,10 @@ namespace Collector.Utility
                         s2 = htm.IndexOf(";", s + 1);
                         if (s2 > 0)
                         {
-                            try
-                            {
-                                str = htm.Substring(s, (s2 + 1) - s);
-                                character = Char.ConvertFromUtf32(int.Parse(str.Replace("&#", "").Replace(";", "")));
-                                htm = htm.Replace(str, character);
-                                i = 0;
-                            }
-                            catch (Exception ex) { }
-
+                            str = htm.Substring(s, (s2 + 1) - s);
+                            character = Char.ConvertFromUtf32(int.Parse(str.Replace("&#", "").Replace(";", "")));
+                            htm = htm.Replace(str, character);
+                            i = 0;
                         }
                     }
                     else { break; }
@@ -325,7 +322,7 @@ namespace Collector.Utility
             return htm;
         }
 
-        public object RemoveHtmlFromString(string str, bool includeBR = false)
+        public string RemoveHtmlFromString(string str, bool includeBR = false)
         {
             string RegExStr = "<[^>]*>";
             if (includeBR == true)
@@ -338,17 +335,17 @@ namespace Collector.Utility
         {
             string result = js;
             //trim left
-            result = Regex.Replace(result, "^\\s*", String.Empty, RegexOptions.Compiled | RegexOptions.Multiline);
+            result = Regex.Replace(result, "^\\s*", String.Empty, RegexOptions.ECMAScript);
             //trim right
-            result = Regex.Replace(result, "\\s*[\\r\\n]", "\n", RegexOptions.Compiled | RegexOptions.ECMAScript);
+            result = Regex.Replace(result, "\\s*[\\r\\n]", "\n", RegexOptions.ECMAScript);
             //remove whitespace beside of left curly braced
-            result = Regex.Replace(result, "\\s*{\\s*", "{", RegexOptions.Compiled | RegexOptions.ECMAScript);
+            result = Regex.Replace(result, "\\s*{\\s*", "{", RegexOptions.ECMAScript);
             //remove whitespace beside of coma
-            result = Regex.Replace(result, "\\s*,\\s*", ",", RegexOptions.Compiled | RegexOptions.ECMAScript);
+            result = Regex.Replace(result, "\\s*,\\s*", ",", RegexOptions.ECMAScript);
             //remove whitespace beside of semicolon
-            result = Regex.Replace(result, "\\s*;\\s*", ";", RegexOptions.Compiled | RegexOptions.ECMAScript);
+            result = Regex.Replace(result, "\\s*;\\s*", ";", RegexOptions.ECMAScript);
             //remove newline after keywords
-            result = Regex.Replace(result, "\\r\\n(?<=\\b(abstract|boolean|break|byte|case|catch|char|class|const|continue|default|delete|do|double|else|extends|false|final|finally|float|for|function|goto|if|implements|import|in|instanceof|int|interface|long|native|new|null|package|private|protected|public|return|short|static|super|switch|synchronized|this|throw|throws|transient|true|try|typeof|var|void|while|with|\\r\\n|\\})\\r\\n)", " ", RegexOptions.Compiled | RegexOptions.ECMAScript);
+            result = Regex.Replace(result, "\\r\\n(?<=\\b(abstract|boolean|break|byte|case|catch|char|class|const|continue|default|delete|do|double|else|extends|false|final|finally|float|for|function|goto|if|implements|import|in|instanceof|int|interface|long|native|new|null|package|private|protected|public|return|short|static|super|switch|synchronized|this|throw|throws|transient|true|try|typeof|var|void|while|with|\\r\\n|\\})\\r\\n)", " ", RegexOptions.ECMAScript);
 
             //remove all newlines
             //result = Regex.Replace(result, "\r\n", " ", RegexOptions.Compiled Or RegexOptions.ECMAScript)
@@ -454,7 +451,7 @@ namespace Collector.Utility
             for (var x = 0; x < text.Length; x++)
             {
                 spart = text.Substring(x, 1);
-                if (S.Util.Str.IsNumeric(spart) || spart == ".")
+                if (Util.Str.IsNumeric(spart) || spart == ".")
                 {
                     //found a number
                     if (isnum == false)
@@ -471,18 +468,14 @@ namespace Collector.Utility
                     //just a period
                     numpart = "";
                 }
-                else if(numpart != "")
+                else if (numpart != "")
                 {
                     //end of number
-                    try
+                    if (Util.Str.IsNumeric(numpart))
                     {
-                        if (S.Util.Str.IsNumeric(numpart))
-                        {
-                            numberlist.Add(double.Parse(numpart));
-                        }
+                        numberlist.Add(double.Parse(numpart));
                     }
-                    catch (Exception ex) { }
-                    
+
                     numpart = "";
                 }
             }
@@ -493,25 +486,25 @@ namespace Collector.Utility
         #region "Generation"
         public string CreateID(int length = 3)
         {
-            Random rnd = new Random();
             string result = "";
-            for (var x = 0; x <= length - 1; x++) {
-                int type = rnd.Next(1, 3);
+            for (var x = 0; x <= length - 1; x++)
+            {
+                int type = Util.Random.Next(1, 3);
                 int num = 0;
                 switch (type)
                 {
                     case 1: //a-z
-                        num = rnd.Next(0, 26);
+                        num = Util.Random.Next(0, 26);
                         result += (char)('a' + num);
                         break;
 
                     case 2: //A-Z
-                        num = rnd.Next(0, 26);
+                        num = Util.Random.Next(0, 26);
                         result += (char)('A' + num);
                         break;
 
                     case 3: //0-9
-                        num = rnd.Next(0, 9);
+                        num = Util.Random.Next(0, 9);
                         result += (char)('1' + num);
                         break;
 
@@ -523,7 +516,7 @@ namespace Collector.Utility
 
         public string CreateMD5Hash(string input)
         {
-            var encryption = new Encryption(S);
+            var encryption = new Encryption(Util);
             return encryption.GetMD5Hash(input);
         }
 
@@ -549,7 +542,7 @@ namespace Collector.Utility
             }
             return "";
         }
-        
+
         public string NumberSuffix(int digit)
         {
             switch (digit)
@@ -572,7 +565,7 @@ namespace Collector.Utility
                 case 13:
                     return "th";
                 default:
-                    switch (int.Parse(S.Util.Str.Right(digit.ToString(), 1)))
+                    switch (int.Parse(Right(digit.ToString(), 1)))
                     {
                         case 1:
                             return "st";
@@ -629,7 +622,7 @@ namespace Collector.Utility
         public bool IsNumeric(string str)
         {
             double retNum;
-            if (S.Util.IsEmpty(str) == false)
+            if (Util.IsEmpty(str) == false)
             {
                 return Double.TryParse(str, out retNum);
             }
@@ -715,14 +708,15 @@ namespace Collector.Utility
             {
                 if (Asc(character) >= Asc("a") & Asc(character) <= Asc("z"))
                 {
-                    if(capitalizedOnly == false)
+                    if (capitalizedOnly == false)
                     {
                         return true;
                     }
-                    else {
+                    else
+                    {
                         return false;
                     }
-                    
+
                 }
 
                 if (Asc(character) >= Asc("A") & Asc(character) <= Asc("Z"))

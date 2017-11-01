@@ -1,34 +1,10 @@
 ﻿using System;
 using System.Xml;
-using System.Text;
-using System.IO;
 
 namespace Collector.Utility
 {
     public class Xml
     {
-
-        public XmlDocument LoadXml(string xml)
-        {
-            // Encode the XML string in a UTF-8 byte array
-            byte[] encodedString = Encoding.UTF8.GetBytes(xml);
-
-            // Put the byte array into a stream and rewind it to the beginning
-            MemoryStream ms = new MemoryStream(encodedString);
-            ms.Flush();
-            ms.Position = 0;
-
-            // Build the XmlDocument from the MemorySteam of UTF-8 encoded bytes
-            XmlDocument xmlDoc = new XmlDocument();
-            try
-            {
-                xmlDoc.Load(ms);
-            }
-            catch(Exception ex){}
-            
-            ms.Dispose();
-            return xmlDoc;
-        }
 
         public string GetAttribute(string name, XmlNode myNode)
         {

@@ -1,0 +1,28 @@
+﻿<div class="accordion subjects" id="subjects{{parentId}}">
+    <div class="title expanded">{{breadcrumbs}}</div>
+    <div class="box expanded">
+        <div class="box-list">
+            {{subjects-list}}
+        </div>
+        <div class="selection">
+            <div class="label goback"></div>
+            <div class="option"><a href="javascript:" class="button green topics">Topics</a></div>
+            <div class="option"><a href="javascript:" class="button blue add-from-subject icon-plus" title="Add a Subject"></a></div>
+            <div class="option"><a href="javascript:" class="button move-from-subject icon-reply" title="Move subject to another parent"></a></div>
+            {{no-words}}
+            <div class="option"><a href="javascript:" class="button green calc-related-words icon-reload" title="Calculate Related Words for this Subject"></a></div>
+            {{/no-words}}
+        </div>
+        <div class="option-box"></div>
+    </div>
+</div>
+<div class="topics-box"id="topicsfor{{parentId}}">
+    <div class="arrow"></div>
+    <div class="row title">
+        <div class="option">
+            <a href="javascript:" class="button blue add-topic icon-plus" title="Add a Topic"></a>
+        </div>
+        <h5 class="topic-title"></h5>
+    </div>
+    <div class="topics-list"></div>
+</div>

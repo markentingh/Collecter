@@ -1,9 +1,9 @@
 using System;
-using Microsoft.AspNet.Http;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 namespace Collector.Pipeline
@@ -14,15 +14,18 @@ namespace Collector.Pipeline
 
         public WebService(Server server, HttpContext context, string[] paths, IFormCollection form = null)
         {
-            //get parameters from request body, including ViewState ID
-            string viewstate = "";
-            object[] parms = new object[0];
+            //get parameters from request body, including page id
+            var parms = new Dictionary<string, string>();
+            object[] paramVals;
+            var param = "";
             byte[] bytes = new byte[0];
             string data = "";
-            int dataType = 0; //0 = ajax, 1 = form post, 2 = multi-part form
+            int dataType = 0; //0 = ajax, 1 = HTML form post, 2 = multi-part form (with file uploads)
 
+            //figure out what kind of data was sent with the request
             if (form == null)
             {
+                //get POST data from request
                 using (MemoryStream ms = new MemoryStream())
                 {
                     context.Request.Body.CopyTo(ms);
@@ -31,6 +34,7 @@ namespace Collector.Pipeline
                 data = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
             }else
             {
+                //form files exist
                 dataType = 2;
             }
             
@@ -43,121 +47,131 @@ namespace Collector.Pipeline
                 }
                 else if (data.IndexOf("{") >= 0 && data.IndexOf("}") > 0 && data.IndexOf(":") > 0)
                 {
-                    //JSON post data
+                    //get method parameters from POST S.ajax.post()
                     Dictionary<string, object> attr = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
-                    parms = new object[attr.Count - 1];
-                    int x = 0; string val = "";
                     foreach (KeyValuePair<string, object> item in attr)
                     {
-                        if(item.Value != null) {
-                            val = item.Value.ToString(); ;
-                        }
-                        else {
-                            val = "";
-                        }
-                        
-                        if (item.Key == "viewstateId")
-                        {
-                            viewstate = val;
-                        }
-                        else
-                        {
-                            //convert value into integer or float
-                            if (IsNumeric(val))
-                            {
-                                if (val.IndexOf('.') >= 0)
-                                {
-                                    parms[x] = float.Parse(val);
-                                }
-                                else
-                                {
-                                    parms[x] = Int32.Parse(val);
-                                }
-
-                            }
-                            else
-                            {
-                                parms[x] = item.Value;
-                            }
-
-                            x = x + 1;
-                        }
+                        parms.Add(item.Key.ToLower(), item.Value.ToString());
                     }
                 }
                 else if (data.IndexOf("=") >= 0)
                 {
-                    //form post data
+                    //HTML form POST data
                     dataType = 1;
                 }
             }
             else
             {
-                //get viewstate from query string
-                viewstate = context.Request.Query["v"];
+                //get method parameters from query string
+                foreach(var key in context.Request.Query.Keys)
+                {
+                    parms.Add(key.ToLower(), context.Request.Query[key].ToString());
+                }
             }
 
-            S = new Core(server, context, viewstate, "service");
-            S.Page.GetPageUrl();
+            //start building Web API response (find method to execute & return results)
+            S = new Core(server, context);
 
             //load service class from URL path
             string className = "Collector.Services." + paths[1];
             string methodName = paths[2];
             if(paths.Length == 4) { className += "." + paths[2]; methodName = paths[3]; }
-            Type type =Type.GetType(className);
-            Service service = (Service)Activator.CreateInstance(type, new object[] { S, paths });
+            var service = GetService(className);
 
             if (dataType == 1)
             {
-                //form post data
+                //parse HTML form POST data and send to new Service instance
                 string[] items = S.Server.UrlDecode(data).Split('&');
                 string[] item;
-                for(int x = 0; x < items.Length; x++)
+                for(var x = 0; x < items.Length; x++)
                 {
                     item = items[x].Split('=');
                     service.Form.Add(item[0], item[1]);
                 }
             }else if(dataType == 2)
             {
-                //multi-part file upload
+                //send multi-part file upload data to new Service instance
                 service.Files = form.Files;
             }
 
-            //execute method from service class
+            //execute method from new Service instance
+            Type type = Type.GetType(className);
             MethodInfo method = type.GetMethod(methodName);
-            object result = method.Invoke(service, parms);
-            if(result != null)
+
+            //try to cast params to correct types
+            ParameterInfo[] methodParams = method.GetParameters();
+
+            paramVals = new object[methodParams.Length];
+            for(var x = 0; x < methodParams.Length; x++)
             {
-                switch (result.GetType().FullName)
+                //find correct key/value pair
+                param = "";
+                foreach(var item in parms)
                 {
-                    case "Collector.WebRequest":
-                        //send raw content (HTML)
-                        WebRequest res = (WebRequest)result;
-                        context.Response.ContentType = res.contentType;
-                        context.Response.WriteAsync(res.html);
+                    if(item.Key == methodParams[x].Name.ToLower())
+                    {
+                        param = item.Value;
+                        break;
+                    }
+                }
+                //cast params to correct (supported) types
+                switch (methodParams[x].ParameterType.Name.ToLower())
+                {
+                    case "int32":
+                        paramVals[x] = Int32.Parse(param);
+                        break;
+
+                    case "boolean":
+                        paramVals[x] = param.ToLower() == "true" ? true : false;
+                        break;
+
+                    case "double":
+                        paramVals[x] = double.Parse(param);
+                        break;
+
+                    case "datetime":
+                        paramVals[x] = DateTime.Parse(param);
                         break;
 
                     default:
-                        //JSON serialize web service response
-                        string serialized = "{\"type\":\"" + result.GetType().FullName + "\", \"d\":" + JsonConvert.SerializeObject(result) + "}";
-
-                        context.Response.ContentType = "text/json";
-                        context.Response.WriteAsync(serialized);
+                        paramVals[x] = param;
                         break;
                 }
-            }else {
-                context.Response.ContentType = "text/json";
-                context.Response.WriteAsync("{\"type\":\"Empty\",\"d\":{}}");
             }
 
+            object result = null;
+
+            try
+            {
+                result = method.Invoke(service, paramVals);
+            }catch(Exception ex)
+            {
+                throw ex.InnerException;
+            }
+
+
             //finally, unload the Collector Core:
-            //close SQL connection, save ViewState, save User info
+            //close SQL connection, save User info, etc (before sending response)
             S.Unload();
+            context.Response.ContentType = "text/json";
+            if (result != null)
+            {
+                context.Response.WriteAsync((string)result);
+            }else {
+                context.Response.WriteAsync("{\"error\":\"no content returned\"}");
+            }
         }
 
-        private static bool IsNumeric(string s)
+        private Service GetService(string className)
         {
-            float output;
-            return float.TryParse(s, out output);
+            //hard-code all known services to increase server performance
+            switch(className.ToLower()){
+
+                default:
+                    //last resort, find service class manually
+                    Type type = Type.GetType(className);
+                    return (Service)Activator.CreateInstance(type, new object[] { S });
+            }
         }
     }
 }

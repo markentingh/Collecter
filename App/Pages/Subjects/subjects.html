@@ -1,0 +1,70 @@
+﻿<form method="post" class="form-addsubjects" style="display:none;">
+    <div class="row field">
+        Add a comma-delimited list of Subjects to the database
+    </div>
+    <div class="row input">
+        <input type="text" id="txtsubjects" />
+    </div>
+    <div class="row field">
+        Provide a hierarchy of Subjects to add your new Subjects under <span class="faded">(or leave blank)</span>
+    </div>
+    <div class="row input">
+        <input type="text" id="txthierarchy" placeholder="Science>Biology>Neurology" />
+    </div>
+    <div class="row pad-top">
+        <div class="col pad-right"><submit class="button apply" id="btnsavesubjects">Create Subjects</submit></div>
+        <div class="col"><a class="button cancel" id="btncanceladdsubject">Cancel</a></div>
+    </div>
+</form>
+
+<div class="form-movesubject" style="display:none;">
+    <div class="row">
+        <div class="col field">Move Subject ID:</div>
+        <div class="col input">
+            <input type="text" id="txtmovesubjectid" style="width:40px;"/>
+        </div>
+        <div class="col field">to hierarchy:</div>
+        <div class="col input" style="width:calc(100% - 540px);">
+            <input type="text" id="txtmovetohierarchy" style="width:100%;" />
+        </div>
+
+        <div class="col"><div class="button apply" id="btnmovesubject">Move Subject</div></div>
+        <div class="col"><div class="button cancel" id="btncancelmovesubject">Cancel</div></div>
+    </div>
+</div>
+
+<div class="form-addtopic" style="display:none;">
+    <div class="row field">
+        <div class="col label">Title: </div>
+        <div class="col input text-topictitle">
+            <input type="text" id="txtaddtopictitle" />
+        </div>
+    </div>
+    <div class="row field">
+        <div class="col label">Description: </div>
+        <div class="col input text-topicdesc">
+            <textarea id="txtaddtopicdesc"></textarea>
+        </div>
+    </div>
+    <div class="row field">
+        <div class="col label">Subject: </div>
+        <div class="col input text-topicsubject">
+            <input type="text" id="txtaddtopicsubject" />
+        </div>
+    </div>
+    <div class="row space">
+        <div class="col btn right"><div class="button green" id="btnsaveaddtopic">Add Topic</div></div>
+        <div class="col btn right"><div class="button" id="btncanceladdtopic">Cancel</div></div>
+    </div>
+</div>
+
+
+
+<div class="subjects-list">
+    {{content}}
+    {{no-subjects}}
+    <div class="row pad-lg text-center">
+        No subjects exist in the database yet.
+    </div>
+    {{/no-subjects}}
+</div>

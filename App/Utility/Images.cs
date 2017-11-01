@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using Nine.Imaging;
-using Nine.Imaging.Filtering;
-using Nine.Imaging.Encoding;
+//using Nine.Imaging;
+//using Nine.Imaging.Filtering;
+//using Nine.Imaging.Encoding;
 
 namespace Collector.Utility
 {
@@ -12,53 +12,43 @@ namespace Collector.Utility
         public string filename;
         public int width;
         public int height;
-        public Image bitmap;
+        //public Image bitmap;
     }
-
+        
 
     public class Images
     {
         private Core S;
 
-        public Images(Core WebsilkCore)
+        public Images(Core CollectorCore)
         {
-            S = WebsilkCore;
+            S = CollectorCore;
         }
 
+        /*
         public structImage Load(string path, string filename)
         {
-            try
-            {
-                Image image = new Image(File.OpenRead(S.Server.MapPath(path + filename)));
-                structImage newImg = new structImage();
-                newImg.bitmap = image;
-                newImg.filename = filename;
-                newImg.path = path;
-                newImg.width = image.PixelWidth;
-                newImg.height = image.PixelHeight;
-                return newImg;
-            }
-            catch (Exception ex) { }
-            return new structImage();
+            Image image = new Image(File.OpenRead(S.Server.MapPath(path + filename)));
+            structImage newImg = new structImage();
+            newImg.bitmap = image;
+            newImg.filename = filename;
+            newImg.path = path;
+            newImg.width = image.PixelWidth;
+            newImg.height = image.PixelHeight;
+            return newImg;
         }
 
         public void Shrink(string filename, string outfile, int width)
         {
-            try
-            {
-                FileStream fs = File.OpenRead(S.Server.MapPath(filename));
-                Image image = new Image(fs);
-
-                //int h = height;
-                if (image.PixelWidth > width)
-                {
-                    //if(h <= 0) { h = (image.PixelHeight / (image.PixelWidth / width)); }
-                    image = image.Resize(width);
-                }
-                Save(outfile, image);
-                fs.Dispose();
-            }catch(Exception ex) { }
+            FileStream fs = File.OpenRead(S.Server.MapPath(filename));
+            Image image = new Image(fs);
             
+            if (image.PixelWidth > width)
+            {
+                image = image.Resize(width);
+            }
+            Save(outfile, image);
+            fs.Dispose();
         }
 
         public void Save(string filename, Image image)
@@ -95,8 +85,7 @@ namespace Collector.Utility
         {
 
             //Shrink(image, path + name, 4096);
-            try
-            {
+            try {
                 Shrink(path + name, path + "xl" + name, 1920);
                 Shrink(path + name, path + "lg" + name, 800);
                 Shrink(path + name, path + "med" + name, 400);
@@ -104,10 +93,10 @@ namespace Collector.Utility
                 Shrink(path + name, path + "tiny" + name, 100);
                 Shrink(path + name, path + "icon" + name, 50);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 throw new Exception(ex.Message);
             }
         }
+        */
     }
 }

@@ -1,0 +1,32 @@
+{
+  "environment": "development",
+  "port": "80",
+  "data": {
+    "active": "SqlServerTrusted",
+    "SqlServerTrusted": "server=.\\SQL2016; database=Collector; Trusted_Connection=true"
+  },
+
+  "encryption": {
+    "bcrypt_work_factor": "10"
+  },
+
+  "analyzer": {
+    "version": "0.111"
+  },
+
+  "website": {
+    "title": "Collector",
+
+    "dashboard": {
+      "analyzer": true,
+      "articles": true,
+      "downloads": true,
+      "feeds": true,
+      "neurons": true,
+      "search": true,
+      "subjects": true,
+      "topics": true
+    }
+
+  }
+}
