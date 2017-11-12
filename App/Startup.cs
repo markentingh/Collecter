@@ -121,7 +121,8 @@ namespace Collector
                                 form = await context.Request.ReadFormAsync();
                             }
                         }
-                        
+                        //form = await context.Request.ReadFormAsync();
+
                         if (cleanNamespace(paths))
                         {
                             //execute web service

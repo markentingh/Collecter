@@ -76,8 +76,24 @@ namespace Collector.Query
                     {"topicId", topicId }
                 }
             );
-            if(list.Count > 0) { return list[0]; }
+            if(list.Count > 0) {
+                var item = list[0];
+                item.path = "/content/topics/" + item.hierarchy.Replace(">", "/") + "/"; ;
+                item.filename = item.topicId + ".json";
+                return item;
+            }
             return null;
+        }
+
+        public void UpdateMediaForTopic(int topicId, string media)
+        {
+            Sql.ExecuteNonQuery("Topic_UpdateMedia",
+                new Dictionary<string, object>()
+                {
+                    {"topicId", topicId },
+                    {"media", media }
+                }
+            );
         }
     }
 }

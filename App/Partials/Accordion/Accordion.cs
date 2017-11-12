@@ -14,7 +14,7 @@ namespace Collector.Partials
             scaffold.Data["classNames"] = classNames;
             scaffold.Data["contents"] = contents;
             scaffold.Data["expanded"] = expanded == true ? "expanded" : "";
-            scaffold.Data["whiteBg"] = whiteBg == true ? "white" : "";
+            scaffold.Data["whitebg"] = whiteBg == true ? "white" : "";
 
             return scaffold.Render();
         }

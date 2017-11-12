@@ -1,61 +1,76 @@
-﻿.preview{width:100%;}
-   .accordion > .box.expanded{max-height:none !important;}
-   .topic-section .buttons{padding-top:10px; width:100%;}
-   .topic-section .buttons a.left{margin-right:10px;}
-   .topic-section .buttons a.right{margin-left:10px;}
-   .nopreview{width:100%; text-align:center; padding:20px; box-sizing:border-box;}
-   .nopreview .title{width:100%; padding:15px 80px; font-size:24px; color:#aaaaaa; box-sizing:border-box;}
-   .ispreview{width:100%;}
-   .ispreview .buttons{padding-top:30px;}
-   .topic-section .edit textarea{padding:15px; font-size:17px; width:100%; box-sizing:border-box; color:#111111; background-color:#fff; min-height:300px;}
-   .section-contents{font-size:17px; padding:0 10px;
-        h1{margin:0 0 20px 0; }
-        h2{margin:0 0 18px 0; }
-        h3{margin:0 0 16px 0; }
-        h4{margin:0 0 14px 0; }
-        h5{margin:0 0 12px 0; }
-        h6{margin:0 0 10px 0; }
-        ul{padding-left:20px; padding-bottom:7px;}
-        > ul{padding-bottom:16px;}
-        li{padding:2px 0 4px 4px; margin:0;}
-        p{padding-bottom:6px;}
-        > p{padding-bottom:16px;}
-        th{text-align:left; background-color:#a8e6e8; padding:4px 10px;}
-        td{text-align:left; padding:4px 10px; box-sizing:border-box; border-right:1px solid #ddd; border-bottom:1px solid #ddd;}
-        blockquote{background-color:#eee; padding:10px 20px 7px 20px;}
-   }
+﻿a.topic{
+    display:block; width:100%; box-sizing:border-box; padding:10px; margin:0 0 20px 0; border-bottom:1px solid #015e4a;
+    &:link, &:visited{color:#fff !important; text-decoration:none;}
+    &:hover, &:active{background-color:#00383c;}
+    .title{padding-bottom:4px; font-size:20px;}
+    .subject{color:#38e5a5;}
+    .subject a:link{color:#38e5a5;}
+    .subject a:hover{color:#38e5a5;}
+    .subject a:active{color:#38e5a5;}
+    .subject a:visited{color:#38e5a5;}
+    .subject .important{display:inline-block; padding-left:10px; color:#00f7ff;}
+    .desc{color:#777777;}
+}
 
-   .topic-media {
-       .dropzone{border:3px dashed #555; width:100%; padding: 20px 10px; height:75px; text-align:center; box-sizing:border-box;}
-       .drop-here{padding-top:7px; display:inline-block; color:#666;}
-       .uploading{animation: media-uploading 2s ease-in-out;}
-       .uploaded{animation: media-uploaded 2s ease-in-out;}
-       .buttons{overflow:hidden; padding-bottom:10px;}
-       .buttons a{margin-right:10px;}
-       .upload-list{width:100%; padding:10px;}
-       .btn-delete-selected-images{display:none;}
-   }
+.preview{width:100%;}
+.accordion > .box.expanded{max-height:none !important;}
+.topic-section .buttons{padding-top:10px; width:100%;}
+.topic-section .buttons a.left{margin-right:10px;}
+.topic-section .buttons a.right{margin-left:10px;}
+.nopreview{width:100%; text-align:center; padding:20px; box-sizing:border-box;}
+.nopreview .title{width:100%; padding:15px 80px; font-size:24px; color:#aaaaaa; box-sizing:border-box;}
+.ispreview{width:100%;}
+.ispreview .buttons{padding-top:30px;}
+textarea.txt-content{overflow-y:hidden !important; overflow:hidden !important;}
+.topic-section .edit textarea{padding:15px; font-size:17px; width:100%; box-sizing:border-box; color:#111111; background-color:#fff; min-height:300px;}
+.section-contents{font-size:17px; padding:0 10px;
+    h1{margin:0 0 20px 0; }
+    h2{margin:0 0 18px 0; }
+    h3{margin:0 0 16px 0; }
+    h4{margin:0 0 14px 0; }
+    h5{margin:0 0 12px 0; }
+    h6{margin:0 0 10px 0; }
+    ul{padding-left:20px; padding-bottom:7px;}
+    > ul{padding-bottom:16px;}
+    li{padding:2px 0 4px 4px; margin:0;}
+    p{padding-bottom:6px;}
+    > p{padding-bottom:16px;}
+    th{text-align:left; background-color:#a8e6e8; padding:4px 10px;}
+    td{text-align:left; padding:4px 10px; box-sizing:border-box; border-right:1px solid #ddd; border-bottom:1px solid #ddd;}
+    blockquote{background-color:#eee; padding:10px 20px 7px 20px;}
+}
 
-   .media-list{overflow-x:auto; overflow-y:hidden; white-space:nowrap; 
-        &.gallery{overflow-x:hidden; overflow-y:auto; max-height:360px;}
-        &.gallery .img{float:left; padding:0 11px 0 0 !important;}
-        .media-list .img{position:relative; display:inline-block; padding:0 14px 0 0; width:150px; height:120px; overflow:hidden; z-index:100;}
-        .chk{position:absolute; left:5px; top:5px; padding:4px 4px 1px 5px; background:#111111; z-index:101; display:none; border-radius:3px;}
-        .chk input[type="checkbox"]{margin:0px; cursor:pointer;}
-        .img:hover .chk{display:block;}
-        .chk.checked{display:block; background:#3EBB30;}
-   }
+.topic-media {
+    .dropzone{border:3px dashed #555; width:100%; padding: 20px 10px; height:75px; text-align:center; box-sizing:border-box;}
+    .drop-here{padding-top:7px; display:inline-block; color:#666;}
+    .uploading{animation: media-uploading 2s ease-in-out;}
+    .uploaded{animation: media-uploaded 2s ease-in-out;}
+    .buttons{overflow:hidden; padding-bottom:10px;}
+    .buttons a{margin-right:10px;}
+    .upload-list{width:100%; padding:10px;}
+    .btn-delete-selected-images{display:none;}
+}
 
-   .upload-list{padding-bottom:48px;}
+.media-list{overflow-x:auto; overflow-y:hidden; white-space:nowrap; 
+    &.gallery{overflow-x:hidden; overflow-y:auto; max-height:360px;}
+    &.gallery .img{float:left; padding:0 11px 0 0 !important;}
+    .img{position:relative; display:inline-block; padding:0 14px 0 0; width:150px; height:120px; overflow:hidden; z-index:100;}
+    .chk{position:absolute; left:5px; top:5px; padding:4px 4px 1px 5px; background:#111111; z-index:101; display:none; border-radius:3px;}
+    .chk input[type="checkbox"]{margin:0px; cursor:pointer;}
+    .img:hover .chk{display:block;}
+    .chk.checked{display:block; background:#3EBB30;}
+}
 
-   @keyframes media-uploading {
-      0%   { background-color: #086f46; }
-      50%  { background-color: #111111; }
-      100% { background-color: #086f46; }
-    }
+.upload-list{padding-bottom:48px;}
 
-   @keyframes media-uploaded {
-      0%   { background-color: #09701b; }
-      50%  { background-color: #111111; }
-      100% { background-color: #09701b; }
-    }
+@keyframes media-uploading {
+    0%   { background-color: #086f46; }
+    50%  { background-color: #111111; }
+    100% { background-color: #086f46; }
+}
+
+@keyframes media-uploaded {
+    0%   { background-color: #09701b; }
+    50%  { background-color: #111111; }
+    100% { background-color: #09701b; }
+}

@@ -190,6 +190,7 @@
     <Build Include="dbo\Stored Procedures\Users\Users_GetList.sql" />
     <Build Include="dbo\Stored Procedures\Users\Users_HasAdmin.sql" />
     <Build Include="dbo\Stored Procedures\Users\Users_HasPasswords.sql" />
+    <Build Include="dbo\Stored Procedures\Topics\Topic_UpdateMedia.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

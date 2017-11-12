@@ -5,16 +5,16 @@
 *.suo
 *.user
 *.sln.docstates
-content/articles
-content/searchterms
-content/neurons
-content/rss
-content/topics
-wwwroot/content
-wwwroot/images/screenshots
-wwwroot/images/workflow
-wwwroot/tests
-wwwroot/topics
+app/content/articles
+app/content/searchterms
+app/content/neurons
+app/content/rss
+app/content/topics
+app/wwwroot/content
+app/wwwroot/images/screenshots
+app/wwwroot/images/workflow
+app/wwwroot/tests
+app/wwwroot/topics
 *.bak
 
 # Build results

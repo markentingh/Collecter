@@ -16,6 +16,8 @@ namespace Collector.Query.Models
         public string hierarchy { get; set; } // nvarchar(50)
         public int subjectId { get; set; } // int
         public string subjectTitle { get; set; } // nvarchar(50)
+        public string path;
+        public string filename;
     }
 
     public class TopicSection

@@ -74,13 +74,13 @@ S.ajax = {
         }
 
         //add any CSS to the page
-        if (data.d.css != null && data.d.css != '') {
+        if (data.d.css && data.d.css != '') {
             S.util.css.add(data.d.cssid, data.d.css);
         }
 
         //finally, execute callback javascript
-        if (data.d.js != '' && data.d.js != null) {
-            var js = new Function(data.d.js);
+        if (data.d.javascript && data.d.javascript != '') {
+            var js = new Function(data.d.javascript);
             js();
         }
     },
@@ -840,8 +840,6 @@ S.window = {
 /*/////////////////////////////////////
 Initialize Collector Platform
 /////////////////////////////////////*/
-S.init = function () {
-}
 
 // Window Events ////////////////////////////////////////////////////////////////////////////////////
 $(document).on('ready', function () { S.events.doc.ready(); });
@@ -850,3 +848,6 @@ $(window).on('scroll', function () { S.events.doc.scroll.trigger(); });
 
 //raise event after document is loaded
 S.events.doc.load(); 
+
+//load all other extensions
+S.accordion.load();

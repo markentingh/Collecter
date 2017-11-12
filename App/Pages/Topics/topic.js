@@ -1,8 +1,10 @@
 ﻿S.topic = {
+    id:0,
     edited: false,
     dropzone: null,
 
-    load: function () {
+    load: function (id) {
+        S.topic.id = id;
         $('#btnaddsection').on('click', function () { S.topic.buttons.addSection('section', 0); });
         $('.btn-select-all-images').on('click', S.topic.media.toggleSelect);
         $('.btn-gallery-toggle').on('click', S.topic.media.toggleGallery);
@@ -10,31 +12,36 @@
 
         //init dropzone library
         Dropzone.autoDiscover = false;
+        var url = '/api/Topics/Upload?topicId=' + S.topic.id;
 
         S.topic.dropzone = new Dropzone(document.body, {
-            url: '/Topics/Upload/?topicId=' + S.topic.id,
+            url: url,
             previewsContainer: ".topic-media .upload-list",
             clickable: ".topic-media .btn-upload",
             paramName: 'file',
-            maxFilesize: 4,
+            autoProcessQueue: true,
             uploadMultiple: true,
-            thumbnailWidth:100,
-            thumbnailHeight: 80,
-            parallelUploads: 1
-                    , init: function () {
-                        this.on('sending', function () {
-                            $('.topic-media .dropzone').addClass('uploading');
-                        });
+            parallelUploads: 100,
+            maxFiles: 100,
+            thumbnailWidth:150,
+            thumbnailHeight: 125,
+            init: function () {
+                this.on('sending', function () {
+                    $('.topic-media .dropzone').addClass('uploading');
+                });
 
-                        this.on('complete', function (file) {
-                            this.removeFile(file);
-                        });
+                this.on('complete', function (file) {
+                    this.removeFile(file);
+                    
+                });
 
-                        this.on('queuecomplete', function () {
-                            S.ajax.post('/api/Topics/SaveUpload', {}, S.ajax.callback.inject);
-                            $('.topic-media .dropzone').addClass('uploaded').removeClass('uploading');
-                        });
-                    }
+                this.on('successmultiple', function () {
+                    S.ajax.post('Topics/SaveUpload', { topicId: S.topic.id }, function (d) {
+                        S.ajax.inject('.topic-media .media-list', JSON.parse(d));
+                    });
+                    $('.topic-media .dropzone').addClass('uploaded').removeClass('uploading');
+                });
+            }
         });
     },
 
@@ -62,20 +69,19 @@
         addSection: function (group, index) {
             var sections = $('.topic-section');
             var section = $('.' + group + index + ' .topic-section');
-            var count = sections.length;
             var element = '.' + group + (index + 1);
             var after = false;
             if (section[0] == sections[sections.length - 1]) { after = true; element = '.' + group + index; }
-            var options = { element: element, after: after, title: "New Section", content: "", index: index, count: count };
-            S.ajax.post('/api/Topics/NewTopicSection', options, function () {
-                S.ajax.callback.inject(arguments[0]);
+            var data = {topicId:S.topic.id, after: after, title: "New Section", content: "", index: index };
+            S.ajax.post('Topics/NewTopicSection', data, function (d) {
+                S.ajax.inject(element, d);
             });
         },
 
         removeSection: function (group, index) {
             if (confirm('Do you really want to delete this section?')) {
                 $('.section' + index).remove();
-                S.ajax.post('/api/Topics/RemoveSection', {index: index}, S.ajax.callback.inject);
+                S.ajax.post('Topics/RemoveSection', {index: index}, S.ajax.callback.inject);
             }
             
         },
@@ -104,7 +110,7 @@
                 //update title
                 $('.' + groupName + id + ' > .title').html(title);
             }
-            S.ajax.post('/api/Topics/SaveTopic', { sections: JSON.stringify(data) }, function () { });
+            S.ajax.post('Topics/SaveTopic', { sections: JSON.stringify(data) }, function () { });
         }
     },
 
@@ -181,4 +187,3 @@
     }
 };
 
-S.topic.load();

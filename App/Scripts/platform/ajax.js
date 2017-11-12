@@ -52,13 +52,13 @@
         }
 
         //add any CSS to the page
-        if (data.d.css != null && data.d.css != '') {
+        if (data.d.css && data.d.css != '') {
             S.util.css.add(data.d.cssid, data.d.css);
         }
 
         //finally, execute callback javascript
-        if (data.d.js != '' && data.d.js != null) {
-            var js = new Function(data.d.js);
+        if (data.d.javascript && data.d.javascript != '') {
+            var js = new Function(data.d.javascript);
             js();
         }
     },

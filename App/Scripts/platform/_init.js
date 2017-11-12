@@ -1,8 +1,6 @@
 ﻿/*/////////////////////////////////////
 Initialize Collector Platform
 /////////////////////////////////////*/
-S.init = function () {
-}
 
 // Window Events ////////////////////////////////////////////////////////////////////////////////////
 $(document).on('ready', function () { S.events.doc.ready(); });
@@ -11,3 +9,6 @@ $(window).on('scroll', function () { S.events.doc.scroll.trigger(); });
 
 //raise event after document is loaded
 S.events.doc.load(); 
+
+//load all other extensions
+S.accordion.load();
