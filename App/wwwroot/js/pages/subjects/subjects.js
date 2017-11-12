@@ -37,7 +37,7 @@ S.subjects = {
 
             S.ajax.post('/Subjects/AddSubjects', { subjects: subjects, hierarchy: hierarchy, loadUI:true },
                 function (data) {
-                    S.ajax.inject('.subjects-list', data);
+                    S.ajax.inject('.subjects-list > .inner', data);
                 });
 
             $('#txtsubjects').val('');
@@ -57,6 +57,8 @@ S.subjects = {
 
         selectSubject: function (id, pid, breadcrumb, speed, noload) {
             var subj = $('#subjects' + pid);
+            var subjlist = $('.subjects-list');
+            var inner = $('.subjects-list > .inner');
             var topic = $('#topicsfor' + pid);
             var subjbtn = $('#subject' + id);
             var title = subjbtn.find("a").html();
@@ -72,14 +74,32 @@ S.subjects = {
                 }
             }
 
+            //set height of subjects list
+            subjlist.css({ 'max-height': subjlist.height() });
+
+            //animate height of subjects list
+            subjlist.animate({ 'max-height': inner.height() - (boxPos.h - 50) }, speed);
+
+            //hide options box
             box.hide();
+
+            //resize parent subject section and hide sub-list
             boxlist.css({ 'max-height': boxPos.h });
             boxlist.animate({ 'max-height': 0 }, speed);
-            subj.find('.selection').animate({ 'max-height': 50 }, speed);
             subj.animate({ 'padding-bottom': 0 }, speed);
+            subj.find('.selection').animate({ 'max-height': 50 }, speed);
+
+            //set title of selected subject within parent subject section
+            subj.find('.title').removeClass('hide').css({ 'max-height': 40, 'padding': '11px 15px', 'height': '17px' });
             subj.find(".selection > .label").html(title);
+            subj.find('.title').animate({ 'max-height': 0, 'padding': '0 15px', 'height':0 }, speed, function () {
+                $(this).addClass('hide');
+            });
+
+            //set parent subject section as currently selected subject
             setTimeout(function () { subj.addClass('selected'); }, speed);
-            subj.find('.title').addClass('hide');
+
+            //set events for selected subject options
             subj.find('.add-from-subject').off().attr('onclick', 'S.subjects.buttons.addFromSubject("' + breadcrumb + '"); return false;');
             subj.find('.move-from-subject').off().attr('onclick', 'S.subjects.buttons.moveFromSubject("' + id + '", "' + pbread + '"); return false;');
             subj.find('.calc-related-words').off().attr('onclick', 'S.subjects.buttons.showRelatedWordsForm("' + id + '","' + pid + '")');
@@ -87,9 +107,12 @@ S.subjects = {
             subj.find('.topics').off().attr('onclick', 'S.subjects.buttons.viewTopics(' + id + ',' + pid + ')');
             topic.find('.topic-title').html('Topics for ' + breadcrumb.replace(/\>/g, ' &gt; '));
             subj.find('.goback').off().attr('onclick', 'S.subjects.buttons.cancelSelectSubject(\'' + pid + '\'); return false;');
+
+            //load subjects UI for select subject
             if (noload != true) {
                 S.ajax.post('/Subjects/LoadSubjectsUI', { parentId: id, getHierarchy: false, isFirst: false }, function (data) {
-                    $('.subjects-list').append(data.d.html);
+                    $('.subjects-list > .inner').append(data.d.html);
+                    $('.subjects-list').animate({ 'max-height': inner.height() });
                     S.subjects.load();
                 }, function () {
                     console.log(arguments);
@@ -106,13 +129,13 @@ S.subjects = {
             boxlist.animate({ 'max-height': 1000 }, speed);
             subj.find('.selection').animate({ 'max-height': 0 }, speed);
             subj.animate({ 'padding-top': 20, 'padding-bottom': 0 }, speed);
+            subj.find('.title').removeClass('hide').animate({ 'max-height': 40, 'padding': '11px 15px', 'height':'17px' }, speed);
             subj.nextAll().remove();
         },
 
         addFromSubject:function(breadcrumb){
-            $('#txtwordcategory').val(breadcrumb);
-            $('#lstwordtype').val('subject');
-            $('#txtselectedwords').val('');
+            $('#txthierarchy').val(breadcrumb);
+            $('#txtsubjects').val('');
             S.subjects.buttons.hideAll();
             S.subjects.buttons.showAddSubject();
         },
@@ -150,7 +173,7 @@ S.subjects = {
         saveMoveSubject: function () {
             var id = $('#txtmovesubjectid').val();
             var hier = $('#txtmovetohierarchy').val();
-            S.ajax.post('/Subjects/MoveSubject', { id: id, hierarchy: hier, element: '.subjects-list' }, function () { S.ajax.callback.inject(arguments[0]); });
+            S.ajax.post('/Subjects/MoveSubject', { id: id, hierarchy: hier, element: '.subjects-list > .inner' }, function () { S.ajax.callback.inject(arguments[0]); });
             S.subjects.buttons.hideMoveSubject();
         },
 

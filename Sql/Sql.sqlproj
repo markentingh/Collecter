@@ -154,8 +154,8 @@
     <Build Include="dbo\Stored Procedures\Subjects\Subject_GetByTitle.sql" />
     <Build Include="dbo\Stored Procedures\Subjects\Subject_Move.sql" />
     <Build Include="dbo\Stored Procedures\Subjects\Subjects_GetList.sql" />
-    <Build Include="dbo\Stored Procedures\Topics\Topic_Add.sql" />
-    <Build Include="dbo\Stored Procedures\Topics\Topic_AddByBreadcrumb.sql" />
+    <Build Include="dbo\Stored Procedures\Topics\Topic_Create.sql" />
+    <Build Include="dbo\Stored Procedures\Topics\Topic_CreateFromBreadcrumb.sql" />
     <Build Include="dbo\Stored Procedures\Topics\Topic_GetDetails.sql" />
     <Build Include="dbo\Stored Procedures\Topics\Topics_GetList.sql" />
     <Build Include="dbo\Stored Procedures\DestroyCollection.sql" />

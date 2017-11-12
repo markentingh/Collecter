@@ -5,6 +5,9 @@
 .form-movesubject {
   padding-bottom: 20px;
 }
+.subjects-list {
+  overflow: hidden;
+}
 .subjects {
   padding-top: 20px;
 }
@@ -31,6 +34,9 @@
   color: #ddd !important;
   text-decoration: underline;
 }
+.subjects > .title {
+  overflow-y: hidden;
+}
 .subjects .box-list {
   overflow: hidden;
 }
@@ -42,9 +48,8 @@
   float: left;
   font-size: 22px;
   color: #00d5b5;
-  height: 30px;
-  padding-top: 3px;
-  width: calc(-210%);
+  padding-top: 8px;
+  width: calc(100% - 320px);
 }
 .subjects .selection .option {
   float: right;
@@ -65,7 +70,7 @@
 .word {
   display: inline-block;
   position: relative;
-  width: calc(-30%);
+  width: calc(20% - 50px);
   padding: 7px;
   border: 2px solid #015b5b;
   background-color: #1f1f1f;
@@ -169,5 +174,5 @@
   width: 90px !important;
 }
 .form-addtopic .input {
-  width: calc(10%) !important;
+  width: calc(100% - 90px) !important;
 }

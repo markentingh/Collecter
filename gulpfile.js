@@ -62,12 +62,14 @@ paths.working = {
         ],
         themes: paths.css + 'themes/*.less',
         tapestry: paths.css + 'tapestry/tapestry.less',
+        utility: paths.css + 'utility/*.less'
     },
 
     css: {
         utility: paths.css + 'utility/**/*.css',
         themes: paths.themes + '**/*.css',
-        app: paths.app + '**/*.css'
+        app: paths.app + '**/*.css',
+        utility: paths.css + 'utility/*.css'
     },
 
     vendor: {
@@ -196,6 +198,13 @@ gulp.task('less:themes', function () {
     return p.pipe(gulp.dest(paths.compiled.css + 'themes', { overwrite: true }));
 });
 
+gulp.task('less:utility', function () {
+    var p = gulp.src(paths.working.less.utility)
+        .pipe(less());
+    if (prod == true) { p = p.pipe(cleancss({ compatibility: 'ie8' })); }
+    return p.pipe(gulp.dest(paths.compiled.css + 'themes', { overwrite: true }));
+});
+
 gulp.task('css:themes', function () {
     var p = gulp.src(paths.working.css.themes)
         .pipe(rename(function (path) {
@@ -220,15 +229,28 @@ gulp.task('css:app', function () {
     return p.pipe(gulp.dest(paths.compiled.app, { overwrite: true }));
 });
 
+gulp.task('css:utility', function () {
+    var p = gulp.src(paths.working.css.utility)
+        .pipe(rename(function (path) {
+            path.dirname = path.dirname.toLowerCase();
+            path.basename = path.basename.toLowerCase();
+            path.extname = path.extname.toLowerCase();
+        }));
+    if (prod == true) { p = p.pipe(cleancss({ compatibility: 'ie8' })); }
+    return p.pipe(gulp.dest(paths.compiled.css + 'utility', { overwrite: true }));
+});
+
 gulp.task('less', function () {
     gulp.start('less:platform');
     gulp.start('less:app');
     gulp.start('less:themes');
+    gulp.start('less:utility');
 });
 
 gulp.task('css', function () {
     gulp.start('css:themes');
     gulp.start('css:app');
+    gulp.start('css:utility');
 });
 
 //tasks for compiling vendor app dependencies /////////////////////////////////////////////////
@@ -278,6 +300,11 @@ gulp.task('watch', function () {
         paths.working.less.themes
     ], ['less:themes']);
 
+    //watch utility LESS
+    gulp.watch([
+        paths.working.less.utility
+    ], ['less:utility']);
+
     //watch app CSS
     var pathcss = paths.working.exclude.app.slice(0);
     for (var x = 0; x < pathcss.length; x++) {
@@ -290,5 +317,10 @@ gulp.task('watch', function () {
     gulp.watch([
         paths.working.css.themes
     ], ['css:themes']);
+
+    //watch utility CSS
+    gulp.watch([
+        paths.working.css.utility
+    ], ['css:utility']);
 
 });

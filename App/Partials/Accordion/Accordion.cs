@@ -1,0 +1,22 @@
+﻿
+namespace Collector.Partials
+{
+    public class Accordion : Page
+    {
+        public Accordion(Core CollectorCore) : base(CollectorCore)
+        {
+        }
+
+        public string Render(string title, string classNames, string contents, bool expanded = true, bool whiteBg = false)
+        {
+            var scaffold = new Scaffold(S, "/Partials/Accordion/accordion.html");
+            scaffold.Data["title"] = title;
+            scaffold.Data["classNames"] = classNames;
+            scaffold.Data["contents"] = contents;
+            scaffold.Data["expanded"] = expanded == true ? "expanded" : "";
+            scaffold.Data["whiteBg"] = whiteBg == true ? "white" : "";
+
+            return scaffold.Render();
+        }
+    }
+}

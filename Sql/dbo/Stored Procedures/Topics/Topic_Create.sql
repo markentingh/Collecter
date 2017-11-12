@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[Topic_Add]
+﻿CREATE PROCEDURE [dbo].[Topic_Create]
 	@subjectId int = 0,
 	@geolat float = 0,
 	@geolong float = 0,
@@ -13,3 +13,5 @@ AS
 	VALUES (@topicId, @geolat, @geolong, @title, @location, GETDATE(), @summary, @media)
 
 	INSERT INTO TopicSubjects (topicId, subjectId) VALUES (@topicId, @subjectId)
+
+	SELECT @topicId AS topicId

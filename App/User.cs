@@ -76,6 +76,10 @@ namespace Collector
         public void LogOut()
         {
             Load();
+            userId = 0;
+            email = "";
+            name = "";
+            photo = false;
             saveSession = true;
             S.Session.Remove("user");
         }

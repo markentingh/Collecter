@@ -3,6 +3,7 @@
 .form-addsubjects,
 .form-movesubject{padding-bottom:20px;}
 
+.subjects-list{overflow:hidden;}
 .subjects{padding-top:20px;}
 .subject {float:left; width:25%; text-align:left; padding:15px 25px; font-size:22px; box-sizing:border-box;}
     
@@ -11,16 +12,17 @@
 .subject a:hover { color: #ddd !important; text-decoration:underline;}
 .subject a:active { color: #ddd !important; text-decoration:underline;}
 
+.subjects > .title{overflow-y:hidden;}
 .subjects .box-list{overflow:hidden;}
 .subjects .selection{max-height:0; overflow:hidden;}
-.subjects .selection .label{float:left; font-size: 22px; color:#00d5b5; height:30px; padding-top:3px; width:calc(100% - 310px);}
+.subjects .selection .label{float:left; font-size: 22px; color:#00d5b5; padding-top:8px; width:~"calc(100% - 320px)";}
 .subjects .selection .option{float:right; padding-left:15px;}
 .subjects .selection .goback{cursor:pointer;}
 .subjects .selection .goback:hover{text-decoration:underline}
 .subjects.selected .box:hover{background-color:#4A2649; }
 .subjects.selected .box:hover .hover-only{display:block;}
 
-.word{display:inline-block; position:relative; width:calc(20% - 50px); padding:7px; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px; overflow:hidden; cursor:pointer;}
+.word{display:inline-block; position:relative; width:~"calc(20% - 50px)"; padding:7px; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px; overflow:hidden; cursor:pointer;}
 .word.common{background-color:#271313; border-color:#63100d;}
 .word.database{background-color:#270919; border-color:#870149;}
 .word.symbols{background-color:#271a13; border-color:#813b00;}
@@ -45,4 +47,4 @@
 
 .form-addtopic {padding-bottom: 20px;}
 .form-addtopic .label{width:90px !important;}
-.form-addtopic .input{width:calc(100% - 90px) !important;}
+.form-addtopic .input{width:~"calc(100% - 90px) !important";}

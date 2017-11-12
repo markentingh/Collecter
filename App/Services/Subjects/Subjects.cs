@@ -79,7 +79,7 @@ namespace Collector.Services
                 if (details == null) { inject.html = Error(); return inject; }
 
                 //set up subject
-                var crumb = details.breadcrumb.Replace(">", "&gt;");
+                var crumb = details.breadcrumb.Replace(">", " &gt; ");
                 if(details.parentId == 0) { crumb = details.title; } else { crumb += " &gt; " + details.title; }
                 indexes = details.hierarchy.Split('>');
                 list.Data["parentId"] = details.subjectId.ToString();
@@ -118,7 +118,7 @@ namespace Collector.Services
                 if(breadcrumbs == "") { breadcrumbs = subject.title; }
                 item.Data["subjectId"] = subject.subjectId.ToString();
                 item.Data["parentId"] = subject.parentId.ToString();
-                item.Data["breadcrumbs"] = subject.breadcrumb.Replace(">", "&gt;");
+                item.Data["breadcrumbs"] = subject.breadcrumb.Replace(">", "&gt;") + (subject.breadcrumb != "" ? "&gt;" : "") + subject.title;
                 item.Data["title"] = S.Util.Str.Capitalize(subject.title);
                 html.Append(item.Render() + "\n");
             });

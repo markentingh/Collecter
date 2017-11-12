@@ -61,15 +61,25 @@ namespace Collector.Partials
             //load custom menu
             if(menuItems.Count > 0)
             {
-                scaffold.Data["menu"] = "<div class=\"row\"><ul class=\"menu left\">" +
+                scaffold.Data["menu"] = "<ul class=\"tabs right\">" +
                     string.Join("", 
                         menuItems.Select<menuItem, string>((menuItem item) =>
                         {
-                            return "<li><a href=\"" + (item.url != "" ? item.url : "javascript:") + "\"" +
+                            return "<li class=\"pad-left\"><a href=\"" + (item.url != "" ? item.url : "javascript:") + "\"" +
                                     (item.id != "" ? " id=\"" + item.id + "\"" : "") +
                                     " class=\"button blue\">" + item.title + "</a></li>";
                         }).ToArray()
-                    ) + "</ul></div>";
+                    ) + "</ul>";
+            }
+
+            //show log in or log out link
+            if(S.User.userId > 0)
+            {
+                scaffold.Data["logout"] = "1";
+            }
+            else
+            {
+                scaffold.Data["login"] = "1";
             }
 
             //include dashboard resources

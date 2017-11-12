@@ -8,7 +8,7 @@ AS
 	ORDER BY score DESC, hierarchy ASC
 	
 	/* get info for topic */
-	SELECT t.*, s.breadcrumb, s.hierarchy, s.title AS subjectTitle FROM Topics t 
-	LEFT JOIN Subjects s ON s.subjectId=@subjectId
+	SELECT t.*, s.breadcrumb, s.hierarchy, s.title AS subjectTitle, @subjectId AS subjectId
+	FROM Topics t LEFT JOIN Subjects s ON s.subjectId=@subjectId
 	WHERE t.topicId=@topicId
 RETURN 0
