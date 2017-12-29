@@ -1,0 +1,3 @@
+[submodule "App/Core"]
+	path = App/Core
+	url = http://github.com/datasilk/Core
