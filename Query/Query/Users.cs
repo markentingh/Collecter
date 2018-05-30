@@ -2,12 +2,8 @@
 
 namespace Collector.Query
 {
-    public class Users : QuerySql
+    public class Users : global::Query.QuerySql
     {
-        public Users(string connectionString) : base(connectionString)
-        {
-        }
-
         public int CreateUser(Models.User user)
         {
             return Sql.ExecuteScalar<int>(
@@ -34,6 +30,29 @@ namespace Collector.Query
             );
             if (list.Count > 0) { return list[0]; }
             return null;
+        }
+
+        public Models.User AuthenticateUser(string token)
+        {
+            var list = Sql.Populate<Models.User>("User_AuthenticateByToken",
+                new Dictionary<string, object>()
+                {
+                    {"token", token }
+                }
+            );
+            if (list.Count > 0) { return list[0]; }
+            return null;
+        }
+
+        public string CreateAuthToken(int userId, int expireDays = 30)
+        {
+            return Sql.ExecuteScalar<string>("User_CreateAuthToken",
+                new Dictionary<string, object>()
+                {
+                    {"userId", userId },
+                    {"expireDays", expireDays }
+                }
+            );
         }
 
         public void UpdatePassword(int userId, string password)

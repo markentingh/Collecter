@@ -1,32 +1,13 @@
 {
+  "assembly": "Collector",
   "environment": "development",
-  "port": "80",
-  "data": {
+  "port": "7000",
+  "sql": {
     "active": "SqlServerTrusted",
-    "SqlServerTrusted": "server=.\\SQL2016; database=Collector; Trusted_Connection=true"
+    "SqlServerTrusted": "server=.\\SQL2017; database=Collector; Trusted_Connection=true"
   },
-
   "encryption": {
+    "salt": "?",
     "bcrypt_work_factor": "10"
-  },
-
-  "analyzer": {
-    "version": "0.111"
-  },
-
-  "website": {
-    "title": "Collector",
-
-    "dashboard": {
-      "analyzer": true,
-      "articles": true,
-      "downloads": true,
-      "feeds": true,
-      "neurons": true,
-      "search": true,
-      "subjects": true,
-      "topics": true
-    }
-
   }
 }

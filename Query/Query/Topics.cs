@@ -3,12 +3,8 @@ using System.Collections.Generic;
 
 namespace Collector.Query
 {
-    public class Topics : QuerySql
+    public class Topics : global::Query.QuerySql
     {
-        public Topics(string connectionString) : base(connectionString)
-        {
-        }
-
         public int CreateTopic(int subjectId, double geolat, double geolong, string title, string location, string summary, string media)
         {
             return Sql.ExecuteScalar<int>(

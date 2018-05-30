@@ -1,0 +1,17 @@
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Collector.Pages
+{
+    public class Logout : Page
+    {
+        public Logout(HttpContext context) : base(context)
+        {
+        }
+
+        public override string Render(string[] path, string body = "", object metadata = null)
+        {
+            User.LogOut();
+            return Redirect("/login");
+        }
+    }
+}

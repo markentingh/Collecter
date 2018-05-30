@@ -1,0 +1,32 @@
+﻿<div class="interface">
+    <header>
+        <div class="content">
+            <div class="logo">{{title}}</div>
+            <nav>
+                <ul>
+                    {{login}}<li><a href="/login" class="dark">Log in</a></li>{{/login}}
+                    {{logout}}<li><a href="/logout" class="dark">Log Out</a></li>{{/logout}}
+                </ul>
+            </nav>
+            <nav>
+                <ul>
+                    <li><a href="/search">Search</a></li>
+                    <li><a href="/subjects">Subjects</a></li>
+                    <li><a href="/articles">Articles</a></li>
+                    <li><a href="/feeds">Feeds</a></li>
+                    <li><a href="/downloads">Downloads</a></li>
+                    <li><a href="/analyzer">Analyzer</a></li>
+                    <li><a href="/neurons">Neurons</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <div class="content dashboard">
+        <div class="row pad-bottom">{{menu}}</div>
+        <div class="row pad-bottom">
+            <div class="section">
+                {{content}}
+            </div>
+        </div>
+    </div>
+</div>

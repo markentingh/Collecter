@@ -2,12 +2,8 @@
 
 namespace Collector.Query
 {
-    public class Subjects : QuerySql
+    public class Subjects : global::Query.QuerySql
     {
-        public Subjects(string connectionString) : base(connectionString)
-        {
-        }
-
         public int CreateSubject(int parentId, int grammartype, int score, string title, string breadcrumb)
         {
             return Sql.ExecuteScalar<int>(

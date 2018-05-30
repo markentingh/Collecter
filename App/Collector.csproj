@@ -6,17 +6,15 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Core" Version="1.4.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.0" />
-	<PackageReference Include="ImageSharp" Version="1.0.0-*" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,10 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Query\Query.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
 </Project>

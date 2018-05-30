@@ -1,5 +1,27 @@
 'use strict';
 
+// fetch command line arguments
+const arg = (argList => {
+    let arg = {}, a, opt, thisOpt, curOpt;
+    for (a = 0; a < argList.length; a++) {
+        thisOpt = argList[a].trim();
+        opt = thisOpt.replace(/^\-+/, '');
+        if (opt === thisOpt) {
+            // argument value
+            if (curOpt) arg[curOpt] = opt;
+            curOpt = null;
+        }
+        else {
+            // argument name
+            curOpt = opt;
+            arg[curOpt] = true;
+        }
+    }
+
+    return arg;
+
+})(process.argv);
+
 //includes
 var gulp = require('gulp'),
     concat = require('gulp-concat'),
@@ -9,8 +31,9 @@ var gulp = require('gulp'),
     less = require('gulp-less'),
     rename = require('gulp-rename'),
     merge = require('merge-stream'),
+    changed = require('gulp-changed'),
     config = require('./App/config.json');
-    
+
 //get config variables from config.json
 var environment = config.environment;
 
@@ -26,10 +49,6 @@ var paths = {
     scripts: './App/Scripts/',
     css: './App/CSS/',
     app: './App/',
-    themes: './App/Content/themes/',
-    vendor: {
-        root: './App/Vendor/**/'
-    },
     webroot: './App/wwwroot/',
 };
 
@@ -37,26 +56,35 @@ var paths = {
 paths.working = {
     js: {
         platform: [
-            // paths.webroot + 'js/selector.js',
-            paths.webroot + '/js/core/jquery-2.1.4.min.js',
+            paths.scripts + 'selector/selector.js',
             paths.scripts + 'utility/velocity.min.js',
-            paths.scripts + 'core/platform.js',
-            paths.scripts + 'platform/[^_]*.js',
-            paths.scripts + 'platform/_init.js'
+            paths.scripts + 'platform/_super.js', // <---- Datasilk Core Js: S object
+            paths.scripts + 'platform/ajax.js', //   <---- Optional platform features
+            paths.scripts + 'platform/loader.js',
+            paths.scripts + 'platform/message.js',
+            //paths.scripts + 'platform/polyfill.js',
+            paths.scripts + 'platform/popup.js',
+            paths.scripts + 'platform/scaffold.js',
+            paths.scripts + 'platform/svg.js',
+            paths.scripts + 'platform/util.js',
+            //paths.scripts + 'platform/util.color.js',
+            //paths.scripts + 'platform/util.file.js',
+            //paths.scripts + 'platform/validate.js',
+            paths.scripts + 'platform/window.js', //  <---- End of Optional features
+            paths.scripts + 'utility/launchpad/launchpad.js'
         ],
         app: paths.app + '**/*.js',
         utility: [
-            paths.scripts + 'utility/*.js',
-            paths.scripts + 'utility/**/*.js'
-        ],
-        core: [
-            '!' + paths.scripts + 'core/platform.js',
-            paths.scripts + 'core/*.js'
+            paths.scripts + 'utility/*.*',
+            paths.scripts + 'utility/**/*.*'
         ]
     },
 
-    less:{
-        platform: paths.css + 'platform.less',
+    less: {
+        platform: [
+            paths.css + 'platform.less'
+        ],
+        website: paths.css + 'website.less',
         app: [
             paths.app + '**/*.less'
         ],
@@ -68,14 +96,7 @@ paths.working = {
     css: {
         utility: paths.css + 'utility/**/*.css',
         themes: paths.themes + '**/*.css',
-        app: paths.app + '**/*.css',
-        utility: paths.css + 'utility/*.css'
-    },
-
-    vendor: {
-        js: paths.vendor.root + 'js/*.js',
-        css: paths.vendor.root + 'css/*.css',
-        less: paths.vendor.root + 'css/app.less'
+        app: paths.app + '**/*.css'
     },
 
     exclude: {
@@ -84,7 +105,8 @@ paths.working = {
             '!' + paths.app + 'Content/**/',
             '!' + paths.app + 'CSS/**/',
             '!' + paths.app + 'CSS/',
-            '!' + paths.app + 'Scripts/**/'
+            '!' + paths.app + 'Scripts/**/',
+            '!' + paths.app + 'obj/**/*'
         ]
     }
 };
@@ -113,58 +135,24 @@ gulp.task('js:app', function () {
     return p.pipe(gulp.dest(paths.compiled.js, { overwrite: true }));
 });
 
-gulp.task('js:platform', ['js:selector'], function () {
+gulp.task('js:platform', function () {
     var p = gulp.src(paths.working.js.platform, { base: '.' })
         .pipe(concat(paths.compiled.platform));
     if (prod == true) { p = p.pipe(uglify()); }
     return p.pipe(gulp.dest('.', { overwrite: true }));
 });
 
-gulp.task('js:selector', function () {
-    var p = gulp.src(paths.scripts + 'selector/selector.js', { base: '.' })
-            .pipe(concat('selector.js'));
-    if (prod == true) { 
-        //p = p
-        //    .pipe(compile({
-        //        compilationLevel: 'SIMPLE',
-        //        warningLevel: 'VERBOSE',
-        //        jsOutputFile: 'selector.js',  // outputs single file
-        //        createSourceMap: true
-        //    }));
-        p = p.pipe(uglify());
-    }
-    return p.pipe(gulp.dest(paths.compiled.js, { overwrite: true }));
-});
-
 gulp.task('js:utility', function () {
-    var p = gulp.src(paths.working.js.utility)
-        .pipe(rename(function (path) {
-            path.dirname = path.dirname.toLowerCase();
-            path.basename = path.basename.toLowerCase();
-            path.extname = path.extname.toLowerCase();
-        }));
-
-    if (prod == true) { p = p.pipe(uglify()); }
-    return p.pipe(gulp.dest(paths.compiled.js + 'utility', { overwrite: true }));
-});
-
-gulp.task('js:core', function () {
-    var p = gulp.src(paths.working.js.core)
-        .pipe(rename(function (path) {
-            path.dirname = path.dirname.toLowerCase();
-            path.basename = path.basename.toLowerCase();
-            path.extname = path.extname.toLowerCase();
-        }));
-
-    if (prod == true) { p = p.pipe(uglify()); }
-    return p.pipe(gulp.dest(paths.compiled.js + 'core', { overwrite: true }));
+    //check file changes & replace changed files in destination
+    return gulp.src(paths.working.js.utility)
+        .pipe(changed(paths.compiled.js + 'utility'))
+        .pipe(gulp.dest(paths.compiled.js + 'utility'));
 });
 
 gulp.task('js', function () {
     gulp.start('js:app');
     gulp.start('js:platform');
     gulp.start('js:utility');
-    gulp.start('js:core');
 });
 
 //tasks for compiling LESS & CSS /////////////////////////////////////////////////////////////////////
@@ -180,12 +168,19 @@ gulp.task('less:app', function () {
             path.basename = path.basename.toLowerCase();
             path.extname = path.extname.toLowerCase();
         }));
-    if(prod == true){ p = p.pipe(cleancss({compatibility: 'ie8'})); }
+    if (prod == true) { p = p.pipe(cleancss({ compatibility: 'ie8' })); }
     return p.pipe(gulp.dest(paths.compiled.app, { overwrite: true }));
 });
 
 gulp.task('less:platform', function () {
     var p = gulp.src(paths.working.less.platform)
+        .pipe(less());
+    if (prod == true) { p = p.pipe(cleancss({ compatibility: 'ie8' })); }
+    return p.pipe(gulp.dest(paths.compiled.css, { overwrite: true }));
+});
+
+gulp.task('less:website', function () {
+    var p = gulp.src(paths.working.less.website)
         .pipe(less());
     if (prod == true) { p = p.pipe(cleancss({ compatibility: 'ie8' })); }
     return p.pipe(gulp.dest(paths.compiled.css, { overwrite: true }));
@@ -253,23 +248,34 @@ gulp.task('css', function () {
     gulp.start('css:utility');
 });
 
-//tasks for compiling vendor app dependencies /////////////////////////////////////////////////
-
-
-//default task
+//default task /////////////////////////////////////////////////////////////////////
 gulp.task('default', ['js', 'less', 'css']);
 
-//watch task
+//specific file task /////////////////////////////////////////////////////////////////////
+gulp.task('file', function () {
+    var path = (arg.path || arg.p).toLowerCase();
+    var pathlist = path.split('/');
+    var file = pathlist[pathlist.length - 1];
+    var dir = pathlist.join('/').replace(file, '');
+    var ext = file.split('.', 2)[1];
+    var outputDir = paths.webroot + dir;
+    console.log(path);
+    console.log(file);
+    console.log(ext);
+    console.log(outputDir);
+    var p = gulp.src('./App/' + path, { base: './App/' + dir });
+    if (prod == true && ext == 'js') { p = p.pipe(uglify()); }
+    if (ext == 'less') { p = p.pipe(less()); }
+    if (prod == true && (ext == 'css' || ext == 'less')) {
+        p = p.pipe(cleancss({ compatibility: 'ie8' }));
+    }
+    return p.pipe(gulp.dest(outputDir, { overwrite: true }));
+});
+
+//watch task /////////////////////////////////////////////////////////////////////
 gulp.task('watch', function () {
     //watch platform JS
-    gulp.watch([
-        paths.scripts + 'selector/selector.js',
-        paths.scripts + 'core/platform.js',
-        paths.scripts + 'platform/*.js'
-    ], ['js:platform']);
-
-    //watch core JS
-    gulp.watch(paths.working.js.core, ['js:core']);
+    gulp.watch(paths.working.js.platform, ['js:platform']);
 
     //watch app JS
     var pathjs = paths.working.exclude.app.slice(0);
@@ -278,6 +284,9 @@ gulp.task('watch', function () {
     }
     pathjs.unshift(paths.working.js.app);
     gulp.watch(pathjs, ['js:app']);
+
+    //watch utility JS
+    gulp.watch(paths.working.js.utility, ['js:utility']);
 
     //watch app LESS
     var pathless = paths.working.exclude.app.slice(0);
@@ -298,7 +307,7 @@ gulp.task('watch', function () {
     //watch themes LESS
     gulp.watch([
         paths.working.less.themes
-    ], ['less:themes']);
+    ], ['less:themes', 'less:platform']);
 
     //watch utility LESS
     gulp.watch([
@@ -322,5 +331,4 @@ gulp.task('watch', function () {
     gulp.watch([
         paths.working.css.utility
     ], ['css:utility']);
-
 });

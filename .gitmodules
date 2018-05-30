@@ -1,3 +1,12 @@
 [submodule "App/Core"]
 	path = App/Core
-	url = http://github.com/datasilk/Core
+	url = https://github.com/datasilk/Core
+[submodule "App/Scripts/platform"]
+	path = App/Scripts/platform
+	url = https://github.com/datasilk/corejs
+[submodule "App/Scripts/selector"]
+	path = App/Scripts/selector
+	url = https://github.com/websilk/selector
+[submodule "Query/Core"]
+	path = Query/Core
+	url = https://github.com/datasilk/corequery

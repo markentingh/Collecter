@@ -1,135 +1,49 @@
 ﻿using System;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.Http;
 
-namespace Collector
+namespace Datasilk
 {
+    public partial class User
+    {
+        public string language = "en";
 
-    public class User
-    { 
-
-        [JsonIgnore]
-        public Core S;
-        [JsonIgnore]
-        private string salt = "";
-        
-        public int userId = 0;
-        public short userType = 0;
-        public string visitorId = "";
-        public string email = "";
-        public string name = "";
-        public bool photo = false;
-        public bool isBot = false;
-        public bool useAjax = true;
-        public bool isMobile = false;
-        public bool isTablet = false;
-        public DateTime datecreated;
-        public int lastSubjectId = 0;
-        public string lastSubjectName = "";
-
-        [JsonIgnore]
-        public bool saveSession = false;
-
-        public void Init(Core CollectorCore)
+        public void SetLanguage(string language)
         {
-            S = CollectorCore;
-
-            //generate visitor id
-            if (visitorId == "" || visitorId == null) { visitorId = S.Util.Str.CreateID(); saveSession = true; }
+            this.language = language;
+            changed = true;
         }
 
-        public virtual void Load()
-        { 
-        }
-
-        /// <summary>
-        /// Authenticate user credentials and log into user account
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="pass"></param>
-        /// <returns></returns>
-        public bool LogIn(string email, string password)
+        partial void VendorInit()
         {
-            Load();
-            //var sqlUser = new SqlQueries.User(S);
-            var query = new Query.Users(S.SqlConnectionString);
-            var encrypted = query.GetPassword(email);
-            if(!DecryptPassword(email, password, encrypted)) { return false; }
+            //check for persistant cookie
+            if (userId <= 0 && context.Request.Cookies.ContainsKey("authId"))
             {
-                //password verified by Bcrypt
-                var user = query.AuthenticateUser(email, encrypted);
+                var query = new Collector.Query.Users();
+                var user = query.AuthenticateUser(context.Request.Cookies["authId"]);
                 if (user != null)
                 {
-                    userId = user.userId;
-                    userType = user.usertype;
-                    this.email = email;
-                    photo = user.photo;
-                    name = user.name;
-                    datecreated = user.datecreated;
-                    saveSession = true;
-                    return true;
+                    //persistant cookie was valid, log in
+                    LogIn(user.userId, user.email, user.name, user.datecreated, "", 1, user.photo);
                 }
             }
-            
-            return false;
         }
 
-        public void LogOut()
+        partial void VendorLogIn()
         {
-            Load();
-            userId = 0;
-            email = "";
-            name = "";
-            photo = false;
-            saveSession = true;
-            S.Session.Remove("user");
-        }
-
-        public string EncryptPassword(string email, string password)
-        {
-            var bCrypt = new BCrypt.Net.BCrypt();
-            return BCrypt.Net.BCrypt.HashPassword(email + salt + password, S.Server.bcrypt_workfactor);
-
-        }
-
-        public bool DecryptPassword(string email, string password, string encrypted)
-        {
-            return BCrypt.Net.BCrypt.Verify(email + salt + password, encrypted);
-        }
-        
-        public bool UpdateAdminPassword(string password)
-        {
-            Load();
-            var update = false; //security check
-            var emailAddr = email;
-            var queryUser = new Query.Users(S.SqlConnectionString);
-            var adminId = 1;
-            if (S.Server.resetPass == true)
+            //create persistant cookie
+            var query = new Collector.Query.Users();
+            var auth = query.CreateAuthToken(userId);
+            var options = new CookieOptions()
             {
-                //securely change admin password
-                //get admin email address from database
-                emailAddr = queryUser.GetEmail(adminId);
-                if (emailAddr != "" && emailAddr != null) { update = true; }
-            }
-            if(update == true)
-            {
-                queryUser.UpdatePassword(adminId, EncryptPassword(emailAddr, password));
-                S.Server.resetPass = false;
-            }
-            return false;
+                Expires = DateTime.Now.AddMonths(1)
+            };
+
+            context.Response.Cookies.Append("authId", auth, options);
         }
 
-        public void CreateAdminAccount(string name, string email, string password)
+        partial void VendorLogOut()
         {
-            Load();
-            var queryUser = new Query.Users(S.SqlConnectionString);
-            queryUser.CreateUser(new Query.Models.User()
-            {
-                name=name,
-                email=email,
-                password = EncryptPassword(email, password)
-            });
-            S.Server.hasAdmin = true;
-            S.Server.resetPass = false;
+            context.Response.Cookies.Delete("authId");
         }
     }
 }
