@@ -12,18 +12,23 @@
     <link type="text/css" rel="stylesheet" href="{{colors-css}}" id="colorsCss" />
     <link rel="icon" type="image/ico" href="{{favicon}}" />
 </head>
-<body class="box"> 
-    <div class="svgicons">{{svg-icons}}</div>
-    <div class="bg for-popup hide"></div>
+<body class="box">
+
+    <div class="bg for-popup hide" onclick="S.popup.bg(event)"></div>
     {{body}}
-    <script type="text/html" id="template_popup_close">
-        <div class="col icon btn-close">
-            <a href="javascript:">
-                <svg viewBox="0 0 32 32">
-                    <use xlink:href="#icon-close" x="0" y="0" width="32" height="32"></use>
-                </svg>
-            </a>
+    <div class="svgicons">{{svg-icons}}</div>
+    <script type="text/html" id="template_popup">
+        <div class="row pad-bottom box">
+            <div class="col title"><h6>#title#</h6></div>
+            <div class="col icon small btn-close">
+                <a href="javascript:">
+                    <svg viewBox="0 0 32 32">
+                        <use xlink:href="#icon-close" x="0" y="0" width="32" height="32"></use>
+                    </svg>
+                </a>
+            </div>
         </div>
+        #body#
     </script>
     <script src="/js/platform.js"></script>
     {{scripts}}

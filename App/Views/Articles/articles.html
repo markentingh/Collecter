@@ -1,0 +1,19 @@
+﻿<div class="accordion articles feed{{feed-id}}">
+    <div class="title {{expanded}}">Articles</div>
+    <div class="box {{expanded}}">
+        <div class="contents">{{contents}}</div>
+    </div>
+</div>
+
+<script type="text/html" id="template_addarticle">
+    <form>
+        <div class="row field">URL Address</div>
+        <div class="row input">
+            <input type="text" id="newarticle_url" style="width:100%" />
+        </div>
+        <div class="row text-right pad-top">
+            <button type="button" class="button cancel">Cancel</button>
+            <button type="submit" class="button apply">Add Article</button>
+        </div>
+    </form>
+</script>

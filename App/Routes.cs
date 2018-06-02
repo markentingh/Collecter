@@ -10,7 +10,9 @@ public class Routes : Datasilk.Routes
         {
             case "login": return new Collector.Pages.Login(context);
             case "subjects": return new Collector.Pages.Subjects(context);
-            default: return new Collector.Pages.Home(context);
+            case "articles": return new Collector.Pages.Articles(context);
+            case "article": return new Collector.Pages.Article(context);
+            default: return null;
         }
     }
 
