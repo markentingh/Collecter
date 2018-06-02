@@ -11,31 +11,9 @@
 .subjects {
   padding-top: 20px;
 }
-.subject {
-  float: left;
-  width: 25%;
-  text-align: left;
-  padding: 15px 25px;
-  font-size: 22px;
-  box-sizing: border-box;
-}
-.subject a:link {
-  color: #ddd !important;
-  text-decoration: none;
-}
-.subject a:visited {
-  color: #ddd !important;
-}
-.subject a:hover {
-  color: #ddd !important;
-  text-decoration: underline;
-}
-.subject a:active {
-  color: #ddd !important;
-  text-decoration: underline;
-}
 .subjects > .title {
   overflow-y: hidden;
+  height: 18px;
 }
 .subjects .box-list {
   overflow: hidden;
@@ -64,8 +42,50 @@
 .subjects.selected .box:hover {
   background-color: #4A2649;
 }
+.subjects.selected .box:hover .option {
+  opacity: 1;
+}
 .subjects.selected .box:hover .hover-only {
   display: block;
+}
+.subjects.selected .box .option {
+  opacity: 0.25;
+}
+.subjects .option-box {
+  display: none;
+  position: relative;
+  padding: 10px 0;
+  background-color: #222;
+  padding: 25px;
+  margin-top: 20px;
+}
+.subjects .opiton-box .arrow {
+  position: absolute;
+  right: 30px;
+  top: -15px;
+}
+.subject {
+  float: left;
+  width: 25%;
+  text-align: left;
+  padding: 15px 25px;
+  font-size: 22px;
+  box-sizing: border-box;
+}
+.subject a:link {
+  color: #ddd !important;
+  text-decoration: none;
+}
+.subject a:visited {
+  color: #ddd !important;
+}
+.subject a:hover {
+  color: #ddd !important;
+  text-decoration: underline;
+}
+.subject a:active {
+  color: #ddd !important;
+  text-decoration: underline;
 }
 .word {
   display: inline-block;
@@ -124,55 +144,4 @@
 }
 .word:hover .count {
   display: block;
-}
-.subjects .option-box {
-  display: none;
-  position: relative;
-  padding: 10px 0;
-  background-color: #222;
-  padding: 25px;
-  margin-top: 20px;
-}
-.subjects .opiton-box .arrow {
-  position: absolute;
-  right: 30px;
-  top: -15px;
-}
-.topics-box {
-  display: none;
-  position: relative;
-  padding: 10px 0;
-  background-color: #222;
-  padding: 25px;
-  margin: 20px 0;
-}
-.topics-box .arrow {
-  position: absolute;
-  right: 30px;
-  top: -15px;
-}
-.topics-box > .title {
-  white-space: nowrap;
-  color: #eee;
-}
-.topics-box > .title > .option {
-  float: right;
-  white-space: nowrap;
-  padding-bottom: 15px;
-}
-.topics-box .topic .title {
-  color: #eee;
-  padding-top: 19px;
-}
-.topics-box .topic:hover {
-  background-color: #4A2649;
-}
-.form-addtopic {
-  padding-bottom: 20px;
-}
-.form-addtopic .label {
-  width: 90px !important;
-}
-.form-addtopic .input {
-  width: calc(100% - 90px) !important;
 }

@@ -19,46 +19,18 @@
 
 <div class="form-movesubject" style="display:none;">
     <div class="row">
-        <div class="col field">Move Subject ID:</div>
-        <div class="col input">
-            <input type="text" id="txtmovesubjectid" style="width:40px;"/>
+        <input type="hidden" id="txtmovesubjectid" style="width:40px;" />
+        <div class="row field">Move <span class="movesubjectname"></span> to New Subject Hierarchy</div>
+        <div class="row">
+            <div class="col input" style="width:calc(100% - 210px);">
+                <input type="text" id="txtmovetohierarchy" style="width:100%;" placeholder="Science > Biology > Neurology" />
+            </div>
+            <div class="col input"><div class="button apply" id="btnmovesubject">Move Subject</div></div>
+            <div class="col input"><div class="button cancel" id="btncancelmovesubject">Cancel</div></div>
         </div>
-        <div class="col field">to hierarchy:</div>
-        <div class="col input" style="width:calc(100% - 540px);">
-            <input type="text" id="txtmovetohierarchy" style="width:100%;" />
-        </div>
-
-        <div class="col"><div class="button apply" id="btnmovesubject">Move Subject</div></div>
-        <div class="col"><div class="button cancel" id="btncancelmovesubject">Cancel</div></div>
+        
     </div>
 </div>
-
-<div class="form-addtopic" style="display:none;">
-    <div class="row field">
-        <div class="col label">Title: </div>
-        <div class="col input text-topictitle">
-            <input type="text" id="txtaddtopictitle" />
-        </div>
-    </div>
-    <div class="row field">
-        <div class="col label">Description: </div>
-        <div class="col input text-topicdesc">
-            <textarea id="txtaddtopicdesc"></textarea>
-        </div>
-    </div>
-    <div class="row field">
-        <div class="col label">Subject: </div>
-        <div class="col input text-topicsubject">
-            <input type="text" id="txtaddtopicsubject" />
-        </div>
-    </div>
-    <div class="row space">
-        <div class="col btn right"><div class="button green" id="btnsaveaddtopic">Add Topic</div></div>
-        <div class="col btn right"><div class="button" id="btncanceladdtopic">Cancel</div></div>
-    </div>
-</div>
-
-
 
 <div class="subjects-list">
     <div class="inner">

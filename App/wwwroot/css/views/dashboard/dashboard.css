@@ -142,10 +142,6 @@ span.info {
   background-color: #e0e0e0;
   padding: 10px 20px 8px 20px;
 }
-/* topic contents */
-.topic-section img {
-  max-width: 100%;
-}
 /* dashboard */
 .dashboard {
   padding-top: 15px;

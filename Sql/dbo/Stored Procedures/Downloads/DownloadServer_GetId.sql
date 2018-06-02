@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [dbo].[DownloadServer_GetId]
-	@host nvarchar(MAX)
+	@settings nvarchar(MAX)
 AS
-	SELECT serverId FROM DownloadServers WHERE settings=@host
+	SELECT serverId FROM DownloadServers WHERE settings=@settings
 RETURN 0

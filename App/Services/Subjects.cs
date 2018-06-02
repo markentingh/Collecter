@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace Collector.Services
 {
@@ -12,21 +13,35 @@ namespace Collector.Services
         {
             if (!CheckSecurity()) { return AccessDenied(); }
             var subjectList = subjects.Replace(" , ", ",").Replace(", ", ",").Replace(" ,", ",").Split(',');
-            var hier = hierarchy.Replace(" > ", ">").Replace("> ", ">").Replace(" >", ">").Split('>');
+            var hier = hierarchy != "" ? hierarchy.Replace(" > ", ">").Replace("> ", ">").Replace(" >", ">").Split('>') : new string[] { };
             try
             {
-                Common.Platform.Subjects.AddSubjects(subjectList, hier);
+                Common.Platform.Subjects.Add(subjectList, hier);
+
+                var query = new Query.Subjects();
+                var parentId = 0;
+                if (hierarchy.Length > 0)
+                {
+                    var parentHier = hier.ToList();
+                    var parentTitle = hier[hier.Length - 1];
+                    parentHier.RemoveAt(parentHier.Count - 1);
+                    var parentBreadcrumb = string.Join(">", parentHier);
+                    var subject = query.GetSubjectByTitle(parentTitle, parentBreadcrumb);
+                    parentId = subject.subjectId;
+                }
+
+
+                return Inject(Common.Platform.Subjects.RenderList(parentId, false, hier.Length > 0));
             }
             catch (ServiceErrorException ex)
             {
                 return Error(ex.Message);
             }
-            return Success();
         }
-
+        
         public string LoadSubjectsUI(int parentId = 0, bool getHierarchy = false, bool isFirst = false)
         {
-            return Inject(Common.Platform.Subjects.RenderSubjectsList(parentId, getHierarchy, isFirst));
+            return Inject(Common.Platform.Subjects.RenderList(parentId, getHierarchy, isFirst));
         }
     }
 }

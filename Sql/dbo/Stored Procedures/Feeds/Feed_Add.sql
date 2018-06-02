@@ -6,4 +6,4 @@
 AS
 	DECLARE @feedId int = NEXT VALUE FOR SequenceFeeds
 	INSERT INTO Feeds (feedId, title, url, checkIntervals, filter) VALUES (@feedId, @title, @url, @checkIntervals, @filter)
-RETURN 0
+	SELECT @feedId

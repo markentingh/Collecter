@@ -53,6 +53,31 @@
     <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
     <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
   <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
@@ -68,13 +93,11 @@
     <Folder Include="dbo\Stored Procedures\Feeds" />
     <Folder Include="dbo\Stored Procedures\Words" />
     <Folder Include="dbo\Stored Procedures\Subjects" />
-    <Folder Include="dbo\Stored Procedures\Topics" />
     <Folder Include="dbo\Tables" />
     <Folder Include="dbo\Tables\Articles" />
     <Folder Include="dbo\Tables\Downloads" />
     <Folder Include="dbo\Tables\Feeds" />
     <Folder Include="dbo\Tables\Vars" />
-    <Folder Include="dbo\Tables\Topics" />
     <Folder Include="dbo\Tables\Statistics" />
     <Folder Include="dbo\Stored Procedures\Users" />
     <Folder Include="dbo\Stored Procedures\Utility" />
@@ -155,10 +178,6 @@
     <Build Include="dbo\Stored Procedures\Subjects\Subject_GetByTitle.sql" />
     <Build Include="dbo\Stored Procedures\Subjects\Subject_Move.sql" />
     <Build Include="dbo\Stored Procedures\Subjects\Subjects_GetList.sql" />
-    <Build Include="dbo\Stored Procedures\Topics\Topic_Create.sql" />
-    <Build Include="dbo\Stored Procedures\Topics\Topic_CreateFromBreadcrumb.sql" />
-    <Build Include="dbo\Stored Procedures\Topics\Topic_GetDetails.sql" />
-    <Build Include="dbo\Stored Procedures\Topics\Topics_GetList.sql" />
     <Build Include="dbo\Stored Procedures\DestroyCollection.sql" />
     <Build Include="dbo\Tables\Articles\ArticleBugs.sql" />
     <Build Include="dbo\Tables\Articles\ArticleDates.sql" />
@@ -171,9 +190,6 @@
     <Build Include="dbo\Tables\Feeds\Feeds.sql" />
     <Build Include="dbo\Tables\Feeds\FeedsCheckedLog.sql" />
     <Build Include="dbo\Tables\Vars\VarDates.sql" />
-    <Build Include="dbo\Tables\Topics\TopicArticles.sql" />
-    <Build Include="dbo\Tables\Topics\Topics.sql" />
-    <Build Include="dbo\Tables\Topics\TopicSubjects.sql" />
     <Build Include="dbo\Tables\Statistics\StatisticsProjectResearchers.sql" />
     <Build Include="dbo\Tables\Statistics\StatisticsProjects.sql" />
     <Build Include="dbo\Tables\Statistics\StatisticsResearchers.sql" />
@@ -191,7 +207,6 @@
     <Build Include="dbo\Stored Procedures\Users\Users_GetList.sql" />
     <Build Include="dbo\Stored Procedures\Users\Users_HasAdmin.sql" />
     <Build Include="dbo\Stored Procedures\Users\Users_HasPasswords.sql" />
-    <Build Include="dbo\Stored Procedures\Topics\Topic_UpdateMedia.sql" />
     <Build Include="dbo\Stored Procedures\Users\User_AuthenticateByToken.sql" />
     <Build Include="dbo\Stored Procedures\Users\User_CreateAuthToken.sql" />
     <Build Include="dbo\Tables\User_AuthTokens.sql" />

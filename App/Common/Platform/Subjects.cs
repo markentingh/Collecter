@@ -7,7 +7,7 @@ namespace Collector.Common.Platform
 {
     public static class Subjects
     {
-        public static int[] AddSubjects(string[] subjects, string[] hierarchy)
+        public static int[] Add(string[] subjects, string[] hierarchy)
         {
             var query = new Query.Subjects();
             var parentId = 0;
@@ -33,10 +33,17 @@ namespace Collector.Common.Platform
             return ids.ToArray();
         }
 
-        public static Service.Response RenderSubjectsList(int parentId = 0, bool getHierarchy = false, bool isFirst = false)
+        public static void Move(int subjectId, int newParentId)
+        {
+            var query = new Query.Subjects();
+            query.Move(subjectId, newParentId);
+        }
+
+        #region "Render"
+        public static Datasilk.Response RenderList(int parentId = 0, bool getHierarchy = false, bool isFirst = false)
         {
             var server = Server.Instance;
-            var inject = new Service.Response() { };
+            var inject = new Datasilk.Response() { };
 
             var html = new StringBuilder();
             var query = new Query.Subjects();
@@ -56,7 +63,6 @@ namespace Collector.Common.Platform
                 if (details.parentId == 0) { crumb = details.title; } else { crumb += " &gt; " + details.title; }
                 indexes = details.hierarchy.Split('>');
                 list.Data["parentId"] = details.subjectId.ToString();
-                list.Data["no-words"] = details.haswords == false ? "1" : "";
                 list.Data["breadcrumbs"] = crumb;
 
                 if (indexes.Length >= 1 && getHierarchy == true)
@@ -70,10 +76,10 @@ namespace Collector.Common.Platform
                         var hier2 = hier.Split('>');
                         pId = hier2[hier2.Length - 1];
                     }
-                    inject.javascript = "S.subjects.buttons.selectSubject(" + parentId + "," + pId + ",'" + bread + "', 0, true);";
+                    inject.javascript = "S.subjects.select.show(" + parentId + "," + pId + ",'" + bread + "', 0, true);";
 
                     //get inject object for parent within hierarchy
-                    var parent = RenderSubjectsList(indexes.Length > 1 ? int.Parse(indexes[indexes.Length - 2]) : 0, indexes.Length > 1 ? true : false);
+                    var parent = RenderList(indexes.Length > 1 ? int.Parse(indexes[indexes.Length - 2]) : 0, indexes.Length > 1 ? true : false);
                     html.Append(parent.html + "\n");
                     inject.javascript += parent.javascript;
                 }
@@ -101,5 +107,6 @@ namespace Collector.Common.Platform
             inject.html = list.Render();
             return inject;
         }
+        #endregion
     }
 }

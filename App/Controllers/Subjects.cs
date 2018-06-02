@@ -19,7 +19,7 @@ namespace Collector.Pages
             //load subjects list
             try
             {
-                var inject = Common.Platform.Subjects.RenderSubjectsList();
+                var inject = Common.Platform.Subjects.RenderList();
                 scaffold.Data["content"] = inject.html;
                 if(inject.javascript != "")
                 {
@@ -31,6 +31,10 @@ namespace Collector.Pages
                 scaffold.Data["no-subjects"] = "1";
             }
 
+            //add CSS & JS files
+            AddCSS("/css/views/subjects/subjects.css");
+            AddScript("/js/views/subjects/subjects.js");
+            
             //finally, render page
             return base.Render(path, scaffold.Render(), metadata);
         }
