@@ -29,13 +29,14 @@ namespace WebBrowser
             }
 
             //Create Browser Instance
-            browser = new ChromiumWebBrowser();
-
-            //Browser Initialized Event
-            browser.BrowserInitialized += delegate
+            var settings = new BrowserSettings()
             {
-                browser.Load(url);
+                ImageLoading = CefState.Disabled,
+                Plugins = CefState.Disabled,
+                WebGl = CefState.Disabled,
+                WindowlessFrameRate = 5
             };
+            browser = new ChromiumWebBrowser(url, settings);
 
             //Frame Load End Event
             browser.FrameLoadEnd += delegate

@@ -17,7 +17,7 @@ namespace Collector.Common.Platform
         public static Models.Article.AnalyzedArticle Download(string url)
         {
             var path = Server.Instance.Cache["browserPath"].ToString();
-            var html = Utility.Shell.Execute(path, Server.MapPath("-url " + url), path);
+            var html = Utility.Shell.Execute(path, Server.MapPath("-url " + url), path.Replace("WebBrowser.exe",""));
             var article = new Models.Article.AnalyzedArticle(url, html);
             return article;
         }
