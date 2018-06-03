@@ -9,7 +9,6 @@ namespace Collector.Common.Platform
     {
         public static int[] Add(string[] subjects, string[] hierarchy)
         {
-            var query = new Query.Subjects();
             var parentId = 0;
             var breadcrumb = "";
             var parentTitle = "";
@@ -21,22 +20,21 @@ namespace Collector.Common.Platform
                 parentHier.RemoveAt(parentHier.Count - 1);
                 parentBreadcrumb = string.Join(">", parentHier);
                 breadcrumb = string.Join(">", hierarchy);
-                var subject = query.GetSubjectByTitle(parentTitle, parentBreadcrumb);
+                var subject = Query.Subjects.GetSubjectByTitle(parentTitle, parentBreadcrumb);
                 parentId = subject.subjectId;
             }
 
             var ids = new List<int>();
             foreach (string subject in subjects)
             {
-                ids.Add(query.CreateSubject(parentId, 0, 0, subject, breadcrumb));
+                ids.Add(Query.Subjects.CreateSubject(parentId, 0, 0, subject, breadcrumb));
             }
             return ids.ToArray();
         }
 
         public static void Move(int subjectId, int newParentId)
         {
-            var query = new Query.Subjects();
-            query.Move(subjectId, newParentId);
+            Query.Subjects.Move(subjectId, newParentId);
         }
 
         #region "Render"
@@ -46,14 +44,13 @@ namespace Collector.Common.Platform
             var inject = new Datasilk.Response() { };
 
             var html = new StringBuilder();
-            var query = new Query.Subjects();
             var list = new Scaffold("/Views/Subjects/subject.html", server.Scaffold);
             var item = new Scaffold("/Views/Subjects/list-item.html", server.Scaffold);
-            var subjects = query.GetList("", parentId);
+            var subjects = Query.Subjects.GetList("", parentId);
             var indexes = new string[] { };
             if (parentId > 0)
             {
-                var details = query.GetSubjectById(parentId);
+                var details = Query.Subjects.GetSubjectById(parentId);
                 if (details == null) {
                     throw new ServiceErrorException("Parent subject does not exist");
                 }

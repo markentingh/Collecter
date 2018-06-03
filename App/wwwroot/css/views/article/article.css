@@ -1,0 +1,21 @@
+.analyze {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+}
+.analyze .button {
+  font-size: 22px;
+  padding: 15px 30px;
+}
+.analyze-article > .box {
+  overflow-y: auto;
+}
+.analyze-article .console {
+  font-family: monospace;
+  font-size: 17px;
+  color: #75bad4;
+}
+.analyze-article .cli-line {
+  line-height: 1.25;
+  padding: 0 0 5px 0;
+}

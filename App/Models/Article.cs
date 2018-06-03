@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Utility.DOM;
+using Utility.Strings;
 
 namespace Collector.Models.Article
 {
@@ -39,6 +40,45 @@ namespace Collector.Models.Article
         public AnalyzedAuthor author;
         public DateTime publishDate;
         public List<AnalyzedPerson> people;
+        
+        public AnalyzedArticle(string url = "", string html = "")
+        {
+            author = new AnalyzedAuthor();
+            body = new List<int>();
+            bodyElements = new List<DomElement>();
+            domain = Web.GetDomainName(url);
+            elements = new List<DomElement>();
+            fiction = true;
+            feedId = 0;
+            id = 0;
+            importance = 0;
+            parentIndexes = new List<AnalyzedParentIndex>();
+            people = new List<AnalyzedPerson>();
+            phrases = new List<AnalyzedPhrase>();
+            publishDate = DateTime.Now;
+            rawHtml = html;
+            relevance = 0;
+            importance = 0;
+            sentences = new List<string>();
+            subjects = new List<ArticleSubject>();
+            tagNames = new List<AnalyzedTag>();
+            tags = new AnalyzedTags();
+            tags.anchorLinks = new List<int>();
+            tags.headers = new List<int>();
+            tags.text = new List<AnalyzedText>();
+            title = "";
+            pageTitle = "";
+            summary = "";
+            totalImportantWords = 0;
+            totalParagraphs = 0;
+            totalSentences = 0;
+            totalWords = 0;
+            this.url = url != "" ? Web.CleanUrl(url, true, false, Rules.commonQueryKeys) : "";
+            words = new List<AnalyzedWord>();
+            yearEnd = 0;
+            yearStart = 0;
+            years = new List<int>();
+        }
     }
 
     public struct AnalyzedTags

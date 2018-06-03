@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace Collector.Query
+namespace Query
 {
-    public class Subjects : global::Query.QuerySql
+    public static class Subjects
     {
-        public int CreateSubject(int parentId, int grammartype, int score, string title, string breadcrumb)
+        public static int CreateSubject(int parentId, int grammartype, int score, string title, string breadcrumb)
         {
             return Sql.ExecuteScalar<int>(
                 "Subject_Create",
@@ -19,7 +19,7 @@ namespace Collector.Query
             );
         }
 
-        public Models.Subject GetSubjectById(int subjectId)
+        public static Models.Subject GetSubjectById(int subjectId)
         {
             var list = Sql.Populate<Models.Subject>(
                 "Subject_GetById",
@@ -32,7 +32,7 @@ namespace Collector.Query
             return null;
         }
 
-        public Models.Subject GetSubjectByTitle(string title, string breadcrumb)
+        public static Models.Subject GetSubjectByTitle(string title, string breadcrumb)
         {
             var list = Sql.Populate<Models.Subject>(
                 "Subject_GetByTitle",
@@ -46,7 +46,7 @@ namespace Collector.Query
             return null;
         }
 
-        public void Move(int subjectId, int newParentId)
+        public static void Move(int subjectId, int newParentId)
         {
             Sql.ExecuteNonQuery("Subject_Move",
                 new Dictionary<string, object>()
@@ -57,7 +57,7 @@ namespace Collector.Query
             );
         }
 
-        public List<Models.Subject> GetList(string subjectIds, int parentId = -1)
+        public static List<Models.Subject> GetList(string subjectIds, int parentId = -1)
         {
             return Sql.Populate<Models.Subject>(
                 "Subjects_GetList",

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Collector.Query
+namespace Query
 {
-    public class Feeds : global::Query.QuerySql
+    public static class Feeds
     {
-        public int Add(string title, string url, string filter = "", int checkIntervals = 720)
+        public static int Add(string title, string url, string filter = "", int checkIntervals = 720)
         {
             return Sql.ExecuteScalar<int>("Feed_Add",
                 new Dictionary<string, object>()
@@ -18,7 +18,7 @@ namespace Collector.Query
             );
         }
 
-        public void LogCheckedLinks(int feedId, int count)
+        public static void LogCheckedLinks(int feedId, int count)
         {
             Sql.ExecuteNonQuery("FeedCheckedLog_Add",
                 new Dictionary<string, object>()
@@ -29,7 +29,7 @@ namespace Collector.Query
             );
         }
 
-        public void UpdateLastChecked(int feedId)
+        public static void UpdateLastChecked(int feedId)
         {
             Sql.ExecuteNonQuery("Feed_Checked",
                 new Dictionary<string, object>()
@@ -39,12 +39,12 @@ namespace Collector.Query
             );
         }
 
-        public List<Models.Feed> GetList()
+        public static List<Models.Feed> GetList()
         {
             return Sql.Populate<Models.Feed>("Feeds_GetList");
         }
 
-        public List<Models.FeedWithLog> GetListWithLogs(int days = 7, DateTime? dateStart = null)
+        public static List<Models.FeedWithLog> GetListWithLogs(int days = 7, DateTime? dateStart = null)
         {
             return Sql.Populate<Models.FeedWithLog>("Feeds_GetListWithLogs",
                 new Dictionary<string, object>()

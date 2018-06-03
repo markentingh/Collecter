@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 
-namespace Collector.Query
+namespace Query
 {
-    public class Downloads : global::Query.QuerySql
+    public static class Downloads
     {
         public enum QueueStatus
         {
             queued = 0,
 
         }
-        public void UpdateQueueItem(int queueId, QueueStatus status)
+
+        public static void UpdateQueueItem(int queueId, QueueStatus status)
         {
             Sql.ExecuteNonQuery("Download_Update",
                 new Dictionary<string, object>()
@@ -20,7 +21,7 @@ namespace Collector.Query
             );
         }
 
-        public void AddToDownloadDistribution(int serverId)
+        public static void AddToDownloadDistribution(int serverId)
         {
             Sql.ExecuteNonQuery("DownloadDistribution_Add",
                 new Dictionary<string, object>()
@@ -30,7 +31,7 @@ namespace Collector.Query
             );
         }
 
-        public List<Models.DownloadQueue> GetDistributionList(int serverId)
+        public static List<Models.DownloadQueue> GetDistributionList(int serverId)
         {
             return Sql.Populate<Models.DownloadQueue>(
                 "DownloadDistributions_GetList",
@@ -41,7 +42,7 @@ namespace Collector.Query
             );
         }
 
-        public bool AddQueueItem(string url, int feedId = 0)
+        public static bool AddQueueItem(string url, int feedId = 0)
         {
             return Sql.ExecuteScalar<int>("DownloadQueue_Add",
                 new Dictionary<string, object>()
@@ -52,12 +53,12 @@ namespace Collector.Query
             ) == 1;
         }
 
-        public int CheckQueue()
+        public static int CheckQueue()
         {
             return Sql.ExecuteScalar<int>("DownloadQueue_Check");
         }
 
-        public int Count()
+        public static int Count()
         {
             return Sql.ExecuteScalar<int>("Downloads_GetCount");
         }
@@ -70,7 +71,7 @@ namespace Collector.Query
             Docker = 4
         }
 
-        public int AddServer(ServerType type, string title, string settings = "")
+        public static int AddServer(ServerType type, string title, string settings = "")
         {
             return Sql.ExecuteScalar<int>("DownloadServer_Add",
                 new Dictionary<string, object>()
@@ -82,7 +83,7 @@ namespace Collector.Query
             );
         }
 
-        public bool ServerExists(string settings)
+        public static bool ServerExists(string settings)
         {
             return Sql.ExecuteScalar<int>("DownloadServer_Exists",
                 new Dictionary<string, object>()
@@ -92,7 +93,7 @@ namespace Collector.Query
             ) == 1;
         }
 
-        public bool GetServerId(string settings)
+        public static bool GetServerId(string settings)
         {
             return Sql.ExecuteScalar<int>("DownloadServer_GetId",
                 new Dictionary<string, object>()
@@ -102,7 +103,7 @@ namespace Collector.Query
             ) == 1;
         }
 
-        public List<Models.DownloadServer> GetServerList()
+        public static List<Models.DownloadServer> GetServerList()
         {
             return Sql.Populate<Models.DownloadServer>("DownloadServers_GetList");
         }

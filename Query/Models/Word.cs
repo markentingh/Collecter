@@ -1,4 +1,4 @@
-﻿namespace Collector.Query.Models
+﻿namespace Query.Models
 {
     public class Word
     {

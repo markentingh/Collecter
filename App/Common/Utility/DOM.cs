@@ -6,15 +6,14 @@ namespace Utility.DOM
     public class DomElement
     {
         public Parser Parser;
-        public bool isSelfClosing;
-        public bool isClosing;
+        public bool isSelfClosing; // <tag/>
+        public bool isClosing; // </tag>
         public int index;
         public int parent;
         public int[] hierarchyIndexes;
         public string tagName;
         public string text;
         public string id;
-        public string[] hierarchyTags;
         public List<string> className;
         public List<int> childIndexes;
         public Dictionary<string, string> attribute;
@@ -137,7 +136,6 @@ namespace Utility.DOM
         public void Parse(string htm)
         {
             if (htm.Length <= 3) { return; }
-            //redevelop DOM parser, use single character traversal with character search
             bool isClosingTag = false;
             bool isSelfClosing = false;
             bool isInScript = false;
@@ -513,7 +511,6 @@ namespace Utility.DOM
 
             domTag.isSelfClosing = isSelfClosing;
             domTag.isClosing = isClosingTag;
-            domTag.hierarchyTags = hierarchy.ToArray();
             domTag.hierarchyIndexes = hierarchyIndexes.ToArray();
             Elements.Add(domTag);
             return parentElement;

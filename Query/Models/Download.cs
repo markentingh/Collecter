@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Collector.Query.Models
+namespace Query.Models
 {
     public class DownloadQueue
     {

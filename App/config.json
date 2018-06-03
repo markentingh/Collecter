@@ -9,5 +9,8 @@
   "encryption": {
     "salt": "?",
     "bcrypt_work_factor": "10"
+  },
+  "browser": {
+    "path":  "../WebBrowser/bin/x64/Debug/WebBrowser.exe"
   }
 }

@@ -17,8 +17,7 @@ namespace Collector.Services
             try
             {
                 Common.Platform.Subjects.Add(subjectList, hier);
-
-                var query = new Query.Subjects();
+                
                 var parentId = 0;
                 if (hierarchy.Length > 0)
                 {
@@ -26,7 +25,7 @@ namespace Collector.Services
                     var parentTitle = hier[hier.Length - 1];
                     parentHier.RemoveAt(parentHier.Count - 1);
                     var parentBreadcrumb = string.Join(">", parentHier);
-                    var subject = query.GetSubjectByTitle(parentTitle, parentBreadcrumb);
+                    var subject = Query.Subjects.GetSubjectByTitle(parentTitle, parentBreadcrumb);
                     parentId = subject.subjectId;
                 }
 

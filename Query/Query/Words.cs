@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Collector.Query
+namespace Query
 {
-    public class Words: global::Query.QuerySql
+    public static class Words
     {
         public enum GrammarType
         {
@@ -14,7 +14,7 @@ namespace Collector.Query
 
         }
 
-        public void Add(string word, int subjectId, GrammarType grammarType, int score = 1)
+        public static void Add(string word, int subjectId, GrammarType grammarType, int score = 1)
         {
             Sql.ExecuteNonQuery("Word_Add",
                 new Dictionary<string, object>()
@@ -27,7 +27,7 @@ namespace Collector.Query
             );
         }
 
-        public List<Models.Word> GetList(string words)
+        public static List<Models.Word> GetList(string words)
         {
             return Sql.Populate<Models.Word>("Words_GetList",
                 new Dictionary<string, object>()

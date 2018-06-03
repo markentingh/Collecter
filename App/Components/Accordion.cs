@@ -1,9 +1,9 @@
 ﻿
 namespace Collector.Components
 {
-    public class Accordion
+    public static class Accordion
     {
-        public string Render(string title, string classNames, string contents, bool expanded = true, bool whiteBg = false)
+        public static string Render(string title, string classNames, string contents, bool expanded = true, bool whiteBg = false)
         {
             var scaffold = new Scaffold("/Views/Components/Accordion/accordion.html", Server.Instance.Scaffold);
             scaffold.Data["title"] = title;
