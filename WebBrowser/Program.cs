@@ -42,7 +42,7 @@ namespace WebBrowser
             browser.FrameLoadEnd += delegate
             {
                 Task task = Task.Run(() => {
-                    object js = EvaluateScript("document.getElementsByTagName('html')[0].innerHTML;");
+                    object js = EvaluateScript("document.getElementsByTagName('html')[0].outerHTML;");
                     html = js.ToString();
                 });
             };

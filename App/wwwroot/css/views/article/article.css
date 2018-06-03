@@ -19,3 +19,6 @@
   line-height: 1.25;
   padding: 0 0 5px 0;
 }
+.raw-html > .box {
+  overflow: auto !important;
+}

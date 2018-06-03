@@ -18,60 +18,89 @@ namespace Collector.SignalR.Hubs
             await Clients.Caller.SendAsync("update", 1, "Collector v" + Server.Instance.Version);
 
             // Get Article HTML Content //////////////////////////////////////////////////////////////////////////////////////////////////
-            var download = true;
-            AnalyzedArticle article = new AnalyzedArticle();
-            var articleInfo = Query.Articles.GetByUrl(url);
-
-            if (articleInfo != null)
+            try
             {
-                //article exists in database
-                await Clients.Caller.SendAsync("update", 1, "Article exists in database");
+                var download = true;
+                AnalyzedArticle article = new AnalyzedArticle();
+                var articleInfo = Query.Articles.GetByUrl(url);
 
-                if (File.Exists(Server.MapPath(Article.ContentPath(url) + articleInfo.articleId + ".html"))){
+                if (articleInfo != null)
+                {
+                    //article exists in database
+                    await Clients.Caller.SendAsync("update", 1, "Article exists in database");
+                }
+                else
+                {
+                    //create article in database
+                    articleInfo = Article.Add(url);
+                }
+                var filepath = Server.MapPath(Article.ContentPath(url));
+                var filename = articleInfo.articleId + ".html";
+                
+                if (File.Exists(filepath + filename))
+                {
                     //open cached content from disk
+                    article.rawHtml = File.ReadAllText(filepath + filename);
                     await Clients.Caller.SendAsync("update", 2, "Loaded cached content for URL: " + url);
                     download = false;
                 }
-            }
+                else if (!Directory.Exists(filepath))
+                {
+                    //create folder for content
+                    Directory.CreateDirectory(filepath);
+                }
 
-            if(download == true)
+                if (download == true)
+                {
+                    //download article from the internet
+                    await Clients.Caller.SendAsync("update", 1, "Downloading...");
+                    article = Article.Download(url);
+                    File.WriteAllText(filepath + filename, article.rawHtml);
+                    await Clients.Caller.SendAsync("update", 1, "Downloaded URL (" + (Encoding.Unicode.GetByteCount(article.rawHtml) / 1024).ToString("c").Replace("$", "").Replace(".00", "") + " KB" + "): " + article.url);
+                }
+
+                if (article.rawHtml.Length == 0)
+                {
+                    //article HTML is empty
+                    await Clients.Caller.SendAsync("update", 1, "URL returned an empty response");
+                    return;
+                }
+
+                // Parse DOM Tree ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                article.elements = (new Parser(article.rawHtml)).Elements;
+                article.rawHtml = Common.Analyze.Html.FormatHtml(article.elements).ToString();
+
+                //send accordion with raw HTML to client
+                var html = Components.Accordion.Render("Raw HTML", "raw-html", "<pre>" + article.rawHtml.Replace("&", "&amp;").Replace("<", "&lt;") + "</pre>", false);
+                await Clients.Caller.SendAsync("append", html);
+                await Clients.Caller.SendAsync("update", 1, "Parsed DOM tree (" + article.elements.Count + " elements)");
+
+                // Collect Content from DOM Tree /////////////////////////////////////////////////////////////////////////////////////////////
+                var tagNames = new List<AnalyzedTag>();
+                var parentIndexes = new List<AnalyzedParentIndex>();
+
+                //sort elements into different lists
+                var textElements = new List<DomElement>();
+                var anchorElements = new List<DomElement>();
+                var headerElements = new List<DomElement>();
+                var imgElements = new List<DomElement>();
+
+                Common.Analyze.Html.GetContent(ref article, ref tagNames, ref textElements, ref anchorElements, ref headerElements, ref imgElements, ref parentIndexes);
+                await Clients.Caller.SendAsync("update", 1, "Collected content from DOM tree (" + textElements.Count + " text elements, " + headerElements.Count + " header elements)");
+
+                // Sort Content /////////////////////////////////////////////////////////////////////////////////////////////
+                textElements = textElements.OrderBy(p => p.text.Length * -1).ToList();
+                headerElements = headerElements.OrderBy(p => p.tagName).ToList();
+                parentIndexes = parentIndexes.OrderBy(p => (p.elements.Count * p.textLength) * -1).ToList();
+                article.tagNames = tagNames.OrderBy(t => t.count * -1).ToList();
+            }
+            catch(Exception ex)
             {
-                //download article from the internet
-                await Clients.Caller.SendAsync("update", 1, "Downloading...");
-                article = Article.Download(url);
-                await Clients.Caller.SendAsync("update", 1, "Downloaded URL (" + (Encoding.Unicode.GetByteCount(article.rawHtml) / 1024).ToString("c").Replace("$", "").Replace(".00", "") + " KB" + "): " + article.url);
+                await Clients.Caller.SendAsync("update", 1, "Error: " + ex.Message + "<br/>" + ex.StackTrace.Replace("\n", "<br/>"));
             }
+            
 
-            if(article.rawHtml.Length == 0)
-            {
-                //article HTML is empty
-                await Clients.Caller.SendAsync("update", 1, "URL returned an empty response");
-                return;
-            }
 
-            // Parse DOM Tree ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            article.elements = (new Parser(article.rawHtml)).Elements;
-            article.rawHtml = Common.Analyze.Html.FormatHtml(article.elements).ToString();
-            await Clients.Caller.SendAsync("update", 1, "Parsed DOM tree (" + article.elements.Count + " elements)");
-
-            // Collect Content from DOM Tree /////////////////////////////////////////////////////////////////////////////////////////////
-            var tagNames = new List<AnalyzedTag>();
-            var parentIndexes = new List<AnalyzedParentIndex>();
-
-            //sort elements into different lists
-            var textElements = new List<DomElement>();
-            var anchorElements = new List<DomElement>();
-            var headerElements = new List<DomElement>();
-            var imgElements = new List<DomElement>();
-
-            Common.Analyze.Html.GetContent(ref article, ref tagNames, ref textElements, ref anchorElements, ref headerElements, ref imgElements, ref parentIndexes);
-            await Clients.Caller.SendAsync("update", 1, "Collected content from DOM tree (" + textElements.Count + " text elements, " + headerElements.Count + " header elements)");
-
-            // Sort Content /////////////////////////////////////////////////////////////////////////////////////////////
-            textElements = textElements.OrderBy(p => p.text.Length * -1).ToList();
-            headerElements = headerElements.OrderBy(p => p.tagName).ToList();
-            parentIndexes = parentIndexes.OrderBy(p => (p.elements.Count * p.textLength) * -1).ToList();
-            article.tagNames = tagNames.OrderBy(t => t.count * -1).ToList();
         }
     }
 }

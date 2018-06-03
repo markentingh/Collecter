@@ -58,19 +58,20 @@ paths.working = {
         platform: [
             paths.scripts + 'selector/selector.js',
             paths.scripts + 'utility/velocity.min.js',
-            paths.scripts + 'platform/_super.js', // <---- Datasilk Core Js: S object
-            paths.scripts + 'platform/ajax.js', //   <---- Optional platform features
-            paths.scripts + 'platform/loader.js',
-            paths.scripts + 'platform/message.js',
-            //paths.scripts + 'platform/polyfill.js',
-            paths.scripts + 'platform/popup.js',
-            paths.scripts + 'platform/scaffold.js',
-            paths.scripts + 'platform/svg.js',
-            paths.scripts + 'platform/util.js',
-            //paths.scripts + 'platform/util.color.js',
-            //paths.scripts + 'platform/util.file.js',
-            //paths.scripts + 'platform/validate.js',
-            paths.scripts + 'platform/window.js', //  <---- End of Optional features
+            paths.scripts + 'platform/_super.js', //    <---- Datasilk Core Js: S object
+            paths.scripts + 'platform/accordion.js',    // <---- Optional module
+            paths.scripts + 'platform/ajax.js',         // <---- Optional module
+            paths.scripts + 'platform/loader.js',       // <---- Optional module
+            paths.scripts + 'platform/message.js',      // <---- Optional module
+            //paths.scripts + 'platform/polyfill.js',   // <---- Optional module
+            paths.scripts + 'platform/popup.js',        // <---- Optional module
+            paths.scripts + 'platform/scaffold.js',     // <---- Optional module
+            paths.scripts + 'platform/svg.js',          // <---- Optional module
+            paths.scripts + 'platform/util.js',         // <---- Optional module
+            //paths.scripts + 'platform/util.color.js', // <---- Optional module
+            //paths.scripts + 'platform/util.file.js',  // <---- Optional module
+            //paths.scripts + 'platform/validate.js',   // <---- Optional module
+            paths.scripts + 'platform/window.js',       // <---- Optional module
             paths.scripts + 'utility/launchpad/launchpad.js'
         ],
         app: paths.app + '**/*.js',

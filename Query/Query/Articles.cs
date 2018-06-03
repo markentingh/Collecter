@@ -7,7 +7,9 @@ namespace Query
     {
         public static int Add(Models.Article article)
         {
-            return Sql.ExecuteScalar<int>("Article_Add",
+            try
+            {
+                return Sql.ExecuteScalar<int>("Article_Add",
                 new Dictionary<string, object>()
                 {
                     {"feedId", article.feedId },
@@ -34,6 +36,11 @@ namespace Query
                     {"analyzed", article.analyzed }
                 }
             );
+            } catch(Exception ex)
+            {
+                throw ex;
+            }
+            
         }
 
         public static void Clean(int articleId)

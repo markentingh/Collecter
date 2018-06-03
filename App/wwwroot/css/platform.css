@@ -5438,3 +5438,6 @@ body > .bg {
   max-height: 500px;
   overflow: hidden;
 }
+.accordion .contents {
+  line-height: 1.25;
+}

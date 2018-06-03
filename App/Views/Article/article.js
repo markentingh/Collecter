@@ -7,6 +7,7 @@
         //set up signalR hub
         S.article.hub = new signalR.HubConnectionBuilder().withUrl('/articlehub').build();
         S.article.hub.on('update', S.article.analyze.update);
+        S.article.hub.on('append', S.article.analyze.append);
         S.article.hub.start().catch(S.article.analyze.error);
     },
 
@@ -34,6 +35,12 @@
             div.innerHTML = '> ' + msg;
             $('.analyze-article .console').append(div);
             box.scrollTop = box.scrollHeight;
+        },
+
+        append: function (html) {
+            //receive command from SignalR
+            $('.article').append(html);
+            S.accordion.load();
         },
 
         error: function (err) {
