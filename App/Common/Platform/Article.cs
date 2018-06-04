@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Utility.Strings;
+using Utility.Serialization;
 using Utility.DOM;
 using Collector.Models.Article;
 using Collector.Common.Analyze;
@@ -22,9 +23,11 @@ namespace Collector.Common.Platform
         public static AnalyzedArticle Download(string url)
         {
             var path = Server.MapPath(Server.Instance.Cache["browserPath"].ToString());
-            var html = Utility.Shell.Execute(path, "-url " + url, path.Replace("WebBrowser.exe",""), 60);
-            var article = new AnalyzedArticle(url, html);
-            return article;
+
+            //execute WebBrowser console app to get DOM results from offscreen Chrome browser
+            var obj = Utility.Shell.Execute(path, "-url " + url, path.Replace("WebBrowser.exe",""), 60);
+            //deserialize and process results
+            return Html.DeserializeArticle(obj);
         }
 
         public static Query.Models.Article Add(string url)

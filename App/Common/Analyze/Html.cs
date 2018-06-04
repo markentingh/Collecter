@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net;
+using Utility.Serialization;
 using Utility.DOM;
 using Collector.Models.Article;
 using Utility.Strings;
@@ -66,7 +67,7 @@ namespace Collector.Common.Analyze
 
                 }
 
-                for (var x = 1; x <= el.hierarchyIndexes.Length; x++)
+                for (var x = 0; x < el.hierarchyIndexes.Length - 1; x++)
                 {
                     tabs += "    ";
                 }
@@ -75,7 +76,120 @@ namespace Collector.Common.Analyze
             return htms;
         }
 
-        #region "Get Content & Words"
+        #region "Get HTML Document"
+        public static AnalyzedArticle DeserializeArticle(string dom)
+        {
+            //deserialize object from string
+            var node = (DomNode)Serializer.ReadObject(dom, typeof(DomNode));
+            var html = new StringBuilder();
+            var hierarchy = new List<int>();
+            var article = new AnalyzedArticle();
+            var parser = new Parser("");
+
+            //build DOM tree
+            var elems = new List<DomElement>();
+            var index = 0;
+            Traverse(node, ref index, elems, hierarchy, parser);
+            article.elements = elems;
+            article.rawHtml = FormatHtml(elems).ToString();
+
+            return article;
+        }
+
+        private static DomElement Traverse(DomNode parent, ref int index, List<DomElement> elems, List<int> hierarchy, Parser parser)
+        {
+            //create local copy of hierarchy
+            int[] hier = new int[hierarchy.Count];
+            if(hierarchy.Count > 0)
+            {
+                hierarchy.CopyTo(hier);
+            }
+            
+            //create DOM element
+            var elem = new DomElement(parser);
+            elem.index = index;
+            elem.tagName = parent.tag;
+            elem.hierarchyIndexes = hier;
+            elem.childIndexes = new List<int>();
+            elem.style = new Dictionary<string, string>();
+            elem.attribute = new Dictionary<string, string>();
+
+            switch (elem.tagName)
+            {
+                case "#text": case "br": case "meta": case "link": case "hr": case "img":
+                    elem.isSelfClosing = true;
+                    break;
+            }
+
+            if(elem.tagName == "#text")
+            {
+                elem.text = parent.value;
+            }
+            else
+            {
+                //build style list for element
+                if (parent.style != null)
+                {
+                    switch (parent.style.display)
+                    {
+                        case 0: elem.style.Add("display", "none"); break;
+                        case 2: elem.style.Add("display", "inline"); break;
+                        case 3: elem.style.Add("display", "inline-block"); break;
+                    }
+                    elem.style.Add("font-size", parent.style.fontsize.ToString() + "px");
+                    if (parent.style.fontweight == 2)
+                    {
+                        elem.style.Add("font-weight", "bold");
+                    }
+                    if (parent.style.italic == true)
+                    {
+                        elem.style.Add("font-style", "italic");
+                    }
+                }
+
+                //build attributes list
+                if (parent.attrs != null)
+                {
+                    elem.attribute = parent.attrs;
+                }
+            }
+
+            //append index to hierarchy list
+            hier = hier.Append(index).ToArray();
+
+            //add element to DOM elements list
+            elems.Add(elem);
+
+            if(parent.children != null)
+            {
+                //traverse all children
+                foreach (var child in parent.children)
+                {
+                    index++;
+                    var childElem = Traverse(child, ref index, elems, hier.ToList(), parser);
+                    elem.childIndexes.Add(childElem.index);
+                }
+            }
+
+            if(elem.isSelfClosing == false)
+            {
+                //add closing tag to DOM elements list
+                index++;
+                var closing = new DomElement(parser);
+                closing.index = index;
+                closing.tagName = "/" + parent.tag;
+                closing.hierarchyIndexes = hierarchy.ToArray();
+                closing.childIndexes = new List<int>();
+                closing.style = new Dictionary<string, string>();
+                closing.attribute = new Dictionary<string, string>();
+                closing.isClosing = true;
+                elems.Add(closing);
+            }
+            return elem;
+        }
+        #endregion
+
+        #region "Get HTML Content & Words"
         public static void GetContent(
             AnalyzedArticle article,
             List<AnalyzedTag> tagNames, 
@@ -398,7 +512,7 @@ namespace Collector.Common.Analyze
         }
         #endregion
 
-        #region "Get Article Contents"
+        #region "Get Article Text"
         public static void GetArticleElements(AnalyzedArticle article)
         {
             var pIndexes = new List<AnalyzedElementCount>();

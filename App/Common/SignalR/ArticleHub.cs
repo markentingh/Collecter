@@ -127,9 +127,6 @@ namespace Collector.SignalR.Hubs
             {
                 await Clients.Caller.SendAsync("update", 1, "Error: " + ex.Message + "<br/>" + ex.StackTrace.Replace("\n", "<br/>"));
             }
-            
-
-
         }
     }
 }

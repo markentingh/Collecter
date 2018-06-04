@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
+using System.Reflection;
 using CefSharp;
 using CefSharp.OffScreen;
+using Newtonsoft.Json;
 
 namespace WebBrowser
 {
     class Program
     {
         private static ChromiumWebBrowser browser;
-        private static string url = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4056415/";
+        private static string url = "http://www.adriancourreges.com/blog/2016/09/09/doom-2016-graphics-study/";
         private static string html = "";
 
         static void Main(string[] args)
@@ -42,8 +45,11 @@ namespace WebBrowser
             browser.FrameLoadEnd += delegate
             {
                 Task task = Task.Run(() => {
-                    object js = EvaluateScript("document.getElementsByTagName('html')[0].outerHTML;");
-                    html = js.ToString();
+                    //object js = EvaluateScript("document.getElementsByTagName('html')[0].outerHTML;");
+                    var js = File.ReadAllText(Path + "extractDOM.js");
+                    object result = EvaluateScript(js);
+                    html = JsonConvert.SerializeObject(result, Formatting.None);
+                    //html = result.ToString();
                 });
             };
 
@@ -66,6 +72,11 @@ namespace WebBrowser
             task.Wait();
             var response = task.Result;
             return response.Success ? (response.Result ?? "") : response.Message;
+        }
+
+        private static string Path
+        {
+            get { return Assembly.GetExecutingAssembly().Location.Replace("WebBrowser.exe", "");  }
         }
     }
 }

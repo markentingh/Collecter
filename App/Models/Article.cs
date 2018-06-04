@@ -81,21 +81,21 @@ namespace Collector.Models.Article
         }
     }
 
-    public struct AnalyzedTags
+    public class AnalyzedTags
     {
         public List<AnalyzedText> text;
         public List<int> anchorLinks;
         public List<int> headers;
     }
 
-    public struct AnalyzedTag
+    public class AnalyzedTag
     {
         public string name;
         public int count;
         public int[] index;
     }
 
-    public struct AnalyzedText
+    public class AnalyzedText
     {
         public int index;
         public List<AnalyzedWordInText> words;
@@ -103,7 +103,7 @@ namespace Collector.Models.Article
         //public List<PossibleTextType> possibleTypes;
     }
 
-    public struct AnalyzedWord
+    public class AnalyzedWord
     {
         public int id;
         public string word;
@@ -115,7 +115,7 @@ namespace Collector.Models.Article
         public bool apostrophe;
     }
 
-    public struct AnalyzedPhrase
+    public class AnalyzedPhrase
     {
         public int id;
         public string phrase;
@@ -123,51 +123,51 @@ namespace Collector.Models.Article
         public int count;
     }
 
-    public struct AnalyzedWordInText
+    public class AnalyzedWordInText
     {
         public string word;
         public AnalyzedWord[] relations;
         public int index;
     }
 
-    public struct AnalyzedImage
+    public class AnalyzedImage
     {
         public string url;
         public int relavance;
     }
 
-    public struct AnalyzedAuthor
+    public class AnalyzedAuthor
     {
         public string name;
         public AuthorSex sex;
     }
 
-    public struct AnalyzedFile
+    public class AnalyzedFile
     {
         public string filename;
         public string fileType;
     }
 
-    public struct AnalyzedParentIndex
+    public class AnalyzedParentIndex
     {
         public List<int> elements;
         public int index;
         public int textLength;
     }
 
-    public struct AnalyzedElementCount
+    public class AnalyzedElementCount
     {
         public int index;
         public int count;
     }
 
-    public struct PossibleTextType
+    public class PossibleTextType
     {
         public TextType type;
         public int count;
     }
 
-    public struct ArticleSubject
+    public class ArticleSubject
     {
         public int id;
         public int parentId;
@@ -180,7 +180,7 @@ namespace Collector.Models.Article
         public int score;
     }
 
-    public struct AnalyzedPerson
+    public class AnalyzedPerson
     {
         public string fullName;
         public string firstName;
@@ -190,11 +190,28 @@ namespace Collector.Models.Article
         public int[] references; //word indexes within article words (he, she, his, hers, him, her, he'd, she'd, he's, she's, etc...)
     }
 
-    public struct ArticleHtmlList
+    public class ArticleHtmlList
     {
         public string html;
         public List<string> list;
         public int id;
+    }
+
+    public class DomNode
+    {
+        public string tag = "";
+        public DomNodeStyle style;
+        public Dictionary<string, string> attrs;
+        public List<DomNode> children;
+        public string value;
+    }
+
+    public class DomNodeStyle
+    {
+        public int display;
+        public int fontsize;
+        public int fontweight;
+        public bool italic;
     }
 
     public enum TextType
