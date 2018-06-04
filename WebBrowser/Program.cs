@@ -9,7 +9,7 @@ namespace WebBrowser
     class Program
     {
         private static ChromiumWebBrowser browser;
-        private static string url = "http://markentingh.io";
+        private static string url = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4056415/";
         private static string html = "";
 
         static void Main(string[] args)

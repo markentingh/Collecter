@@ -118,6 +118,33 @@ namespace Utility.DOM
                 return Parser.Elements[hierarchyIndexes[hierarchyIndexes.Length - 1]];
             }
         }
+
+        public int HierarchyTagIndex(string tag)
+        {
+            for(var x = hierarchyIndexes.Length - 1; x >= 0; x--)
+            {
+                if(Parser.Elements[hierarchyIndexes[x]].tagName == tag)
+                {
+                    return x;
+                }
+            }
+            return -1;
+        }
+
+        public bool HasTagInHierarchy(string tag)
+        {
+            return HierarchyTagIndex(tag) >= 0;
+        }
+
+        public List<string> HierarchyTags()
+        {
+            var tags = new List<string>();
+            for (var x = 0; x < hierarchyIndexes.Length - 1; x++)
+            {
+                tags.Add(Parser.Elements[hierarchyIndexes[x]].tagName);
+            }
+            return tags;
+        }
     }
 
     public class Parser

@@ -100,7 +100,7 @@ namespace Collector.Models.Article
         public int index;
         public List<AnalyzedWordInText> words;
         public TextType type;
-        public List<PossibleTextType> possibleTypes;
+        //public List<PossibleTextType> possibleTypes;
     }
 
     public struct AnalyzedWord
@@ -249,6 +249,7 @@ namespace Collector.Models.Article
     {
         public static string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
         public static string[] sentenceSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
+        public static string[] separatorExceptions = new string[] { "'", "\"" };
 
         public static string[] scriptSeparators = new string[] { "{", "}", ";", "$", "=", "(", ")" };
 
@@ -256,7 +257,7 @@ namespace Collector.Models.Article
             "published","written","posted",
             "january","february","march","april","may","june", "july","august","september","october","november","december" };
 
-        public static string[] nonSentenceTags = new string[] { "h1", "h2", "h3", "h4", "h5", "h6", "title" };
+        public static string[] headerTags = new string[] { "h1", "h2", "h3", "h4", "h5", "h6", "title", "strong" };
 
         public static string[] badTags = new string[]  {
             "applet", "area", "audio", "canvas", "dialog", "small",
@@ -294,6 +295,8 @@ namespace Collector.Models.Article
         public static string[] HtmlVerify = new string[] { "<div", "<html", "<a ", "<img ", "<p>" };
 
         public static string[] suspiciousWords = new string[] { "copyright", "posts", "entry", "entries", "article", "articles", "home", "blog", "stories", "menu", "comments", "navigate", "trademark" };
+
+        public static string[] badWords = new string[] {"shit", "crap", "asshole", "shitty", "bitch", "slut", "whore", "fuck", "fucking", "fucker", "fucked", "fuckers", "fucks"};
     }
     
 

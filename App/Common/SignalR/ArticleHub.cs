@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Collector.Common.Platform;
+using Collector.Common.Analyze;
 using Collector.Models.Article;
 using Utility.DOM;
 
@@ -55,15 +56,16 @@ namespace Collector.SignalR.Hubs
                     //download article from the internet
                     await Clients.Caller.SendAsync("update", 1, "Downloading...");
                     article = Article.Download(url);
+
+                    if (article.rawHtml.Length == 0)
+                    {
+                        //article HTML is empty
+                        await Clients.Caller.SendAsync("update", 1, "URL returned an empty response");
+                        return;
+                    }
+
                     File.WriteAllText(filepath + filename, article.rawHtml);
                     await Clients.Caller.SendAsync("update", 1, "Downloaded URL (" + (Encoding.Unicode.GetByteCount(article.rawHtml) / 1024).ToString("c").Replace("$", "").Replace(".00", "") + " KB" + "): " + article.url);
-                }
-
-                if (article.rawHtml.Length == 0)
-                {
-                    //article HTML is empty
-                    await Clients.Caller.SendAsync("update", 1, "URL returned an empty response");
-                    return;
                 }
 
                 // Parse DOM Tree ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +87,7 @@ namespace Collector.SignalR.Hubs
                 var headerElements = new List<DomElement>();
                 var imgElements = new List<DomElement>();
 
-                Common.Analyze.Html.GetContent(ref article, ref tagNames, ref textElements, ref anchorElements, ref headerElements, ref imgElements, ref parentIndexes);
+                Html.GetContent(article, tagNames, textElements, anchorElements, headerElements, imgElements, parentIndexes);
                 await Clients.Caller.SendAsync("update", 1, "Collected content from DOM tree (" + textElements.Count + " text elements, " + headerElements.Count + " header elements)");
 
                 // Sort Content /////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,8 +95,35 @@ namespace Collector.SignalR.Hubs
                 headerElements = headerElements.OrderBy(p => p.tagName).ToList();
                 parentIndexes = parentIndexes.OrderBy(p => (p.elements.Count * p.textLength) * -1).ToList();
                 article.tagNames = tagNames.OrderBy(t => t.count * -1).ToList();
+                
+                foreach (DomElement header in headerElements)
+                {
+                    article.tags.headers.Add(header.index);
+                }
+                foreach (DomElement anchor in anchorElements)
+                {
+                    article.tags.anchorLinks.Add(anchor.index);
+                }
+
+                // Analyze Content /////////////////////////////////////////////////////////////////////////////////////////////
+                //
+                // to determine if there is an article within the HTML page
+                // or if the page is simply a link to an article (in which case, follow link to article)
+                // or if the page has a paywall in front of the article (in which case abandon the article)
+
+                Html.GetWords(article, textElements);
+
+                Html.GetArticleElements(article);
+
+                if(article.body.Count > 0)
+                {
+                    //found article
+                    html = Components.Accordion.Render("Article Text", "article-text", Article.RenderArticle(article), false);
+                    await Clients.Caller.SendAsync("append", html);
+                }
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await Clients.Caller.SendAsync("update", 1, "Error: " + ex.Message + "<br/>" + ex.StackTrace.Replace("\n", "<br/>"));
             }

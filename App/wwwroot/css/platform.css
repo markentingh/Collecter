@@ -5357,6 +5357,7 @@ body > .bg {
   padding: 20px;
   max-height: 800px;
   overflow: hidden;
+  overflow-y: auto;
 }
 .accordion > .box > .content {
   white-space: nowrap;
