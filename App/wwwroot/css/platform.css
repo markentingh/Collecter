@@ -5349,6 +5349,14 @@ body > .bg {
   box-sizing: border-box;
   overflow: hidden;
 }
+.accordion > .box h1,
+.accordion > .box h2,
+.accordion > .box h3,
+.accordion > .box h4,
+.accordion > .box h5,
+.accordion > .box h6 {
+  color: #aaa;
+}
 .accordion > .white {
   background-color: #fff;
   color: #111;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Utility.Strings;
 
 namespace Utility.DOM
@@ -123,7 +124,7 @@ namespace Utility.DOM
         {
             for(var x = hierarchyIndexes.Length - 1; x >= 0; x--)
             {
-                if(Parser.Elements[hierarchyIndexes[x]].tagName == tag)
+                if (Parser.Elements[hierarchyIndexes[x]].tagName == tag)
                 {
                     return x;
                 }

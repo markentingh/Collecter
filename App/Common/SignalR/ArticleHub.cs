@@ -41,8 +41,8 @@ namespace Collector.SignalR.Hubs
                 if (File.Exists(filepath + filename))
                 {
                     //open cached content from disk
-                    article.rawHtml = File.ReadAllText(filepath + filename);
-                    await Clients.Caller.SendAsync("update", 2, "Loaded cached content for URL: " + url);
+                    article = Html.DeserializeArticle(File.ReadAllText(filepath + filename));
+                    await Clients.Caller.SendAsync("update", 2, "Loaded cached content for URL: <a href=\"" + url + "\" target=\"_blank\">" + url + "</a>");
                     download = false;
                 }
                 else if (!Directory.Exists(filepath))
@@ -55,7 +55,8 @@ namespace Collector.SignalR.Hubs
                 {
                     //download article from the internet
                     await Clients.Caller.SendAsync("update", 1, "Downloading...");
-                    article = Article.Download(url);
+                    var obj = Article.Download(url);
+                    article = Html.DeserializeArticle(obj);
 
                     if (article.rawHtml.Length == 0)
                     {
@@ -64,13 +65,9 @@ namespace Collector.SignalR.Hubs
                         return;
                     }
 
-                    File.WriteAllText(filepath + filename, article.rawHtml);
-                    await Clients.Caller.SendAsync("update", 1, "Downloaded URL (" + (Encoding.Unicode.GetByteCount(article.rawHtml) / 1024).ToString("c").Replace("$", "").Replace(".00", "") + " KB" + "): " + article.url);
+                    File.WriteAllText(filepath + filename, obj);
+                    await Clients.Caller.SendAsync("update", 1, "Downloaded URL (" + (Encoding.Unicode.GetByteCount(article.rawHtml) / 1024).ToString("c").Replace("$", "").Replace(".00", "") + " KB" + "): <a href=\"" + article.url + "\" target=\"_blank\">" + article.url + "</a>");
                 }
-
-                // Parse DOM Tree ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                article.elements = (new Parser(article.rawHtml)).Elements;
-                article.rawHtml = Common.Analyze.Html.FormatHtml(article.elements).ToString();
 
                 //send accordion with raw HTML to client
                 var html = Components.Accordion.Render("Raw HTML", "raw-html", "<pre>" + article.rawHtml.Replace("&", "&amp;").Replace("<", "&lt;") + "</pre>", false);
@@ -87,7 +84,7 @@ namespace Collector.SignalR.Hubs
                 var headerElements = new List<DomElement>();
                 var imgElements = new List<DomElement>();
 
-                Html.GetContent(article, tagNames, textElements, anchorElements, headerElements, imgElements, parentIndexes);
+                Html.GetContentFromDOM(article, tagNames, textElements, anchorElements, headerElements, imgElements, parentIndexes);
                 await Clients.Caller.SendAsync("update", 1, "Collected content from DOM tree (" + textElements.Count + " text elements, " + headerElements.Count + " header elements)");
 
                 // Sort Content /////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +108,7 @@ namespace Collector.SignalR.Hubs
                 // or if the page is simply a link to an article (in which case, follow link to article)
                 // or if the page has a paywall in front of the article (in which case abandon the article)
 
-                Html.GetWords(article, textElements);
+                Html.GetWordsFromDOM(article, textElements);
 
                 Html.GetArticleElements(article);
 

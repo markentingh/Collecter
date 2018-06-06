@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text;
 using Utility.Strings;
-using Utility.Serialization;
 using Utility.DOM;
 using Collector.Models.Article;
-using Collector.Common.Analyze;
 
 namespace Collector.Common.Platform
 {
@@ -20,14 +17,12 @@ namespace Collector.Common.Platform
             return "/Content/articles/" + domain.Substring(0, 2) + "/" + domain + "/";
         }
 
-        public static AnalyzedArticle Download(string url)
+        public static string Download(string url)
         {
             var path = Server.MapPath(Server.Instance.Cache["browserPath"].ToString());
 
             //execute WebBrowser console app to get DOM results from offscreen Chrome browser
-            var obj = Utility.Shell.Execute(path, "-url " + url, path.Replace("WebBrowser.exe",""), 60);
-            //deserialize and process results
-            return Html.DeserializeArticle(obj);
+            return Utility.Shell.Execute(path, "-url " + url, path.Replace("WebBrowser.exe",""), 60);
         }
 
         public static Query.Models.Article Add(string url)
@@ -70,331 +65,278 @@ namespace Collector.Common.Platform
 
         public static string RenderArticle(AnalyzedArticle article)
         {
-            var body = new StringBuilder();
-            var containerType = "";
-            var containerChangedType = "";
-            var oldType = "";
-            var containerIndex = 0;
-            var tagIndex = 0;
-            var tagId = 0;
-            var tagChanged = false;
-            var tagTypes = new string[] { "p", "h1", "h2", "h3", "h4", "h5", "h6" };
-            var containTypes = new string[] { "a" };
-            var endTags = "";
-            var startTags = "";
-            var hasSpace = false;
-            DomElement elemTag;
+            var html = new StringBuilder();
+            var parts = new List<ArticlePart>();
             DomElement elem;
-            DomElement specialTag;
-            AnalyzedWord aword;
-            List<AnalyzedWord> awords;
             List<string> hierarchyTags;
-            int sentenceIndex = 1;
-            var sentences = new List<string>();
-            var sentenceEnding = "";
-            double sentenceScore = 0;
-            int sentenceCount = 0;
-            var parWords = "";
-            var paragraph = "";
-            var paragraphs = 0;
-            var parType = 0;
-            var parTypeName = "";
-            var paraEnd = "";
-            var wordClasses = "";
-            var sentenceClasses = "";
-            var paragraphHtml = "";
-            var str1 = "";
-            var scoreCount = 5;
-            string[] wordlist;
-            int bod;
-                        
+            var lastHierarchy = new int[] { };
+            int index;
+            var newline = false;
+            var fontsize = 1;
+            var baseFontSize = 16;
+            var incFontSize = 2.0; //font size increment between header tags
+            var maxFontSize = 20;
+            var fontsizes = new List<KeyValuePair<int, int>>();
+            var isBold = false;
+            var isItalic = false;
+
+
+            //get all font sizes from all text to determine base font-size
             for (var x = 0; x < article.body.Count; x++)
             {
-                bod = article.body[x];
-                tagChanged = false;
-                elem = article.elements[bod];
-                containerChangedType = containerType;
-                hierarchyTags = elem.HierarchyTags();
-
-                //check for container (p, h1, h2, h3, etc)
-                foreach (string tag in tagTypes)
+                fontsize = 0;
+                index = article.body[x];
+                elem = article.elements[index];
+                if(elem.style != null)
                 {
-                    tagIndex = hierarchyTags.ToList().LastIndexOf(tag);
-                    if (tagIndex < 0) { continue; }
-                    tagIndex = elem.hierarchyIndexes[tagIndex];
-                    if (tagIndex >= 0)
+                    if (elem.style.ContainsKey("font-size"))
                     {
-                        elemTag = article.elements[tagIndex];
-
-                        if (hierarchyTags.Contains(tag))
+                        try { fontsize = int.Parse(elem.style["font-size"].Replace("px", "")); } catch (Exception) { }
+                    }
+                    if (fontsize > 0)
+                    {
+                        index = fontsizes.FindIndex(a => a.Key == fontsize);
+                        if (index >= 0)
                         {
-                            if (containerType == tag)
-                            {
-                                if (containerIndex != elemTag.index)
-                                {
-                                    //different tag
-                                    tagChanged = true;
-                                }
-                            }
-                            else
-                            {
-                                //current tag is not same
-                                containerType = tag;
-                                tagChanged = true;
-                            }
+                            fontsizes[index] = new KeyValuePair<int, int>(fontsize, fontsizes[index].Value + 1);
                         }
-                        if (tagChanged == true)
+                        else
                         {
-                            containerIndex = elemTag.index;
-                            break;
+                            fontsizes.Add(new KeyValuePair<int, int>(fontsize, 1));
                         }
                     }
                 }
-                if (tagChanged == false && containerChangedType != "" && hierarchyTags.Contains(containerChangedType) == false)
-                {
-                    //old tag doesn't exist in hierarchy
-                    tagChanged = true;
-                    containerType = "";
-                    containerIndex = -1;
-                }
-
-                //create tags based on element tag hierarchy
-                foreach (string tag in containTypes)
-                {
-                    tagIndex = hierarchyTags.ToList().LastIndexOf(tag);
-                    if (tagIndex >= 0)
-                    {
-                        //found special tag in hierarchy
-                        tagId = elem.hierarchyIndexes[tagIndex];
-                        specialTag = article.elements[tagId];
-                        var attrs = "";
-                        var useTag = false;
-                        switch (tag)
-                        {
-                            case "a":
-                                str1 = "#";
-                                if (specialTag.attribute.ContainsKey("href"))
-                                {
-                                    str1 = specialTag.attribute["href"];
-                                }
-                                attrs = " href=\"/dashboard/articles?url=" + WebUtility.UrlEncode(str1) + "\" target=\"_blank\"";
-                                useTag = true;
-                                break;
-                        }
-                        if(useTag == true)
-                        {
-                            startTags += "<" + tag + attrs + ">";
-                            endTags = "</" + tag + "> " + endTags;
-                        }
-                    }
-                }
-
-
-                if (tagChanged == true)
-                {
-                    if (oldType != "") { body.Append("</" + oldType + ">"); }
-                    if (containerType != "") { body.Append("<" + containerType + ">"); }
-                    oldType = containerType;
-                }
-
-
-                if (x < article.body.Count - 1)
-                {
-                    //check for adding an extra space after this tag (for grammar)
-                    switch (article.elements[article.body[x + 1]].text.Substring(0, 1))
-                    {
-                        case ".": case ":": case ";": case ",":
-                        case "!": case "?": case "\"": case "'":
-                        case "/": case "\\":
-                            break;
-                        default:
-                            endTags = " " + endTags;
-                            break;
-                    }
-                }
-
-
-                //separate paragraph into sentences
-                sentences = Html.GetSentences(article.elements[bod].text);
-                sentenceCount += sentences.Count();
-                paragraph = "";
-                paragraphs+=1;
-
-
-                foreach (var s in sentences)
-                {
-                    //detect whether or not the sentence is important
-                    //TODO: figure out paragraph type
-                    parType = 1;
-                    switch (parType)
-                    {
-                        case 1:
-                            parTypeName = "normal";
-                            break;
-
-                        case 2:
-                            parTypeName = "important";
-                            break;
-
-                        case 3:
-                            parTypeName = "title";
-                            break;
-
-                        case 4:
-                            parTypeName = "published";
-                            break;
-
-                        case 5:
-                            parTypeName = "unknown";
-                            break;
-
-                        default:
-                            parTypeName = "normal";
-                            break;
-
-                    }
-
-                    //check to see if this is the end of the sentence
-                    wordlist = Html.GetWordsFromText(s, Rules.separatorExceptions);
-                    if(wordlist.Length > 0)
-                    {
-                        sentenceEnding = wordlist[wordlist.Length - 1];
-                        if (tagChanged == true)
-                        {
-                            //tag changed, this is the end of a sentence
-                            sentenceIndex += 1;
-                            sentenceClasses = "";
-                        }
-
-                        //find sentence score based on word list importance
-                        sentenceScore = 0;
-                        if (wordlist.Length > 5)
-                        {
-                            foreach (var w in wordlist)
-                            {
-                                //find analyzed word
-                                awords = article.words.Where(wr => wr.word == w.ToLower()).ToList();
-                                if (awords.Count == 1)
-                                {
-                                    aword = awords[0];
-                                    if (aword.importance >= 5)
-                                    {
-                                        if (aword.id > 0)
-                                        {
-                                            //word is stored in the database
-                                            if (aword.importance >= 10)
-                                            {
-                                                //word is a name
-                                                sentenceScore += (scoreCount * 0.1);
-                                            }
-                                            else
-                                            {
-                                                //word is potentially important
-                                                sentenceScore += (scoreCount * 0.149);
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            //word is potentially important
-                                            sentenceScore += (scoreCount * 0.149);
-                                        }
-
-                                    }
-                                    if (Rules.badWords.Contains(aword.word))
-                                    {
-                                        //punish score if negative words are found (shit, bitch, fuck)
-                                        sentenceScore -= (scoreCount * 0.5);
-                                    }
-                                }
-                            }
-
-                            if (sentenceScore > 0)
-                            {
-                                if (sentenceScore > scoreCount) { sentenceScore = scoreCount; }
-                                sentenceScore = Math.Round(sentenceScore);
-                                //sentenceScore = 0.1 * sentenceScore;
-                                //sentenceScore = Math.Round(5.0 / (wordlist.Length / 4.0) * sentenceScore);
-                                if (sentenceScore > 0)
-                                {
-                                    sentenceClasses += " score" + Math.Round(sentenceScore);
-                                }
-                            }
-                        }
-
-                        //separate each word into a span tag
-                        parWords = "";
-                        var a = "";
-                        for (var u = 0; u < wordlist.Length; u++)
-                        {
-                            a = wordlist[u];
-                            wordClasses = "";
-                            if (a.Length == 1)
-                            {
-                                if (Html.isSentenceSeparator(a, Rules.separatorExceptions))
-                                {
-                                    wordClasses += " separator";
-                                }
-                            }
-                            hasSpace = false;
-                            if (u < wordlist.Length - 1)
-                            {
-                                //check for adding an extra space after this tag (for grammar)
-                                switch (wordlist[u + 1].Substring(0, 1))
-                                {
-                                    case ".": case ":": case ";": case ",": case "!":
-                                    case "?": case "'": case "/": case "\\":
-                                    case ")": case "]": case "}":
-                                        break;
-                                    default:
-                                        hasSpace = true;
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                hasSpace = true;
-                            }
-                            switch(a.Substring(a.Length - 1))
-                            {
-                                case "(": case "[": case "{":
-                                    hasSpace = false;
-                                    break;
-                            }
-
-                            parWords += "<span class=\"word sentence" + sentenceIndex + " " + parTypeName + wordClasses + sentenceClasses + (hasSpace ? " space" : "") + "\">" + a + (hasSpace ? " " : "") + "</span>\n";
-                        }
-                        paragraph += parWords;
-
-                        //check for end of sentence
-                        switch (sentenceEnding)
-                        {
-                            case ".": case "?": case "!":
-                                //last word is a sentence ending marker
-                                sentenceIndex += 1;
-                                break;
-                        }
-                                        
-                    }
-                }
-
-
-                //TODO: figure out if current body element is the end of a paragraph
-                paragraphHtml = startTags + paragraph + paraEnd + endTags;
-                if (paragraphHtml.Trim() != "")
-                {
-                    body.Append(startTags + paragraph + paraEnd + endTags);
-                }
-                endTags = "";
-                startTags = "";
-                paraEnd = "";
-                paragraph = "";
+                
             }
-            if (containerType != "")
+            //sort font sizes & get top font size as base font size
+            fontsizes = fontsizes.OrderBy(a => a.Value * -1).ToList();
+            baseFontSize = fontsizes[0].Key;
+            foreach(var size in fontsizes)
             {
-                body.Append("</" + containerType + ">\n");
+                if(size.Key > maxFontSize && (size.Key - baseFontSize) <= 20) {
+                    maxFontSize = size.Key;
+                }
             }
-            return body.ToString();
+            incFontSize = (maxFontSize - baseFontSize) / 6.0;
+
+            //generate article parts from DOM
+            for (var x = 0; x < article.body.Count; x++)
+            {
+
+                index = article.body[x];
+                elem = article.elements[index];
+                hierarchyTags = elem.HierarchyTags().ToList();
+                newline = false;
+                isBold = false;
+                isItalic = false;
+                fontsize = 1;
+
+                var part = new ArticlePart();
+                part.value = elem.text;
+
+                if (elem.style != null)
+                {
+                    //determine font styling (bold & italic)
+                    if (elem.style.ContainsKey("font-weight")) { isBold = elem.style["font-weight"] == "bold"; }
+                    if (elem.style.ContainsKey("font-style")) { isItalic = elem.style["font-style"] == "italic"; }
+
+                    //determine font size
+                    if (elem.style.ContainsKey("font-size")) {
+                        fontsize = int.Parse(elem.style["font-size"].Replace("px", ""));
+                    }
+                    fontsize = fontsize - baseFontSize;
+                    if (fontsize > 1) {
+                        fontsize = (int)Math.Round(fontsize / incFontSize);
+                    }
+                    if(fontsize > 6) { fontsize = 6; }
+                    if(fontsize < 1) { fontsize = 1; }
+                }
+                part.fontSize = fontsize;
+
+                //check last hierarchy for line break
+                if (x > 0 && lastHierarchy.Count() > 0)
+                {
+                    var y = 0;
+                    var past = false;
+                    for (y = 0; y < elem.hierarchyIndexes.Count(); y++)
+                    {
+                        if (y < lastHierarchy.Length)
+                        {
+                            if (elem.hierarchyIndexes[y] != lastHierarchy[y])
+                            {
+                                past = true;
+                            }
+                        }
+                        else
+                        {
+                            past = true;
+                        }
+                        if(past == true)
+                        {
+                            //found first item in element hierarchy that is different from last element's hierarchy
+                            var baseElem = article.elements[elem.hierarchyIndexes[y]];
+                            if (baseElem.style != null)
+                            {
+                                if (baseElem.style.ContainsKey("display"))
+                                {
+                                    //determine new line by element display property
+                                    if (baseElem.style["display"] == "block")
+                                    {
+                                        newline = true;
+                                    }
+                                }
+                            }
+
+                            if (newline == false)
+                            {
+                                //determine new line by element tag
+                                newline = Rules.blockElements.Contains(baseElem.tagName.ToLower());
+                            }
+                            break;
+                        }
+                    }
+
+                    for (y = 0; y < elem.hierarchyIndexes.Count(); y++)
+                    {
+                        //check for specific tags within element hierarchy
+                        var baseElem = article.elements[elem.hierarchyIndexes[y]];
+
+                        //check for anchor link
+                        if (baseElem.tagName == "a")
+                        {
+                            if (baseElem.attribute != null)
+                            {
+                                if (baseElem.attribute.ContainsKey("href"))
+                                {
+                                    var url = baseElem.attribute["href"];
+                                    if (url.IndexOf("javascript:") < 0)
+                                    {
+                                        part.title = elem.text;
+                                        part.value = url;
+                                        part.type = TextType.anchorLink;
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+
+                        switch (baseElem.tagName)
+                        {
+                            //check for list
+                            case "ul":
+                            case "ol":
+                                part.type = TextType.listItem;
+                                part.indent += 1;
+                                break;
+
+                            //check for headers
+                            case "h1":
+                            case "h2":
+                            case "h3":
+                            case "h4":
+                            case "h5":
+                            case "h6":
+                            case "title":
+                                part.type = TextType.header;
+                                break;
+                        }
+                    }
+                }
+                if (newline == true)
+                {
+                    parts.Add(new ArticlePart());
+                }
+
+                parts.Add(part);
+                lastHierarchy = elem.hierarchyIndexes;
+            }
+
+            //render HTML from article parts
+            var paragraph = false;
+            var indent = 0;
+            foreach(var part in parts)
+            {
+                //create paragraph tag (if neccessary)
+                if (paragraph == false)
+                {
+                    switch (part.type)
+                    {
+                        case TextType.mainArticle:
+                        case TextType.anchorLink:
+                        case TextType.listItem:
+                            paragraph = true;
+                            html.Append("<p>");
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (part.type)
+                    {
+                        case TextType.header:
+                            paragraph = false;
+                            html.Append("</p>");
+                            break;
+                    }
+                }
+
+                //escape list if neccessary
+                switch (part.type)
+                {
+                    case TextType.listItem: break;
+                    default:
+                        for(var x = 1; x <= indent; x++)
+                        {
+                            html.Append("</ul>");
+                        }
+                        indent = 0;
+                        break;
+                }
+
+                //render contents of article part
+                switch (part.type)
+                {
+                    case TextType.mainArticle:
+                        if(part.value == "" && paragraph == true)
+                        {
+                            paragraph = false;
+                            html.Append("</p>");
+                        }
+                        else
+                        {
+                            html.Append("<span class=\"font-" + part.fontSize + "\">" + part.value + "</span>\n");
+                        }
+                        break;
+                    case TextType.header:
+                        html.Append("<h" + (7 - part.fontSize) + ">" + part.value + "</h" + (7 - part.fontSize) + ">\n");
+                        break;
+                    case TextType.anchorLink:
+                        html.Append("<a href=\"" + part.value + "\" target=\"_blank\">" + part.title + "</a>\n");
+                        break;
+                    case TextType.listItem:
+                        if(part.indent > indent)
+                        {
+                            for(var x = indent; x < part.indent; x++)
+                            {
+                                html.Append("<ul>");
+                            }
+                            indent = part.indent;
+                        }
+                        else if(part.indent < indent)
+                        {
+                            for (var x = part.indent; x > indent; x--)
+                            {
+                                html.Append("</ul>");
+                            }
+                            indent = part.indent;
+                        }
+                        html.Append("<li>" + part.value + "</li>");
+                        break;
+                }
+            }
+
+            return html.ToString();
         }
     }
 }

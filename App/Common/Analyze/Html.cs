@@ -6,6 +6,7 @@ using System.Net;
 using Utility.Serialization;
 using Utility.DOM;
 using Collector.Models.Article;
+using Collector.Models.Nodes;
 using Utility.Strings;
 using Utility;
 
@@ -13,6 +14,131 @@ namespace Collector.Common.Analyze
 {
     public static class Html
     {
+        #region "Get HTML Document"
+        public static AnalyzedArticle DeserializeArticle(string dom)
+        {
+            //deserialize object from string
+            var node = (Document)Serializer.ReadObject(dom, typeof(Document));
+            var html = new StringBuilder();
+            var hierarchy = new List<int>();
+            var article = new AnalyzedArticle();
+            var parser = new Parser("");
+
+            //build DOM tree
+            var elems = new List<DomElement>();
+            var index = 0;
+            Traverse(node.dom, ref index, elems, hierarchy, node.a, parser);
+            parser.Elements = elems;
+            article.elements = elems;
+            article.rawHtml = FormatHtml(elems).ToString();
+
+            return article;
+        }
+
+        private static DomElement Traverse(Node parent, ref int index, List<DomElement> elems, List<int> hierarchy, string[] attributes, Parser parser)
+        {
+            //create local copy of hierarchy
+            var parentId = -1;
+            int[] hier = new int[hierarchy.Count];
+            if(hierarchy.Count > 0)
+            {
+                hierarchy.CopyTo(hier);
+                parentId = hierarchy[hierarchy.Count() - 1];
+            }
+            
+            //create DOM element
+            var elem = new DomElement(parser);
+            elem.index = index;
+            elem.parent = parentId;
+            elem.tagName = parent.t;
+            elem.className = new List<string>();
+            elem.hierarchyIndexes = hier.ToArray();
+            elem.childIndexes = new List<int>();
+            elem.style = new Dictionary<string, string>();
+            elem.attribute = new Dictionary<string, string>();
+
+            switch (elem.tagName)
+            {
+                case "#text": case "br": case "meta": case "link": case "hr": case "img":
+                    elem.isSelfClosing = true;
+                    break;
+            }
+
+            if(elem.tagName == "#text")
+            {
+                elem.text = parent.v;
+            }
+
+            //build style list for element
+            if (parent.s != null)
+            {
+                switch (parent.s[0])
+                {
+                    case 0: elem.style.Add("display", "none"); break;
+                    case 2: elem.style.Add("display", "inline"); break;
+                    case 3: elem.style.Add("display", "inline-block"); break;
+                }
+                elem.style.Add("font-size", parent.s[1].ToString() + "px");
+                if (parent.s[2] == 2)
+                {
+                    elem.style.Add("font-weight", "bold");
+                }
+                if (parent.s[3] == 1)
+                {
+                    elem.style.Add("font-style", "italic");
+                }
+            }
+
+            //build attributes list
+            if (parent.a != null)
+            {
+                foreach (var x in parent.a)
+                {
+                    if(attributes[x.Key] == "class")
+                    {
+                        elem.className = x.Value.Replace("  ", " ").Replace("  ", " ").Split(" ").ToList();
+                    }
+                    else
+                    {
+                        elem.attribute.Add(attributes[x.Key], x.Value);
+                    }
+                }
+            }
+
+            //append index to hierarchy list
+            hier = hier.Append(index).ToArray();
+
+            //add element to DOM elements list
+            elems.Add(elem);
+
+            if(parent.c != null)
+            {
+                //traverse all children
+                foreach (var child in parent.c)
+                {
+                    index++;
+                    var childElem = Traverse(child, ref index, elems, hier.ToList(), attributes, parser);
+                    elem.childIndexes.Add(childElem.index);
+                }
+            }
+
+            if(elem.isSelfClosing == false)
+            {
+                //add closing tag to DOM elements list
+                index++;
+                var closing = new DomElement(parser);
+                closing.index = index;
+                closing.tagName = "/" + parent.t;
+                closing.hierarchyIndexes = hierarchy.ToArray();
+                closing.childIndexes = new List<int>();
+                closing.style = new Dictionary<string, string>();
+                closing.attribute = new Dictionary<string, string>();
+                closing.isClosing = true;
+                elems.Add(closing);
+            }
+            return elem;
+        }
+
         public static StringBuilder FormatHtml(List<DomElement> elements)
         {
             var htms = new StringBuilder();
@@ -35,6 +161,10 @@ namespace Collector.Common.Analyze
                     else
                     {
                         htmelem = "<" + el.tagName;
+                        if(el.className.Count() > 0)
+                        {
+                            htmelem += " class=\"" + string.Join(" ", el.className) + "\"";
+                        }
                         if (el.attribute != null)
                         {
                             if (el.attribute.Count > 0)
@@ -75,122 +205,10 @@ namespace Collector.Common.Analyze
             }
             return htms;
         }
-
-        #region "Get HTML Document"
-        public static AnalyzedArticle DeserializeArticle(string dom)
-        {
-            //deserialize object from string
-            var node = (DomNode)Serializer.ReadObject(dom, typeof(DomNode));
-            var html = new StringBuilder();
-            var hierarchy = new List<int>();
-            var article = new AnalyzedArticle();
-            var parser = new Parser("");
-
-            //build DOM tree
-            var elems = new List<DomElement>();
-            var index = 0;
-            Traverse(node, ref index, elems, hierarchy, parser);
-            article.elements = elems;
-            article.rawHtml = FormatHtml(elems).ToString();
-
-            return article;
-        }
-
-        private static DomElement Traverse(DomNode parent, ref int index, List<DomElement> elems, List<int> hierarchy, Parser parser)
-        {
-            //create local copy of hierarchy
-            int[] hier = new int[hierarchy.Count];
-            if(hierarchy.Count > 0)
-            {
-                hierarchy.CopyTo(hier);
-            }
-            
-            //create DOM element
-            var elem = new DomElement(parser);
-            elem.index = index;
-            elem.tagName = parent.tag;
-            elem.hierarchyIndexes = hier;
-            elem.childIndexes = new List<int>();
-            elem.style = new Dictionary<string, string>();
-            elem.attribute = new Dictionary<string, string>();
-
-            switch (elem.tagName)
-            {
-                case "#text": case "br": case "meta": case "link": case "hr": case "img":
-                    elem.isSelfClosing = true;
-                    break;
-            }
-
-            if(elem.tagName == "#text")
-            {
-                elem.text = parent.value;
-            }
-            else
-            {
-                //build style list for element
-                if (parent.style != null)
-                {
-                    switch (parent.style.display)
-                    {
-                        case 0: elem.style.Add("display", "none"); break;
-                        case 2: elem.style.Add("display", "inline"); break;
-                        case 3: elem.style.Add("display", "inline-block"); break;
-                    }
-                    elem.style.Add("font-size", parent.style.fontsize.ToString() + "px");
-                    if (parent.style.fontweight == 2)
-                    {
-                        elem.style.Add("font-weight", "bold");
-                    }
-                    if (parent.style.italic == true)
-                    {
-                        elem.style.Add("font-style", "italic");
-                    }
-                }
-
-                //build attributes list
-                if (parent.attrs != null)
-                {
-                    elem.attribute = parent.attrs;
-                }
-            }
-
-            //append index to hierarchy list
-            hier = hier.Append(index).ToArray();
-
-            //add element to DOM elements list
-            elems.Add(elem);
-
-            if(parent.children != null)
-            {
-                //traverse all children
-                foreach (var child in parent.children)
-                {
-                    index++;
-                    var childElem = Traverse(child, ref index, elems, hier.ToList(), parser);
-                    elem.childIndexes.Add(childElem.index);
-                }
-            }
-
-            if(elem.isSelfClosing == false)
-            {
-                //add closing tag to DOM elements list
-                index++;
-                var closing = new DomElement(parser);
-                closing.index = index;
-                closing.tagName = "/" + parent.tag;
-                closing.hierarchyIndexes = hierarchy.ToArray();
-                closing.childIndexes = new List<int>();
-                closing.style = new Dictionary<string, string>();
-                closing.attribute = new Dictionary<string, string>();
-                closing.isClosing = true;
-                elems.Add(closing);
-            }
-            return elem;
-        }
         #endregion
 
         #region "Get HTML Content & Words"
-        public static void GetContent(
+        public static void GetContentFromDOM(
             AnalyzedArticle article,
             List<AnalyzedTag> tagNames, 
             List<DomElement> textElements,
@@ -237,7 +255,7 @@ namespace Collector.Common.Analyze
                                 traverseElement = article.elements[traverseElement.parent];
                             }
                             else { break; }
-                        } while (traverseElement.parent > -1);
+                        } while (traverseElement.parent > 0);
                         break;
                     case "a":
                         //sort anchor links
@@ -288,7 +306,7 @@ namespace Collector.Common.Analyze
             }
         }
         
-        public static void GetWords(AnalyzedArticle article, List<DomElement> text)
+        public static void GetWordsFromDOM(AnalyzedArticle article, List<DomElement> text)
         {
             string[] texts;
             AnalyzedWord word;
@@ -306,7 +324,7 @@ namespace Collector.Common.Analyze
                 var newText = new AnalyzedText();
                 newText.index = element.index;
                 //separate all words & symbols
-                texts = GetWordsFromText(element.text);
+                texts = SeparateWordsFromText(element.text);
 
                 for (var x = 0; x < texts.Length; x++)
                 {
@@ -337,7 +355,6 @@ namespace Collector.Common.Analyze
                     wordsInText.Add(wordIn);
                 }
                 newText.words = wordsInText;
-                //var sortedAllWords = allWords.OrderBy(a => a.count * -1).ToList();
 
                 //check all words for patterns to determine
                 //what type of text is in this element
@@ -438,7 +455,7 @@ namespace Collector.Common.Analyze
             }
         }
 
-        public static string[] GetWordsFromText(string text, string[] exceptions = null)
+        public static string[] SeparateWordsFromText(string text, string[] exceptions = null)
         {
             if (exceptions != null)
             {
@@ -515,44 +532,79 @@ namespace Collector.Common.Analyze
         #region "Get Article Text"
         public static void GetArticleElements(AnalyzedArticle article)
         {
+            var text = article.tags.text.OrderBy(a => a.words.Count * -1);
             var pIndexes = new List<AnalyzedElementCount>();
             var i = 0;
-            foreach (var a in article.tags.text)
+            foreach (var a in text)
             {
 
-                if (a.type == TextType.mainArticle)
+                //find most relevant parent indexes shared by all article text elements
+                i++;
+
+                //limit to large article text
+                if (a.words.Count < 10 && i > 2) { i--; break; }
+
+                //limit to top 5 article text
+                //if (i > 5) { i--; break; }
+
+                foreach (int indx in article.elements[a.index].hierarchyIndexes)
                 {
-                    //find most relevant parent indexes shared by all article text elements
-                    i++;
-
-                    //limit to large article text
-                    if (a.words.Count < 10 && i > 2) { i--; break; }
-
-                    //limit to top 5 article text
-                    if (i > 10) { i--; break; }
-
-                    foreach (int indx in article.elements[a.index].hierarchyIndexes)
+                    var parindex = pIndexes.FindIndex(p => p.index == indx);
+                    if (parindex >= 0)
                     {
-                        var parindex = pIndexes.FindIndex(p => p.index == indx);
-                        if (parindex >= 0)
-                        {
-                            //update count for a parent index
-                            var p = pIndexes[parindex];
-                            p.count += 1;
-                            pIndexes[parindex] = p;
-                        }
-                        else
-                        {
-                            //add new parent index
-                            var p = new AnalyzedElementCount();
-                            p.index = indx;
-                            p.count = 1;
-                            pIndexes.Add(p);
-                        }
+                        //update count for a parent index
+                        var p = pIndexes[parindex];
+                        p.count += 1;
+                        pIndexes[parindex] = p;
+                    }
+                    else
+                    {
+                        //add new parent index
+                        var p = new AnalyzedElementCount();
+                        p.index = indx;
+                        p.count = 1;
+                        pIndexes.Add(p);
                     }
                 }
             }
             var sortedArticleParents = pIndexes.OrderBy(p => p.index * -1).OrderBy(p => p.count * -1).ToList();
+            var topParents = sortedArticleParents.Take(10);
+            var avgIndex = topParents.Select(a => a.index).Sum() / topParents.Count();
+            
+
+
+            //get top parent indexes from sorted indexes
+            var topIndexes = new List<AnalyzedElementCount>();
+            var count = 0;
+            var lastcount = 0;
+            var minIndex = 999999;
+            for (var x = 0; x < sortedArticleParents.Count; x++)
+            {
+                count = sortedArticleParents[x].count;
+                if (count < 2) { break; }
+                if (lastcount != count && sortedArticleParents[x].index > (avgIndex * 0.5))
+                {
+                    lastcount = count;
+                    topIndexes.Add(sortedArticleParents[x]);
+                }
+            }
+            for (var x = 0; x < topIndexes.Count; x++)
+            {
+                if(topIndexes[x].index < minIndex)
+                {
+                    minIndex = topIndexes[x].index;
+                }
+            }
+
+            topIndexes = new List<AnalyzedElementCount>();
+
+            for (var x = 0; x < sortedArticleParents.Count; x++)
+            {
+                if(sortedArticleParents[x].index >= minIndex)
+                {
+                    topIndexes.Add(sortedArticleParents[x]);
+                }
+            }
 
             //determine best parent element that contains the entire article
             var bodyText = new List<int>();
@@ -574,6 +626,7 @@ namespace Collector.Common.Analyze
             string articletxt = "";
             DomElement hElem;
             DomElement elem;
+            var checkedIndexes = new List<int>();
 
             for (var x = sortedArticleParents.Count - 1; x >= 0; x--)
             {
@@ -586,11 +639,12 @@ namespace Collector.Common.Analyze
                 isEnd = false;
                 for (var y = parentId + 1; y < article.elements.Count; y++)
                 {
+                    if (checkedIndexes.Contains(y)) { continue; }
+                    checkedIndexes.Add(y);
                     elem = article.elements[y];
                     if (Objects.IsEmpty(elem)) { continue; }
                     if (elem.hierarchyIndexes.Contains(parentId))
                     {
-                        if (elem.hierarchyIndexes.Where(ind => badIndexes.Contains(ind)).Count() > 0) { continue; }
                         if (elem.tagName == "#text")
                         {
                             //element is text & is part of parent index
@@ -599,22 +653,20 @@ namespace Collector.Common.Analyze
                             if (!uselessText.Contains(textTag.type))
                             {
                                 articletxt = elem.text.ToLower();
-                                articleText = GetWordsFromText(articletxt);
-                                if (elem.className != null)
-                                {
-                                    elem.className = elem.className.Select(c => c.ToLower()).ToList();
-                                }
-                                else { elem.className = new List<string>(); }
+                                articleText = SeparateWordsFromText(articletxt);
 
                                 //check for any text from the article that does not belong,
                                 //such as advertisements, side-bars, photo credits, widgets
                                 isBad = false;
 
+                                //search down the hierarchy DOM tree
+                                var zi = 0;
                                 for (var z = elem.hierarchyIndexes.Length - 1; z >= 0; z--)
                                 {
-                                    //search down the hierarchy DOM tree
+                                    if (elem.hierarchyIndexes[z] <= 0) {
+                                        break;
+                                    }
                                     hElem = article.elements[elem.hierarchyIndexes[z]];
-                                    if (hElem.index == parentId) { break; }
 
                                     //check for bad tag names
                                     if (Rules.badTags.Contains(hElem.tagName)) { isBad = true; break; }
@@ -622,16 +674,23 @@ namespace Collector.Common.Analyze
                                     //check classes for bad element indicators within class names
                                     if (hElem.className.Count > 0)
                                     {
-                                        if (hElem.className.Where(c => Rules.badClasses.Contains(c)).Count() > 0)
+                                        if (hElem.className.Where(c => Rules.badClasses.Where(bc => c.IndexOf(bc) >= 0).Count() > 0).Count() > 0)
                                         {
                                             isBad = true; break;
                                         }
                                     }
+                                    
+                                    //stop traversing if we reach certain point past parent element
+                                    if(zi >= 1) {
+                                        zi++;
+                                        if(zi > 3) { break; }
+                                    }
+                                    if (hElem.index == parentId) { zi = 1; }
                                 }
 
-                                if (articletxt.IndexOf("disqus") >= 0)
+                                //check for bad keywords within text
+                                if (Rules.badKeywords.Where(c => articleText.Contains(c)).Count() > 0)
                                 {
-                                    //article comments
                                     isBad = true;
                                     isEnd = true;
                                 }
@@ -651,7 +710,7 @@ namespace Collector.Common.Analyze
                                         //menu
                                         isBad = true;
                                     }
-                                    if (articletxt.IndexOf("additional resources") >= 0)
+                                    if (Rules.badTrailing.Where(t => articleText.Contains(t)).Count() > 0)
                                     {
                                         //end of article
                                         isBad = true;
@@ -659,24 +718,9 @@ namespace Collector.Common.Analyze
                                     }
                                 }
 
-                                if (articleText.Length <= 3 && isBad != true)
-                                {
-                                    if (articleText.Where(t => Rules.badChars.Contains(t)).Count() >= 1)
-                                    {
-                                        //bad characters
-                                        isBad = true;
-                                    }
-                                    if (articleText.Where(t => Rules.badTrailing.Contains(t)).Count() >= 1)
-                                    {
-                                        //bad characters
-                                        isBad = true;
-                                        isEnd = true;
-                                    }
-                                }
-
+                                //finally, add text to article
                                 if (isBad == false)
                                 {
-                                    //finally, add text to article
                                     if (!bodyText.Contains(elem.index))
                                     {
                                         bodyText.Add(elem.index);
@@ -684,33 +728,6 @@ namespace Collector.Common.Analyze
                                     //clean up text in element
                                     elem.text = WebUtility.HtmlDecode(elem.text);
                                 }
-                            }
-                        }
-                        else
-                        {
-                            //element is not text, 
-                            //determine if element contains bad content
-                            if (elem.className != null)
-                            {
-                                if (elem.className.Where(c => Rules.badClasses.Where(bc => c.IndexOf(bc) >= 0).Count() > 0).Count() > 0)
-                                {
-                                    badIndexes.Add(elem.index);
-                                }
-                            }
-                            if (elem.attribute != null)
-                            {
-                                if (elem.attribute.ContainsKey("id"))
-                                {
-                                    if (Rules.badClasses.Where(bc => elem.attribute["id"].ToLower().IndexOf(bc) >= 0).Count() > 0)
-                                    {
-                                        badIndexes.Add(elem.index);
-                                    }
-                                }
-                            }
-
-                            if (Rules.badArticleTags.Contains(elem.tagName))
-                            {
-                                badIndexes.Add(elem.index);
                             }
                         }
                     }
@@ -909,7 +926,7 @@ namespace Collector.Common.Analyze
             return sentences;
         }
 
-        public static bool isSentenceSeparator(string character, string[] exceptions = null)
+        public static bool IsSentenceSeparator(string character, string[] exceptions = null)
         {
             if (exceptions != null)
             {

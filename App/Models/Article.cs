@@ -196,24 +196,7 @@ namespace Collector.Models.Article
         public List<string> list;
         public int id;
     }
-
-    public class DomNode
-    {
-        public string tag = "";
-        public DomNodeStyle style;
-        public Dictionary<string, string> attrs;
-        public List<DomNode> children;
-        public string value;
-    }
-
-    public class DomNodeStyle
-    {
-        public int display;
-        public int fontsize;
-        public int fontweight;
-        public bool italic;
-    }
-
+    
     public enum TextType
     {
         mainArticle = 0,
@@ -229,7 +212,8 @@ namespace Collector.Models.Article
         useless = 10,
         style = 11,
         anchorLink = 12,
-        menuItem = 13
+        menuItem = 13,
+        listItem = 14,
     }
 
     public enum WordType
@@ -277,8 +261,8 @@ namespace Collector.Models.Article
         public static string[] headerTags = new string[] { "h1", "h2", "h3", "h4", "h5", "h6", "title", "strong" };
 
         public static string[] badTags = new string[]  {
-            "applet", "area", "audio", "canvas", "dialog", "small",
-            "embed", "footer", "iframe", "input", "label", "nav",
+            "applet", "area", "audio", "canvas", "dialog", "small", "form",
+            "embed", "footer", "iframe", "input", "label", "nav", "title",
             "object", "option", "s", "script", "style", "textarea", "video" };
 
         public static string[] badArticleTags = new string[]  {
@@ -290,12 +274,18 @@ namespace Collector.Models.Article
         public static string[] badAttributes = new string[] { "id" };
 
         public static string[] badClasses = new string[] {
-            "head", "social", "side", "advert", "menu", "comment", "tag", "keyword",
-            "nav", "logo", "list", "link", "search", "form", "topic", "feature",
-            "filter", "categor", "bread", "credit", "foot", "disqus", "callout",
-            "graphic", "image", "photo", "addthis", "tool", "separat",
-            "related", "ad-", "item", "return", "mobile", "home", "about", "hidden",
-            "semantic"};
+            "social", "advert", "menu", "comment", "keyword",
+            "nav", "logo", "search", "form", "topic",
+            "filter", "categor", "bread", "credit", "disqus", "callout",
+            "graphic", "image", "photo", "addthis", "tool", "separat", "access",
+            "related", "-ad-", "hidden",
+            "semantic", "banner", "subscribe", "button", "reddit", "login", "signup",
+            "signin"
+        };
+
+        public static string[] badWords = new string[] { "shit", "crap", "asshole", "shitty", "bitch", "slut", "whore", "fuck", "fucking", "fucker", "fucked", "fuckers", "fucks" };
+
+        public static string[] badKeywords = new string[] { "disqus", "advertisement", "follow on twitter" };
 
         public static string[] badPhotoCredits = new string[] { "photo", "courtesy", "by", "copyright" };
 
@@ -313,8 +303,20 @@ namespace Collector.Models.Article
 
         public static string[] suspiciousWords = new string[] { "copyright", "posts", "entry", "entries", "article", "articles", "home", "blog", "stories", "menu", "comments", "navigate", "trademark" };
 
-        public static string[] badWords = new string[] {"shit", "crap", "asshole", "shitty", "bitch", "slut", "whore", "fuck", "fucking", "fucker", "fucked", "fuckers", "fucks"};
+        public static string[] blockElements = new string[] {
+            "address", "article", "aside", "blockquote", "dd", "div", "dl", "dt",
+            "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3",
+            "h4", "h5", "h6", "header", "hr", "li", "main", "nav", "noscript", "ol",
+            "output", "p", "pre", "section", "table", "tfoot", "ul" };
     }
     
-
+    public class ArticlePart
+    {
+        public TextType type = TextType.mainArticle;
+        public string title = "";
+        public string value = "";
+        public int fontSize = 1;
+        public int indent = 0;
+        public int listItem = 0;
+    }
 }

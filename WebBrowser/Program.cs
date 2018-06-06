@@ -12,7 +12,7 @@ namespace WebBrowser
     class Program
     {
         private static ChromiumWebBrowser browser;
-        private static string url = "http://www.adriancourreges.com/blog/2016/09/09/doom-2016-graphics-study/";
+        private static string url = "https://np.reddit.com/r/DnD/comments/3jpksw/gandalf_was_really_just_fighter_with_int18/";
         private static string html = "";
 
         static void Main(string[] args)
