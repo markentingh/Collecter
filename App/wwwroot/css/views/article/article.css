@@ -22,6 +22,26 @@
 .raw-html > .box {
   overflow: auto !important;
 }
+.article-text h1,
+.article-text h2,
+.article-text h3,
+.article-text h4,
+.article-text h5,
+.article-text h6,
+.article-text span,
+.article-text li,
+.article-text p {
+  line-height: 1.35 !important;
+}
+.article-text span,
+.article-text li,
+.article-text p,
+.article-text blockquote {
+  font-size: 17px;
+}
+.article-text p {
+  padding: 0 0 15px 0;
+}
 .article-text .font-1 {
   font-size: 17px;
 }
@@ -39,4 +59,28 @@
 }
 .article-text .font-6 {
   font-size: 38px;
+}
+.article-text li {
+  padding-bottom: 7px;
+}
+.article-text ul {
+  padding-bottom: 15px;
+  padding-left: 10px;
+}
+.article-text li > ul {
+  padding-top: 7px;
+  padding-left: 30px;
+  padding-bottom: 0px;
+}
+.article-text img {
+  display: block;
+  padding-top: 15px;
+  max-width: 100%;
+}
+.article-text blockquote {
+  font-style: italic;
+  margin: 5px 0 15px 0px;
+  padding: 7px 7px 7px 20px;
+  line-height: 1.3 !important;
+  background: rgba(255, 255, 255, 0.05);
 }

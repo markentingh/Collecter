@@ -108,7 +108,6 @@
     <Build Include="dbo\Indexes\IndexArticleScore.sql" />
     <Build Include="dbo\Indexes\IndexArticleSentences.sql" />
     <Build Include="dbo\Indexes\IndexArticleSubjects.sql" />
-    <Build Include="dbo\Indexes\IndexArticleTopics.sql" />
     <Build Include="dbo\Indexes\IndexArticleUrl.sql" />
     <Build Include="dbo\Indexes\IndexArticleWords.sql" />
     <Build Include="dbo\Indexes\IndexArticleWordsByArticle.sql" />
@@ -120,10 +119,6 @@
     <Build Include="dbo\Indexes\IndexStatisticsResultsProject.sql" />
     <Build Include="dbo\Indexes\IndexSubjectsBreadcrumb.sql" />
     <Build Include="dbo\Indexes\IndexSubjectsHierarchy.sql" />
-    <Build Include="dbo\Indexes\IndexSubjectTopics.sql" />
-    <Build Include="dbo\Indexes\IndexTopicArticles.sql" />
-    <Build Include="dbo\Indexes\IndexTopicsSubjects.sql" />
-    <Build Include="dbo\Indexes\IndexTopicSubjects.sql" />
     <Build Include="dbo\Indexes\IndexWords.sql" />
     <Build Include="dbo\Sequences\SequenceArticleBugs.sql" />
     <Build Include="dbo\Sequences\SequenceArticles.sql" />
@@ -132,8 +127,7 @@
     <Build Include="dbo\Sequences\SequenceFeeds.sql" />
     <Build Include="dbo\Sequences\SequenceStatisticsProjects.sql" />
     <Build Include="dbo\Sequences\SequenceStatisticsResults.sql" />
-    <Build Include="dbo\Sequences\SequenceSubects.sql" />
-    <Build Include="dbo\Sequences\SequenceTopics.sql" />
+    <Build Include="dbo\Sequences\SequenceSubjects.sql" />
     <Build Include="dbo\Sequences\SequenceUsers.sql" />
     <Build Include="dbo\Sequences\SequenceWords.sql" />
     <Build Include="dbo\Stored Procedures\Articles\Article_Add.sql" />

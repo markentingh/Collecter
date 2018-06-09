@@ -11,7 +11,7 @@ namespace Collector.Pages
             if(User.userId > 0)
             {
                 //redirect to dashboard
-                return base.Render(path, Redirect("/subjects/"));
+                return base.Render(path, Redirect("/articles/"));
             }
 
             //check for database reset

@@ -1,6 +1,6 @@
 ﻿<div class="listing-item">
     <div class="title">
-        <a href="/dashboard/articles/analyze?url={{encoded-url}}" class="article-title">{{title}}</a>
+        <a href="/article?url={{encoded-url}}" class="article-title">{{title}}</a>
     </div>
     <div class="url"><a href="{{url}}" target="_blank">{{url}}</a></div>
 
@@ -12,7 +12,7 @@
     {{/show-breadcrumb}}
 
     <div class="info">
-        {{show-file-size}}<div class="col">file size: <span class="val">{{file-size}}KB</span></div>" : "") +{{/show-file-size}}
+        {{show-file-size}}<div class="col">file size: <span class="val">{{file-size}}KB</span></div>{{/show-file-size}}
         {{show-words}}<div class="col">words: <span class="val">{{words}}</span></div>{{/show-words}}
         {{show-sentences}}<div class="col">sentences: <span class="val">{{sentences}}</span></div>{{/show-sentences}}
         {{show-important-words}}<div class="col">important words: <span class="important">{{important-words}}</span></div>{{/show-important-words}}

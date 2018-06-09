@@ -72,7 +72,21 @@
                                     //add name to known attributes list
                                     knownAttrs.push(attrs[x].name);
                                 }
-                                parent.a[knownAttrs.indexOf(attrs[x].name)] = attrs[x].value;
+                                if (attrs[x].value.indexOf('data:image') >= 0) {
+                                    //embedded images (base64) should be ignored
+                                    return null;
+                                }
+                                var attr;
+                                if (attrs[x].name == 'src') {
+                                    attr = node.src;
+                                }
+                                else if (attrs[x].name == 'href') {
+                                    attr = node.href;
+                                }
+                                else {
+                                    attr = attrs[x].value;
+                                }
+                                parent.a[knownAttrs.indexOf(attrs[x].name)] = clean(attr);
                                 break;
                         }
 
@@ -94,13 +108,22 @@
                     var val = node.nodeValue.replace('\n', '').replace('\r', '').trim();
                     if (val != '') {
                         //replace unknown characters in text
-                        parent.v = val.replace(/“/g, '"').replace(/”/g, '"').replace(/[\u{0080}-\u{FFFF}]/gu, '');
+                        parent.v = clean(val);
                         return parent;
                     }
                 }
                 break;
         }
         return null;
+    }
+
+    function clean(str) {
+        return unescape(str
+        .replace(/\u00a0/g, " ")
+        .replace(/“/g, '"') //replace open quotes
+        .replace(/”/g, '"') //replace close quotes
+        .replace(/"/g, '"') //escape quotes (for C#)
+        .replace(/[\u{0080}-\u{FFFF}]/gu, '')); //remove unknown characters
     }
 
     window["__getDOM"] = getDOM;

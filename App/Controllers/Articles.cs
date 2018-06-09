@@ -19,7 +19,8 @@ namespace Collector.Pages
             //load articles list
             try
             {
-                scaffold.Data["content"] = Common.Platform.Articles.RenderList(); ;
+                scaffold.Data["expanded"] = "expanded";
+                scaffold.Data["content"] = Common.Platform.Articles.RenderList();
             }
             catch (ServiceErrorException)
             {

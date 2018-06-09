@@ -14,7 +14,7 @@ namespace Collector.Common.Analyze
 {
     public static class Html
     {
-        #region "Get HTML Document"
+        #region "Step #1: Get HTML Document"
         public static AnalyzedArticle DeserializeArticle(string dom)
         {
             //deserialize object from string
@@ -207,7 +207,7 @@ namespace Collector.Common.Analyze
         }
         #endregion
 
-        #region "Get HTML Content & Words"
+        #region "Step #2: Get HTML Content & Words"
         public static void GetContentFromDOM(
             AnalyzedArticle article,
             List<AnalyzedTag> tagNames, 
@@ -529,7 +529,7 @@ namespace Collector.Common.Analyze
         }
         #endregion
 
-        #region "Get Article Text"
+        #region "Step #3: Get Article Text"
         public static void GetArticleElements(AnalyzedArticle article)
         {
             var text = article.tags.text.OrderBy(a => a.words.Count * -1);
@@ -621,6 +621,7 @@ namespace Collector.Common.Analyze
             var isFound = false;
             var isBad = false;
             var isEnd = false;
+            var minDepth = 3;
             var badIndexes = new List<int>();
             string[] articleText;
             string articletxt = "";
@@ -643,8 +644,13 @@ namespace Collector.Common.Analyze
                     checkedIndexes.Add(y);
                     elem = article.elements[y];
                     if (Objects.IsEmpty(elem)) { continue; }
+                    if(badIndexes.Where(a => elem.hierarchyIndexes.Contains(a)).Count() > 0) {
+                        //skip elements that are part of bad parent elements
+                        continue;
+                    }
                     if (elem.hierarchyIndexes.Contains(parentId))
                     {
+                        //determine which elements to include in the results
                         if (elem.tagName == "#text")
                         {
                             //element is text & is part of parent index
@@ -658,6 +664,11 @@ namespace Collector.Common.Analyze
                                 //check for any text from the article that does not belong,
                                 //such as advertisements, side-bars, photo credits, widgets
                                 isBad = false;
+
+                                if(Rules.badText.Where(a => articletxt.IndexOf(a) == 0).Count() > 0)
+                                {
+                                    continue;
+                                }
 
                                 //search down the hierarchy DOM tree
                                 var zi = 0;
@@ -674,7 +685,7 @@ namespace Collector.Common.Analyze
                                     //check classes for bad element indicators within class names
                                     if (hElem.className.Count > 0)
                                     {
-                                        if (hElem.className.Where(c => Rules.badClasses.Where(bc => c.IndexOf(bc) >= 0).Count() > 0).Count() > 0)
+                                        if (hElem.hierarchyIndexes.Length > minDepth && hElem.className.Where(c => Rules.badClasses.Where(bc => c.IndexOf(bc) >= 0).Count() > 0).Count() > 0)
                                         {
                                             isBad = true; break;
                                         }
@@ -689,13 +700,13 @@ namespace Collector.Common.Analyze
                                 }
 
                                 //check for bad keywords within text
-                                if (Rules.badKeywords.Where(c => articleText.Contains(c)).Count() > 0)
+                                if (elem.hierarchyIndexes.Length > minDepth && Rules.badKeywords.Where(c => articleText.Contains(c)).Count() > 0)
                                 {
                                     isBad = true;
                                     isEnd = true;
                                 }
 
-                                if (articleText.Length <= 20)
+                                if (elem.hierarchyIndexes.Length > minDepth && articleText.Length <= 20)
                                 {
                                     if (articleText.Where(t => Rules.badPhotoCredits.Contains(t)).Count() >= 2)
                                     {
@@ -703,14 +714,14 @@ namespace Collector.Common.Analyze
                                         isBad = true;
                                     }
                                 }
-                                if (articleText.Length <= 7 && isBad != true)
+                                if (elem.hierarchyIndexes.Length > minDepth && articleText.Length <= 7 && isBad != true)
                                 {
                                     if (articleText.Where(t => Rules.badMenu.Contains(t)).Count() >= 1)
                                     {
                                         //menu
                                         isBad = true;
                                     }
-                                    if (Rules.badTrailing.Where(t => articleText.Contains(t)).Count() > 0)
+                                    if (Rules.badTrailing.Where(t => articleText.Contains(t)).Count() > 1 && elem.index > (article.elements.Count * 0.75))
                                     {
                                         //end of article
                                         isBad = true;
@@ -727,6 +738,28 @@ namespace Collector.Common.Analyze
                                     }
                                     //clean up text in element
                                     elem.text = WebUtility.HtmlDecode(elem.text);
+                                }
+                            }
+                        }
+                        else if(elem.tagName == "br")
+                        {
+                            //add line break
+                            bodyText.Add(elem.index);
+                        }
+                        else if(elem.tagName == "img")
+                        {
+                            //add image
+                            bodyText.Add(elem.index);
+                        }
+                        else if(elem.tagName == "a")
+                        {
+                            //check for bad URLs in anchor link
+                            if (elem.attribute.ContainsKey("href"))
+                            {
+                                if (Rules.badUrls.Where(a => elem.attribute["href"].IndexOf(a) >= 0).Count() > 0)
+                                {
+                                    badIndexes.Add(elem.index);
+                                    continue;
                                 }
                             }
                         }
@@ -933,6 +966,36 @@ namespace Collector.Common.Analyze
                 if (exceptions.Contains(character) == true) { return false; }
             }
             return Rules.sentenceSeparators.Contains(character);
+        }
+
+        public static void GetImages(AnalyzedArticle article)
+        {
+            article.images = new List<AnalyzedImage>();
+            for (var x = 0; x < article.body.Count; x++)
+            {
+                var elem = article.elements[article.body[x]];
+                if (elem.tagName == "img" && elem.attribute.ContainsKey("src"))
+                {
+                    var img = new AnalyzedImage()
+                    {
+                        index = elem.index,
+                        url = elem.attribute["src"]
+                    };
+
+                    img.filename = img.url.GetFilename();
+                    img.extension = img.url.GetFileExtension().ToLower();
+
+                    switch (img.extension)
+                    {
+                        case "jpg": case "jpeg": case "png": case "gif": case "tiff":
+                        case "webp": case "bpg": case "flif": 
+                            //only add supported image types
+                            article.images.Add(img);
+                            break;
+                    }
+                    
+                }
+            }
         }
         #endregion
 

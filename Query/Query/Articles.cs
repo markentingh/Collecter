@@ -33,7 +33,8 @@ namespace Query
                     {"relavance", article.relavance },
                     {"importance", article.importance },
                     {"fiction", article.fiction },
-                    {"analyzed", article.analyzed }
+                    {"analyzed", article.analyzed },
+                    {"active", article.active }
                 }
             );
             } catch(Exception ex)
@@ -158,8 +159,8 @@ namespace Query
                     {"isActive", (int)isActive },
                     {"isDeleted", isDeleted },
                     {"minImages", minImages },
-                    {"dateStart", dateStart == null ? "" : dateStart.GetValueOrDefault().ToString("yyyy/MM/dd hh:mm:ss tt") },
-                    {"dateEnd", dateEnd == null ? "" : dateEnd.GetValueOrDefault().ToString("yyyy/MM/dd hh:mm:ss tt") },
+                    {"dateStart", dateStart == null ? "" : dateStart.Value.ToString("dd/MM/yyyy hh:mm:ss tt")},
+                    {"dateEnd", dateEnd == null ? "" : dateEnd.Value.ToString("dd/MM/yyyy hh:mm:ss tt")},
                     {"orderby", (int)orderBy },
                     {"start", start },
                     {"length", length },
@@ -181,8 +182,8 @@ namespace Query
                     {"isActive", (int)isActive },
                     {"isDeleted", isDeleted },
                     {"minImages", minImages },
-                    {"dateStart", dateStart == null ? "" : dateStart.GetValueOrDefault().ToString("yyyy/MM/dd hh:mm:ss tt") },
-                    {"dateEnd", dateEnd == null ? "" : dateEnd.GetValueOrDefault().ToString("yyyy/MM/dd hh:mm:ss tt") },
+                    {"dateStart", dateStart == null ? "" : dateStart.Value.ToString("dd/MM/yyyy hh:mm:ss tt")},
+                    {"dateEnd", dateEnd == null ? "" : dateEnd.Value.ToString("dd/MM/yyyy hh:mm:ss tt")},
                     {"orderby", (int)orderBy },
                     {"start", start },
                     {"length", length },
@@ -203,8 +204,8 @@ namespace Query
                     {"isActive", (int)isActive },
                     {"isDeleted", isDeleted },
                     {"minImages", minImages },
-                    {"dateStart", dateStart == null ? "" : dateStart.GetValueOrDefault().ToString("yyyy/MM/dd hh:mm:ss tt") },
-                    {"dateEnd", dateEnd == null ? "" : dateEnd.GetValueOrDefault().ToString("yyyy/MM/dd hh:mm:ss tt") },
+                    {"dateStart", dateStart == null ? "" : dateStart.Value.ToString("dd/MM/yyyy hh:mm:ss tt")},
+                    {"dateEnd", dateEnd == null ? "" : dateEnd.Value.ToString("dd/MM/yyyy hh:mm:ss tt")},
                     {"orderby", (int)orderBy },
                     {"start", start },
                     {"length", length },

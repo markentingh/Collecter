@@ -5,7 +5,7 @@ namespace Collector.Components
     {
         public static string Render(string title, string classNames, string contents, bool expanded = true, bool whiteBg = false)
         {
-            var scaffold = new Scaffold("/Views/Components/Accordion/accordion.html", Server.Instance.Scaffold);
+            var scaffold = new Scaffold("/Views/Components/Accordion/accordion.html", Server.Scaffold);
             scaffold.Data["title"] = title;
             scaffold.Data["classNames"] = classNames;
             scaffold.Data["contents"] = contents;

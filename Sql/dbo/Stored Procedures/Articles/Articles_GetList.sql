@@ -12,8 +12,8 @@
 	@bugsonly bit = 0
 AS
 	/* set default dates */
-	IF (@dateStart IS NULL) BEGIN SET @dateStart = DATEADD(YEAR, -100, GETDATE()) END
-	IF (@dateEnd IS NULL) BEGIN SET @dateEnd = DATEADD(YEAR, 100, GETDATE()) END
+	IF (@dateStart IS NULL OR @dateStart = '') BEGIN SET @dateStart = DATEADD(YEAR, -100, GETDATE()) END
+	IF (@dateEnd IS NULL OR @dateEnd = '') BEGIN SET @dateEnd = DATEADD(YEAR, 100, GETDATE()) END
 
 	/* get subjects from array */
 	SELECT * INTO #subjects FROM dbo.SplitArray(@subjectIds, ',')
@@ -27,17 +27,14 @@ AS
 	SELECT articleId INTO #searchedarticles FROM ArticleWords
 	WHERE wordId IN (SELECT * FROM #wordids)
 
-
-
+	/* get list of articles that match filter */
 	SELECT * FROM (
 		SELECT ROW_NUMBER() OVER(ORDER BY 
 			CASE WHEN @orderby = 1 THEN a.datecreated END ASC,
 			CASE WHEN @orderby = 2 THEN a.datecreated END DESC,
 			CASE WHEN @orderby = 3 THEN a.score END ASC,
 			CASE WHEN @orderby = 4 THEN a.score END DESC
-		) AS rownum, a.*, 
-		(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=0) AS bugsopen,
-		(SELECT COUNT(*) FROM ArticleBugs WHERE articleId=a.articleId AND status=1) AS bugsresolved,
+		) AS rownum, a.*,
 		s.breadcrumb, s.hierarchy, s.title AS subjectTitle
 		FROM Articles a 
 		LEFT JOIN Subjects s ON s.subjectId=a.subjectId
@@ -49,9 +46,6 @@ AS
 			OR a.title LIKE '%' + @search + '%'
 			OR a.summary LIKE '%' + @search + '%'
 		) 
-		AND a.articleId = CASE 
-			WHEN @bugsonly=1 THEN (SELECT TOP 1 articleId FROM ArticleBugs WHERE articleId=a.articleId) 
-			ELSE a.articleId END
 		AND a.active = CASE WHEN @isActive = 2 THEN a.active ELSE @isActive END
 		AND a.deleted=@isDeleted
 		AND a.images >= @minImages

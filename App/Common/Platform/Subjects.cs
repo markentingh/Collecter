@@ -44,8 +44,8 @@ namespace Collector.Common.Platform
             var inject = new Datasilk.Response() { };
 
             var html = new StringBuilder();
-            var list = new Scaffold("/Views/Subjects/subject.html", server.Scaffold);
-            var item = new Scaffold("/Views/Subjects/list-item.html", server.Scaffold);
+            var list = new Scaffold("/Views/Subjects/subject.html", Server.Scaffold);
+            var item = new Scaffold("/Views/Subjects/list-item.html", Server.Scaffold);
             var subjects = Query.Subjects.GetList("", parentId);
             var indexes = new string[] { };
             if (parentId > 0)

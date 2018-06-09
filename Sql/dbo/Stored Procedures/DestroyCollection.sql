@@ -13,13 +13,8 @@ AS
 		DELETE FROM DownloadQueue
 		DELETE FROM FeedsCheckedLog
 	END
-	DELETE FROM TopicArticles
 
 	IF @subjects = 1 BEGIN
 		DELETE FROM Subjects
 		DELETE FROM Words
-	END
-
-	IF @topics = 1 BEGIN
-		DELETE FROM Topics
 	END

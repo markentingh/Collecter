@@ -9,12 +9,7 @@ namespace Collector.Models.Article
     {
         public int id;
         public int feedId;
-        public string rawHtml;
-        public string url;
-        public string domain;
-        public string pageTitle;
-        public string title;
-        public string summary;
+        public int fileSize;
         public int relevance;
         public int importance;
         public int totalWords;
@@ -27,6 +22,12 @@ namespace Collector.Models.Article
         public int yearEnd;
         public List<int> years;
         public bool fiction;
+        public string rawHtml;
+        public string url;
+        public string domain;
+        public string pageTitle;
+        public string title;
+        public string summary;
         public List<DomElement> elements;
         public AnalyzedTags tags;
         public List<AnalyzedTag> tagNames;
@@ -34,6 +35,7 @@ namespace Collector.Models.Article
         public List<AnalyzedWord> words;
         public List<AnalyzedPhrase> phrases;
         public List<ArticleSubject> subjects;
+        public List<AnalyzedImage> images;
         public List<int> body;
         public List<DomElement> bodyElements;
         public List<string> sentences;
@@ -55,6 +57,7 @@ namespace Collector.Models.Article
             parentIndexes = new List<AnalyzedParentIndex>();
             people = new List<AnalyzedPerson>();
             phrases = new List<AnalyzedPhrase>();
+            images = new List<AnalyzedImage>();
             publishDate = DateTime.Now;
             rawHtml = html;
             relevance = 0;
@@ -132,8 +135,11 @@ namespace Collector.Models.Article
 
     public class AnalyzedImage
     {
+        public int index;
         public string url;
-        public int relavance;
+        public string filename;
+        public string extension;
+        public bool exists = false;
     }
 
     public class AnalyzedAuthor
@@ -214,6 +220,9 @@ namespace Collector.Models.Article
         anchorLink = 12,
         menuItem = 13,
         listItem = 14,
+        image = 15,
+        lineBreak = 16,
+        quote = 17
     }
 
     public enum WordType
@@ -274,14 +283,19 @@ namespace Collector.Models.Article
         public static string[] badAttributes = new string[] { "id" };
 
         public static string[] badClasses = new string[] {
-            "social", "advert", "menu", "comment", "keyword",
-            "nav", "logo", "search", "form", "topic",
-            "filter", "categor", "bread", "credit", "disqus", "callout",
+            "social", "advert", "menu", "comments", "keyword", "twitter", "replies", "reply",
+            "nav", "logo", "search", "form", "topic", "trending", "sidebar", "discussion",
+            "filter", "categor", "bread", "credit", "disqus", "callout", "toolbar", "masthead",
             "graphic", "image", "photo", "addthis", "tool", "separat", "access",
-            "related", "-ad-", "hidden",
-            "semantic", "banner", "subscribe", "button", "reddit", "login", "signup",
-            "signin"
+            "related", "-ad-", "ad-cont", "hidden", "tags", "contacts", "popular", "promo",
+            "semantic", "banner", "subscri", "button", "reddit", "login", "signup", "sticky",
+            "signin", "recommend", "promot", "reading", "share", "sharing", "facebook",
+            "-bio", "author-", "poweredby", "powered-by"
         };
+
+        public static string[] badUrls = new string[] { "/ads/", "/ad/", "/click/", "/bait/", "refer" };
+
+        public static string[] badText = new string[] { "contents", "table of contents" };
 
         public static string[] badWords = new string[] { "shit", "crap", "asshole", "shitty", "bitch", "slut", "whore", "fuck", "fucking", "fucker", "fucked", "fuckers", "fucks" };
 
@@ -291,7 +305,7 @@ namespace Collector.Models.Article
 
         public static string[] badMenu = new string[] { "previous", "next", "post", "posts", "entry", "entries", "article", "articles", "more", "back", "go", "view", "about", "home", "blog" };
 
-        public static string[] badTrailing = new string[] { "additional", "resources", "notes", "comment" };
+        public static string[] badTrailing = new string[] { "additional", "resources", "notes", "comment", "discuss", "post", "links", "share", "article" };
 
         public static string[] badChars = new string[] { "|", ":", "{", "}", "[", "]" };
 
@@ -312,11 +326,12 @@ namespace Collector.Models.Article
     
     public class ArticlePart
     {
-        public TextType type = TextType.mainArticle;
+        public List<TextType> type = new List<TextType>();
         public string title = "";
         public string value = "";
         public int fontSize = 1;
         public int indent = 0;
+        public int quote = 0;
         public int listItem = 0;
     }
 }

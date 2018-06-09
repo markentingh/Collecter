@@ -20,14 +20,15 @@
 	@relavance smallint = 1,
 	@importance smallint = 1,
 	@fiction smallint = 1,
-	@analyzed float = 0.1
+	@analyzed float = 0.1,
+	@active bit = 1
 AS
 	DECLARE @articleId int = NEXT VALUE FOR SequenceArticles
 	INSERT INTO Articles 
 	(articleId, feedId, subjects, subjectId, score, domain, url, title, summary, filesize, wordcount, sentencecount, paragraphcount, importantcount, analyzecount,
-	yearstart, yearend, years, images, datecreated, datepublished, relavance, importance, fiction, analyzed)
+	yearstart, yearend, years, images, datecreated, datepublished, relavance, importance, fiction, analyzed, active)
 	VALUES 
 	(@articleId, @feedId, @subjects, @subjectId, @score, @domain, @url, @title, @summary, @filesize, @wordcount, @sentencecount, @paragraphcount, @importantcount, 1,
-	@yearstart, @yearend, @years, @images, GETDATE(), @datepublished, @relavance, @importance, @fiction, @analyzed)
+	@yearstart, @yearend, @years, @images, GETDATE(), @datepublished, @relavance, @importance, @fiction, @analyzed, @active)
 
 	SELECT @articleId
