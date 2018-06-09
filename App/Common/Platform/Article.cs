@@ -302,6 +302,11 @@ namespace Collector.Common.Platform
                         {
                             //check for list
                             case "ul": case "ol":
+                                var tmp = parts.Where(a => a.type.Contains(TextType.listItem)).ToList();
+                                if(tmp.Count == 44)
+                                {
+
+                                }
                                 if (!indents.Contains(baseElem.index))
                                 {
                                     indents.Add(baseElem.index);
@@ -311,7 +316,7 @@ namespace Collector.Common.Platform
                                     var ix = indents.IndexOf(baseElem.index);
                                     if (ix >= 0 && ix < indents.Count - 1)
                                     {
-                                        indents.RemoveRange(ix + 1, indents.Count - ix - 2);
+                                        indents.RemoveRange(ix + 1, indents.Count - ix - 1);
                                     }
                                     else if (ix < 0)
                                     {
@@ -353,7 +358,8 @@ namespace Collector.Common.Platform
                     var nline = new ArticlePart()
                     {
                         type = new List<TextType>() { TextType.mainArticle },
-                        quote = inQuote
+                        quote = inQuote,
+                        indent = part.indent
                     };
                     parts.Add(nline);
                 }
@@ -365,7 +371,7 @@ namespace Collector.Common.Platform
                 }
 
                 //finally, add part to render list
-                if(part.type.Count == 0) { part.type.Add(TextType.mainArticle); }
+                if(part.type.Count == 0 || part.type.Contains(TextType.listItem)) { part.type.Add(TextType.mainArticle); }
                 parts.Add(part);
                 lastHierarchy = elem.hierarchyIndexes;
             }
@@ -375,6 +381,8 @@ namespace Collector.Common.Platform
             indent = 0;
             inQuote = 0;
             hasQuote = false;
+
+            var listitems = parts.Where(a => a.type.Contains(TextType.listItem)).ToList();
 
             foreach(var part in parts)
             {
@@ -404,12 +412,8 @@ namespace Collector.Common.Platform
                 }
 
                 //escape list if neccessary
-                if (part.type.Where(a => a == TextType.listItem || a == TextType.anchorLink || a == TextType.lineBreak).Count() == 0)
+                if (part.indent == 0 && indent > 0)
                 { 
-                    if(part.type.Where(a => a == TextType.mainArticle).Count() > 0)
-                    {
-                        if(part.value != "") { goto endEscape; }
-                    }
                     if (indentOpen == true)
                     {
                         html.Append("</li>");
@@ -421,8 +425,6 @@ namespace Collector.Common.Platform
                     }
                     indent = 0;
                 }
-
-                endEscape:
 
                 //render contents of article part
                 var endTags = "";
@@ -443,9 +445,9 @@ namespace Collector.Common.Platform
                     else if (part.indent < indent)
                     {
                         //end of unordered list(s)
-                        for (var x = part.indent; x > indent; x--)
+                        for (var x = indent; x > part.indent; x--)
                         {
-                            html.Append("</ul>");
+                            html.Append("</li></ul>");
                         }
                         indent = part.indent;
                     }
