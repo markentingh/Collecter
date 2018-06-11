@@ -207,539 +207,409 @@ namespace Collector.Common.Analyze
         }
         #endregion
 
-        #region "Step #2: Get HTML Content & Words"
-        public static void GetContentFromDOM(
-            AnalyzedArticle article,
-            List<AnalyzedTag> tagNames, 
-            List<DomElement> textElements,
-            List<DomElement> anchorElements,
-            List<DomElement> headerElements,
-            List<DomElement> imgElements,
-            List<AnalyzedParentIndex> parentIndexes)
+        #region "Step #2: Get Article Info"
+        public static void GetArticleInfoFromDOM(AnalyzedArticle article)
         {
-            DomElement traverseElement;
-
-            foreach (DomElement element in article.elements)
+            //get title
+            article.title = "";
+            var title = article.elements.Where(a => a.tagName == "title").FirstOrDefault();
+            if(title != null)
             {
-                switch (element.tagName.ToLower())
+                var child = title.FirstChild;
+                if(child != null)
                 {
-                    case "#text":
-                        //sort text elements
-                        textElements.Add(element);
-                        traverseElement = element;
-                        //add element's parent indexes to list
-                        do
+                    article.title = child.text;
+                }
+            }
+            if(article.title == "")
+            {
+                //get title from header tags
+                var headers = article.elements.Where(a =>
+                {
+                    switch (a.tagName)
+                    {
+                        case "h1": case "h2": case "h3": case "h4": case "h5": case "h6":
+                            return true;
+                    }
+                    return false;
+                }).OrderBy(a => a.tagName).ToList();
+                if(headers.Count > 0)
+                {
+                    for(var x = 0; x < headers.Count; x++)
+                    {
+                        var child = headers[x].FirstChild;
+                        if(child != null)
                         {
-                            var parentIndex = parentIndexes.FindIndex(x => x.index == traverseElement.parent);
-                            if (parentIndex >= 0)
+                            if(child.text != "")
                             {
-                                //update existing parent index
-                                var parent = parentIndexes[parentIndex];
-                                parent.elements.Add(element.index);
-                                parent.textLength += element.text.Length;
-                                parentIndexes[parentIndex] = parent;
-                            }
-                            else
-                            {
-                                //create new parent index
-                                var parent = new AnalyzedParentIndex();
-                                parent.index = traverseElement.parent;
-                                parent.elements = new List<int>();
-                                parent.elements.Add(element.index);
-                                parent.textLength = element.text.Length;
-                                parentIndexes.Add(parent);
-                            }
-                            if (traverseElement.parent > -1)
-                            {
-                                //get next parent element
-                                traverseElement = article.elements[traverseElement.parent];
-                            }
-                            else { break; }
-                        } while (traverseElement.parent > 0);
-                        break;
-                    case "a":
-                        //sort anchor links
-                        anchorElements.Add(element);
-                        break;
-                    case "h1":
-                    case "h2":
-                    case "h3":
-                    case "h4":
-                    case "h5":
-                    case "h6":
-                        headerElements.Add(element);
-                        break;
-                    case "img":
-                        imgElements.Add(element);
-                        break;
-                    case "title":
-                        if (article.title == "")
-                        {
-                            article.pageTitle = article.title = article.elements[element.index + 1].text.Trim();
-
-                            //check for 404 error
-                            if (article.title.IndexOf("404") >= 0)
-                            {
-                                return;
+                                article.title = child.text;
+                                break;
                             }
                         }
-                        break;
-                }
-
-                //add new tag to list or incriment count of existing tag in list
-                var tagIndex = tagNames.FindIndex(x => x.name == element.tagName);
-                if (tagIndex >= 0)
-                {
-                    //incriment tag name count
-                    var t = tagNames[tagIndex];
-                    t.count += 1;
-                    tagNames[tagIndex] = t;
-                }
-                else
-                {
-                    //add new tag to list
-                    var t = new AnalyzedTag();
-                    t.name = element.tagName;
-                    t.count = 1;
-                    tagNames.Add(t);
-                }
-            }
-        }
-        
-        public static void GetWordsFromDOM(AnalyzedArticle article, List<DomElement> text)
-        {
-            string[] texts;
-            AnalyzedWord word;
-            AnalyzedWordInText wordIn;
-            var index = 0;
-            var i = -1;
-            var allWords = new List<AnalyzedWord>(); //every word in text
-            var words = new List<AnalyzedWord>(); //every unique word in text
-
-
-            foreach (DomElement element in text)
-            {
-                var textTypesCount = 13;
-                var wordsInText = new List<AnalyzedWordInText>();
-                var newText = new AnalyzedText();
-                newText.index = element.index;
-                //separate all words & symbols
-                texts = SeparateWordsFromText(element.text);
-
-                for (var x = 0; x < texts.Length; x++)
-                {
-                    if (texts[x].Trim() == "") { continue; }
-                    wordIn = new AnalyzedWordInText();
-                    wordIn.word = texts[x];
-                    wordIn.index = x;
-
-                    //add word to all words list
-                    index = allWords.FindIndex(w => w.word == texts[x]);
-                    if (index >= 0)
-                    {
-                        //incriment word count
-                        var w = allWords[index];
-                        w.count += 1;
-                        allWords[index] = w;
-                    }
-                    else
-                    {
-                        //add new word to list
-                        word = new AnalyzedWord();
-                        word.word = texts[x];
-                        word.count = 1;
-                        allWords.Add(word);
-                    }
-
-                    //set reference to article word
-                    wordsInText.Add(wordIn);
-                }
-                newText.words = wordsInText;
-
-                //check all words for patterns to determine
-                //what type of text is in this element
-                i = -1;
-                var len = wordsInText.Count;
-                var possibleTypes = new int[textTypesCount + 1];
-
-                foreach (AnalyzedWordInText aword in wordsInText)
-                {
-                    i++;
-                    if (CheckWordForPossibleTypes(article, element, aword.word.ToLower(), ref possibleTypes, len) == false)
-                    {
-                        break;
                     }
                 }
-
-                //check element hierarchy to guess what kind of content it consists of
-                if (element.text.Length >= 4)
-                {
-                    //useless type
-                    if (element.text.Trim().IndexOf("<!--") == 0)
-                    {
-                        possibleTypes[(int)TextType.useless] = 10000;
-                    }
-                }
-                if (element.HasTagInHierarchy("ul") && element.HasTagInHierarchy("li"))
-                {
-                    //menu item
-                    possibleTypes[(int)TextType.menuItem] += 100;
-                }
-                else if (element.HasTagInHierarchy("a"))
-                {
-                    //anchor link
-                    possibleTypes[(int)TextType.anchorLink] += 100;
-                }
-
-                //sort possible types by count
-                var possTypes = new List<PossibleTextType>();
-                var e = 0;
-                for (e = 0; e <= textTypesCount; e++)
-                {
-                    var newPoss = new PossibleTextType();
-                    newPoss.type = (TextType)e;
-                    newPoss.count = possibleTypes[e];
-                    possTypes.Add(newPoss);
-                }
-                var sortedPossTypes = possTypes.OrderBy(p => p.count * -1).ToList();
-                //newText.possibleTypes = sortedPossTypes;
-
-                //figure out dominant type from possible types
-                for (e = 0; e < sortedPossTypes.Count; e++)
-                {
-                    var t = sortedPossTypes[e];
-                    var found = false;
-                    if (t.count > 1)
-                    {
-                        if (t.type == TextType.script)
-                        {
-                            if (t.count >= 5) { found = true; }
-                        }
-                        else if (t.type == TextType.style)
-                        {
-                            if (t.count >= 5) { found = true; }
-                        }
-                        else if (t.type == TextType.useless)
-                        {
-                            if (t.count >= 5) { found = true; }
-                        }
-                        else if (t.type == TextType.copyright)
-                        {
-                            if (t.count >= 2) { found = true; }
-                        }
-                        else if (t.type == TextType.publishDate)
-                        {
-                            if (t.count >= 5)
-                            {
-                                found = true;
-                            }
-                        }
-                        else if (t.type == TextType.anchorLink)
-                        {
-                            found = true;
-                        }
-                        else if (t.type == TextType.menuItem)
-                        {
-                            found = true;
-                        }
-                    }
-                    if (found == true)
-                    {
-                        newText.type = t.type;
-                        break;
-                    }
-                }
-
-                //add text to article results
-                article.tags.text.Add(newText);
             }
-        }
 
-        public static string[] SeparateWordsFromText(string text, string[] exceptions = null)
-        {
-            if (exceptions != null)
+            //get page description
+            var description = article.elements.Where(a => a.tagName == "meta" && a.attribute.ContainsKey("name") && a.attribute["name"].IndexOf("description") >= 0).FirstOrDefault();
+            if(description != null)
             {
-
-                var ws = Rules.wordSeparators.Where(w => !exceptions.Contains(w)).ToArray();
-                return text.ReplaceAll(" {1} ", ws).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Split(' ').Where(w => w != "").ToArray();
+                article.summary = description.attribute["content"];
             }
-            return text.ReplaceAll(" {1} ", Rules.wordSeparators).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Split(' ').Where(w => w != "").ToArray();
-        }
-
-        private static bool CheckWordForPossibleTypes(AnalyzedArticle article, DomElement element, string w, ref int[] possibleTypes, int totalWords)
-        {
-            if (Rules.scriptSeparators.Contains(w))
-            {
-                if (element.index > 0)
-                {
-                    if (article.elements[element.index - 1].tagName == "script")
-                    {
-                        possibleTypes[(int)TextType.script] += 5000;
-                        return false;
-                    }
-                    if (article.elements[element.index - 1].tagName == "style")
-                    {
-                        possibleTypes[(int)TextType.style] += 5000;
-                        return false;
-                    }
-                }
-
-
-
-            }
-            else if (w == "copyright")
-            {
-                possibleTypes[(int)TextType.copyright] += 1;
-            }
-            else if (w.IndexOf("&copy") >= 0 || w == "©")
-            {
-                possibleTypes[(int)TextType.copyright] += 2;
-            }
-            else if (w == "rights" || w == "reserved")
-            {
-                possibleTypes[(int)TextType.copyright] += 1;
-            }
-            else if (Rules.dateTriggers.Contains(w))
-            {
-                if (totalWords < 20)
-                {
-                    //small group of text has better chance 
-                    //of being a publish date
-                    possibleTypes[(int)TextType.publishDate] += 5;
-                }
-                else
-                {
-                    possibleTypes[(int)TextType.publishDate] += 1;
-                }
-            }
-            else if (w.IndexOf("advertis") >= 0 || w.IndexOf("sponsor") >= 0)
-            {
-                if (totalWords < 10)
-                {
-                    //small group of text has better chance 
-                    //of being an advertisement
-                    possibleTypes[(int)TextType.advertisement] += 5;
-                }
-                else
-                {
-                    possibleTypes[(int)TextType.advertisement] += 1;
-                }
-            }
-            return true;
         }
         #endregion
 
-        #region "Step #3: Get Article Text"
-        public static void GetArticleElements(AnalyzedArticle article)
+        #region "Step #3: Get Article Contents"
+        public static void TraverseIndexes(AnalyzedArticle article, DomElement root, List<int> children)
         {
-            var text = article.tags.text.OrderBy(a => a.words.Count * -1);
-            var pIndexes = new List<AnalyzedElementCount>();
-            var i = 0;
-            foreach (var a in text)
+            var childNodes = root.Children();
+            for (var x = 0; x < childNodes.Count; x++)
             {
+                children.Add(childNodes[x].index);
+                TraverseIndexes(article, childNodes[x], children);
+            }
+        }
 
-                //find most relevant parent indexes shared by all article text elements
-                i++;
+        public static void CheckTagForContamination(AnalyzedElement index, DomElement element, bool isChild, StringBuilder text)
+        {
+            if (element.tagName == "#text")
+            {
+                var txt = element.text.ToLower();
+                text.Append(txt + " ");
 
-                //limit to large article text
-                if (a.words.Count < 10 && i > 2) { i--; break; }
+                var words = SeparateWordsFromText(txt.ToLower());
+                index.words += words.Length;
 
-                //limit to top 5 article text
-                //if (i > 5) { i--; break; }
-
-                foreach (int indx in article.elements[a.index].hierarchyIndexes)
+                if (words.Length < 5)
                 {
-                    var parindex = pIndexes.FindIndex(p => p.index == indx);
-                    if (parindex >= 0)
+                    var hierarchyTags = element.HierarchyTags();
+                    if (hierarchyTags.Where(a => Rules.menuTags.Contains(a)).Count() > 0
+                    )
                     {
-                        //update count for a parent index
-                        var p = pIndexes[parindex];
-                        p.count += 1;
-                        pIndexes[parindex] = p;
-                    }
-                    else
-                    {
-                        //add new parent index
-                        var p = new AnalyzedElementCount();
-                        p.index = indx;
-                        p.count = 1;
-                        pIndexes.Add(p);
+                        index.badMenu += Rules.badMenu.Where(a => txt.IndexOf(a) >= 0).Count();
                     }
                 }
-            }
-            var sortedArticleParents = pIndexes.OrderBy(p => p.index * -1).OrderBy(p => p.count * -1).ToList();
-            var topParents = sortedArticleParents.Take(10);
-            var avgIndex = topParents.Select(a => a.index).Sum() / topParents.Count();
-            
-
-
-            //get top parent indexes from sorted indexes
-            var topIndexes = new List<AnalyzedElementCount>();
-            var count = 0;
-            var lastcount = 0;
-            var minIndex = 999999;
-            for (var x = 0; x < sortedArticleParents.Count; x++)
-            {
-                count = sortedArticleParents[x].count;
-                if (count < 2) { break; }
-                if (lastcount != count && sortedArticleParents[x].index > (avgIndex * 0.5))
+                if (words.Length < 10)
                 {
-                    lastcount = count;
-                    topIndexes.Add(sortedArticleParents[x]);
+                    index.badKeywords += Rules.badKeywords.Where(a => txt.IndexOf(a) >= 0).Count();
+                }
+                if (words.Length < 20)
+                {
+                    index.badKeywords += Rules.badTrailing.Where(a => txt.IndexOf(a) >= 0).Count() > 2 ? 1 : 0;
+                }
+
+                //check for legal words
+                index.badLegal = Rules.badLegal.Where(a => txt.IndexOf(a) >= 0).Count();
+            }
+            else
+            {
+                if(isChild)
+                {
+                    //not a parent but instead a child element
+                    index.tags++;
+
+                    if (element.tagName == "a")
+                    {
+                        //check element for contamination from anchor links
+                        if (element.attribute.ContainsKey("href"))
+                        {
+                            var href = element.attribute["href"];
+                            index.badUrls += Rules.badUrls.Where(a => href.IndexOf(a) >= 0).Count() > 0 ? 1 : 0;
+                        }
+                    }else if(element.tagName == "img")
+                    {
+                        index.images++;
+                    }
+                }
+                else
+                {
+                    if(element.tagName == "head")
+                    {
+                        index.badTags++;
+                    }
+                }
+
+                //check for header
+                if (element.tagName == "header" && element.Parent.tagName == "body")
+                {
+                    index.isBad = true;
+                }
+
+                //check element for contamination from class names
+                if (element.className != null)
+                {
+                    var bad = Rules.badClasses.Where(a => !Rules.ignoreTags.Contains(element.tagName) && element.className.Where(b => b.IndexOf(a) >= 0).Count() > 0).ToList();
+                    index.badClasses += bad.Count();
+                    for (var z = 0; z < bad.Count(); z++)
+                    {
+                        if (!index.badClassNames.Contains(bad[z]))
+                        {
+                            index.badClassNames.Add(bad[z]);
+                        }
+                    }
                 }
             }
-            for (var x = 0; x < topIndexes.Count; x++)
+            //check for bad tags in hierarchy & children
+            if (Rules.badTags.Contains(element.tagName))
             {
-                if(topIndexes[x].index < minIndex)
+                index.badTags += 1;
+                if (!index.badTagNames.Contains(element.tagName))
                 {
-                    minIndex = topIndexes[x].index;
+                    index.badTagNames.Add(element.tagName);
+                }
+            }
+        }
+
+        public static void GetBestElementIndexes(AnalyzedArticle article, List<AnalyzedElement> bestIndexes, List<AnalyzedElement> badIndexes)
+        {
+            var allIndexes = new List<AnalyzedElement>();
+
+            for (var x = 0; x < article.elements.Count; x++)
+            {
+                var parent = article.elements[x];
+
+                if (Rules.skipTags.Contains(parent.tagName)) { continue; }
+
+                var index = new AnalyzedElement()
+                {
+                    index = parent.index
+                };
+                var text = new StringBuilder();
+                var hierarchy = new List<int>();
+
+                //check parent tag for contamination
+                if (parent.hierarchyIndexes.Length < 2) { continue; }
+                CheckTagForContamination(index, parent, true, text);
+                if(index.badTags > 0 || index.badClasses > 0) {
+                    badIndexes.Add(index);
+                    continue;
+                }
+
+                //check all child tags for contamination
+                TraverseIndexes(article, parent, hierarchy);
+
+                //add parent hierarchy to list
+                hierarchy = hierarchy.Concat(parent.hierarchyIndexes.ToList()).ToList();
+                for (var y = 0; y < hierarchy.Count; y++)
+                {
+                    //check each element within the hierarchy
+                    var el = article.elements[hierarchy[y]];
+                    CheckTagForContamination(index, el, !parent.hierarchyIndexes.Contains(hierarchy[y]), text);
+                }
+
+                if(index.badClasses + index.badKeywords + index.badLegal + index.badMenu + 
+                    index.badTags + index.badUrls + index.words + index.images > 0)
+                {
+                    //add analyzed DOM element to list
+                    allIndexes.Add(index);
                 }
             }
 
-            topIndexes = new List<AnalyzedElementCount>();
-
-            for (var x = 0; x < sortedArticleParents.Count; x++)
+            //filter best indexes that contain many legal words
+            for (var x = 0; x < allIndexes.Count; x++)
             {
-                if(sortedArticleParents[x].index >= minIndex)
+                var index = allIndexes[x];
+                var children = new List<int>();
+                TraverseIndexes(article, article.elements[index.index], children);
+                var legalwords = allIndexes.Select(a => children.Contains(a.index) ? a.badLegal : 0).Sum();
+
+                if (legalwords > 5)
                 {
-                    topIndexes.Add(sortedArticleParents[x]);
+                    //too many legal words
+                    index.badLegal = legalwords;
+                    index.isBad = true;
+                    var remove = allIndexes.Where(a => children.Contains(a.index)).ToList();
+                    for (var y =0; y < remove.Count; y++)
+                    {
+                        remove[y].isBad = true;
+                    }
                 }
             }
 
-            //determine best parent element that contains the entire article
+            //filter best indexes that contain menus
+            for (var x = 0; x < allIndexes.Count; x++)
+            {
+                var index = allIndexes[x];
+                var children = new List<int>();
+                TraverseIndexes(article, article.elements[index.index], children);
+                var indexes = allIndexes.Where(a => children.Contains(a.index));
+                var menus = indexes.Select(a => a.badMenu).Sum();
+
+
+                if (menus > 0)
+                {
+                    var others = 0;
+                    for (var y = 0; y < children.Count; y++)
+                    {
+                        var el = article.elements[children[y]];
+                        switch (el.tagName)
+                        {
+                            case "li":
+                            case "a":
+                            case "ul":
+                            case "ol":
+                            case "#text":
+                                break;
+                            default:
+                                switch (article.elements[el.parent].tagName)
+                                {
+                                    case "li":
+                                    case "a":
+                                    case "ul":
+                                    case "ol":
+                                        break;
+                                    default: others++; break;
+                                }
+                                break;
+                        }
+                    }
+
+                    if ((double)others / (double)menus <= 1)
+                    {
+                        //found menus
+                        index.isBad = true;
+                        var remove = allIndexes.Where(a => children.Contains(a.index)).ToList();
+                        for (var y = 0; y < remove.Count; y++)
+                        {
+                            remove[y].isBad = true;
+                        }
+                    }
+                }
+            }
+
+            //filter best indexes that contain roles
+            for (var x = 0; x < allIndexes.Count; x++)
+            {
+                var index = allIndexes[x];
+                var elem = article.elements[index.index];
+                if (elem.attribute.ContainsKey("role"))
+                {
+                    var role = elem.attribute["role"];
+                    if (Rules.badRoles.Where(a => a == role).Count() > 0)
+                    {
+                        //make all child indexes contaminated
+                        var children = new List<int>();
+                        TraverseIndexes(article, elem, children);
+                        var remove = allIndexes.Where(a => children.Contains(a.index)).ToList();
+                        for (var y = 0; y < remove.Count; y++)
+                        {
+                            remove[y].isBad = true;
+                        }
+                    }
+                }
+            }
+
+            //separate all indexes into best & bad indexes
+            for (var x = 0; x < allIndexes.Count; x++)
+            {
+                var index = allIndexes[x];
+
+                //check for bad elements
+                if (index.badClasses > 0)
+                {
+                    var z = ((double)index.badClasses / (double)index.tags);
+                    if (z > 0.15)
+                    {
+                        index.badClassNames.Add(index.badClasses + " / " + index.tags + " = " + z.ToString("#.###"));
+                    }
+                }
+                if (index.isBad == true || (double)index.badClasses / (double)index.tags > 0.15 || index.badTags > 0 || index.badUrls > 0 ||
+                   index.badMenu > 0 || index.badKeywords > 0)
+                {
+                    //bad element
+                    badIndexes.Add(index);
+                }
+                else
+                {
+                    //potentially good element
+                    bestIndexes.Add(index);
+                }
+            }
+
+            //clean memory of all indexes
+            allIndexes = new List<AnalyzedElement>();
+
+            //add up best indexes that contain other best indexes
+            for (var x = 0; x < bestIndexes.Count; x++)
+            {
+                var index = bestIndexes[x];
+                var children = new List<int>();
+                TraverseIndexes(article, article.elements[index.index], children);
+                index.bestIndexes = children.Where(a => bestIndexes.Where(b => b.index == a).Count() > 0).Count();
+                index.badIndexes = children.Where(a => badIndexes.Where(b => b.index == a).Count() > 0).Count();
+            }
+
+            //sort best indexes by word count & by best index count within children
+            bestIndexes = bestIndexes.OrderBy(a => (a.words * a.bestIndexes) * -1).ToList();
+
+            //remove best indexes that are contaminated by bad text
+            for (var x = 0; x < bestIndexes.Count; x++)
+            {
+                var index = bestIndexes[x];
+                if(index.badIndexes > 0)
+                {
+                    if (index.badIndexes > index.bestIndexes)
+                    {
+                        bestIndexes.RemoveAt(x); x--;
+                    }
+                }
+            }
+
+            //remove best indexes that are contained within the top best indexes
+            for (var x = 0; x < bestIndexes.Count; x++)
+            {
+                var index = bestIndexes[x];
+                var children = new List<int>();
+                TraverseIndexes(article, article.elements[index.index], children);
+
+                var indexes = bestIndexes.FindAll(a => children.Contains(a.index));
+                for (var y = 0; y < indexes.Count; y++)
+                {
+                    //if (y > x) { bestIndexes.Remove(indexes[y]); }
+                }
+            }
+
+            bestIndexes = bestIndexes.OrderBy(a => a.index).ToList();
+        }
+
+        public static void GetArticleElements(AnalyzedArticle article, List<AnalyzedElement> bestIndexes, List<AnalyzedElement> badIndexes)
+        {
+            //build list of DOM elements that contains the article
             var bodyText = new List<int>();
-            var uselessText = new[] {
-                TextType.advertisement,
-                TextType.comment,
-                TextType.copyright,
-                TextType.script,
-                TextType.style,
-                TextType.useless
-            };
-
             int parentId;
             var isFound = false;
-            var isBad = false;
             var isEnd = false;
-            var minDepth = 3;
-            var badIndexes = new List<int>();
-            string[] articleText;
-            string articletxt = "";
-            DomElement hElem;
             DomElement elem;
             var checkedIndexes = new List<int>();
 
-            for (var x = sortedArticleParents.Count - 1; x >= 0; x--)
+            for (var x = bestIndexes.Count - 1; x >= 0; x--)
             {
                 //all elements are a part of this parent element
                 //get a list of text elements that are a part of the 
                 //parent element
-                parentId = sortedArticleParents[x].index;
+                parentId = bestIndexes[x].index;
                 isFound = false;
-                isBad = false;
                 isEnd = false;
                 for (var y = parentId + 1; y < article.elements.Count; y++)
                 {
-                    if (checkedIndexes.Contains(y)) { continue; }
-                    checkedIndexes.Add(y);
                     elem = article.elements[y];
-                    if (Objects.IsEmpty(elem)) { continue; }
-                    if(badIndexes.Where(a => elem.hierarchyIndexes.Contains(a)).Count() > 0) {
-                        //skip elements that are part of bad parent elements
-                        continue;
-                    }
+
                     if (elem.hierarchyIndexes.Contains(parentId))
                     {
+                        //check if index was already handled
+                        if (checkedIndexes.Contains(elem.index)) { continue; }
+                        checkedIndexes.Add(elem.index);
+
+                        //check for bad indexes
+                        if (badIndexes.Where(a => a.index == elem.index || a.index == elem.parent).Count() > 0) { break; }
+
+
                         //determine which elements to include in the results
                         if (elem.tagName == "#text")
                         {
-                            //element is text & is part of parent index
-                            //check if text type is article
-                            var textTag = article.tags.text.Find(p => p.index == y);
-                            if (!uselessText.Contains(textTag.type))
-                            {
-                                articletxt = elem.text.ToLower();
-                                articleText = SeparateWordsFromText(articletxt);
-
-                                //check for any text from the article that does not belong,
-                                //such as advertisements, side-bars, photo credits, widgets
-                                isBad = false;
-
-                                if(Rules.badText.Where(a => articletxt.IndexOf(a) == 0).Count() > 0)
-                                {
-                                    continue;
-                                }
-
-                                //search down the hierarchy DOM tree
-                                var zi = 0;
-                                for (var z = elem.hierarchyIndexes.Length - 1; z >= 0; z--)
-                                {
-                                    if (elem.hierarchyIndexes[z] <= 0) {
-                                        break;
-                                    }
-                                    hElem = article.elements[elem.hierarchyIndexes[z]];
-
-                                    //check for bad tag names
-                                    if (Rules.badTags.Contains(hElem.tagName)) { isBad = true; break; }
-
-                                    //check classes for bad element indicators within class names
-                                    if (hElem.className.Count > 0)
-                                    {
-                                        if (hElem.hierarchyIndexes.Length > minDepth && hElem.className.Where(c => Rules.badClasses.Where(bc => c.IndexOf(bc) >= 0).Count() > 0).Count() > 0)
-                                        {
-                                            isBad = true; break;
-                                        }
-                                    }
-                                    
-                                    //stop traversing if we reach certain point past parent element
-                                    if(zi >= 1) {
-                                        zi++;
-                                        if(zi > 3) { break; }
-                                    }
-                                    if (hElem.index == parentId) { zi = 1; }
-                                }
-
-                                //check for bad keywords within text
-                                if (elem.hierarchyIndexes.Length > minDepth && Rules.badKeywords.Where(c => articleText.Contains(c)).Count() > 0)
-                                {
-                                    isBad = true;
-                                    isEnd = true;
-                                }
-
-                                if (elem.hierarchyIndexes.Length > minDepth && articleText.Length <= 20)
-                                {
-                                    if (articleText.Where(t => Rules.badPhotoCredits.Contains(t)).Count() >= 2)
-                                    {
-                                        //photo credits
-                                        isBad = true;
-                                    }
-                                }
-                                if (elem.hierarchyIndexes.Length > minDepth && articleText.Length <= 7 && isBad != true)
-                                {
-                                    if (articleText.Where(t => Rules.badMenu.Contains(t)).Count() >= 1)
-                                    {
-                                        //menu
-                                        isBad = true;
-                                    }
-                                    if (Rules.badTrailing.Where(t => articleText.Contains(t)).Count() > 1 && elem.index > (article.elements.Count * 0.75))
-                                    {
-                                        //end of article
-                                        isBad = true;
-                                        isEnd = true;
-                                    }
-                                }
-
-                                //finally, add text to article
-                                if (isBad == false)
-                                {
-                                    if (!bodyText.Contains(elem.index))
-                                    {
-                                        bodyText.Add(elem.index);
-                                    }
-                                    //clean up text in element
-                                    elem.text = WebUtility.HtmlDecode(elem.text);
-                                }
-                            }
+                            //add text
+                            elem.text = WebUtility.HtmlDecode(elem.text);
+                            bodyText.Add(elem.index);
                         }
                         else if(elem.tagName == "br")
                         {
@@ -758,7 +628,11 @@ namespace Collector.Common.Analyze
                             {
                                 if (Rules.badUrls.Where(a => elem.attribute["href"].IndexOf(a) >= 0).Count() > 0)
                                 {
-                                    badIndexes.Add(elem.index);
+                                    badIndexes.Add(new AnalyzedElement()
+                                    {
+                                        index = elem.index,
+                                        badUrls = 1
+                                    });
                                     continue;
                                 }
                             }
@@ -997,6 +871,18 @@ namespace Collector.Common.Analyze
                 }
             }
         }
+
+        public static string[] SeparateWordsFromText(string text, string[] exceptions = null)
+        {
+            if (exceptions != null)
+            {
+
+                var ws = Rules.wordSeparators.Where(w => !exceptions.Contains(w)).ToArray();
+                return text.ReplaceAll(" {1} ", ws).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Split(' ').Where(w => w != "").ToArray();
+            }
+            return text.ReplaceAll(" {1} ", Rules.wordSeparators).Replace("  ", " ").Replace("  ", " ").Replace("  ", " ").Split(' ').Where(w => w != "").ToArray();
+        }
+
         #endregion
 
     }

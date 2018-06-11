@@ -81,48 +81,25 @@ namespace Collector.SignalR.Hubs
                 article.id = articleInfo.articleId;
                 article.feedId = articleInfo.feedId ?? -1;
                 article.domain = Web.GetDomainName(url);
-
-                //send accordion with raw HTML to client
-                var html = Components.Accordion.Render("Raw HTML", "raw-html", "<pre>" + article.rawHtml.Replace("&", "&amp;").Replace("<", "&lt;") + "</pre>", false);
-                await Clients.Caller.SendAsync("append", html);
+                Html.GetArticleInfoFromDOM(article);
+                
                 await Clients.Caller.SendAsync("update", 1, "Parsed DOM tree (" + article.elements.Count + " elements)");
 
-                // Collect Content from DOM Tree /////////////////////////////////////////////////////////////////////////////////////////////
-                var tagNames = new List<AnalyzedTag>();
-                var parentIndexes = new List<AnalyzedParentIndex>();
+                //Html.GetWordsFromDOM(article, textElements);
+                await Clients.Caller.SendAsync("update", 1, "Analyzing DOM...");
+                var bestIndexes = new List<AnalyzedElement>();
+                var badIndexes = new List<AnalyzedElement>();
+                Html.GetBestElementIndexes(article, bestIndexes, badIndexes);
+                Html.GetArticleElements(article, bestIndexes, badIndexes);
+                await Clients.Caller.SendAsync("update", 1, "Collected article contents from DOM");
 
-                //sort elements into different lists
-                var textElements = new List<DomElement>();
-                var anchorElements = new List<DomElement>();
-                var headerElements = new List<DomElement>();
-                var imgElements = new List<DomElement>();
 
-                Html.GetContentFromDOM(article, tagNames, textElements, anchorElements, headerElements, imgElements, parentIndexes);
-                await Clients.Caller.SendAsync("update", 1, "Collected content from DOM tree (" + textElements.Count + " text elements, " + headerElements.Count + " header elements)");
+                //send accordion with raw HTML to client
+                var rawhtml = Article.RenderRawHTML(article, bestIndexes, badIndexes);
+                var html = Components.Accordion.Render("Raw HTML", "raw-html", rawhtml, false);
+                await Clients.Caller.SendAsync("append", html);
+                await Clients.Caller.SendAsync("update", 1, "Generated Raw HTML for dissecting DOM importance");
 
-                // Sort Content /////////////////////////////////////////////////////////////////////////////////////////////
-                textElements = textElements.OrderBy(p => p.text.Length * -1).ToList();
-                headerElements = headerElements.OrderBy(p => p.tagName).ToList();
-                parentIndexes = parentIndexes.OrderBy(p => (p.elements.Count * p.textLength) * -1).ToList();
-                article.tagNames = tagNames.OrderBy(t => t.count * -1).ToList();
-                
-                foreach (DomElement header in headerElements)
-                {
-                    article.tags.headers.Add(header.index);
-                }
-                foreach (DomElement anchor in anchorElements)
-                {
-                    article.tags.anchorLinks.Add(anchor.index);
-                }
-
-                // Analyze Content /////////////////////////////////////////////////////////////////////////////////////////////
-                //
-                // to determine if there is an article within the HTML page
-                // or if the page is simply a link to an article (in which case, follow link to article)
-                // or if the page has a paywall in front of the article (in which case abandon the article)
-
-                Html.GetWordsFromDOM(article, textElements);
-                Html.GetArticleElements(article);
 
                 var imgCount = 0;
                 var imgTotalSize = 0;
@@ -198,7 +175,7 @@ namespace Collector.SignalR.Hubs
                 //update article info in database
                 await Clients.Caller.SendAsync("update", 1, "Updating database records...");
 
-                articleInfo.title = article.pageTitle;
+                articleInfo.title = article.title;
                 articleInfo.analyzecount++;
                 articleInfo.analyzed = Article.Version;
                 articleInfo.cached = true;

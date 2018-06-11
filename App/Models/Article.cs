@@ -25,7 +25,6 @@ namespace Collector.Models.Article
         public string rawHtml;
         public string url;
         public string domain;
-        public string pageTitle;
         public string title;
         public string summary;
         public List<DomElement> elements;
@@ -70,7 +69,6 @@ namespace Collector.Models.Article
             tags.headers = new List<int>();
             tags.text = new List<AnalyzedText>();
             title = "";
-            pageTitle = "";
             summary = "";
             totalImportantWords = 0;
             totalParagraphs = 0;
@@ -161,10 +159,23 @@ namespace Collector.Models.Article
         public int textLength;
     }
 
-    public class AnalyzedElementCount
+    public class AnalyzedElement
     {
         public int index;
-        public int count;
+        public int tags;
+        public int words;
+        public int images;
+        public int bestIndexes;
+        public int badIndexes;
+        public int badClasses;
+        public int badKeywords;
+        public int badTags;
+        public int badUrls;
+        public int badMenu;
+        public int badLegal;
+        public bool isBad = false;
+        public List<string> badClassNames = new List<string>();
+        public List<string> badTagNames = new List<string>();
     }
 
     public class PossibleTextType
@@ -205,7 +216,7 @@ namespace Collector.Models.Article
     
     public enum TextType
     {
-        mainArticle = 0,
+        text = 0,
         authorName = 1,
         publishDate = 2,
         comment = 3,
@@ -222,7 +233,8 @@ namespace Collector.Models.Article
         listItem = 14,
         image = 15,
         lineBreak = 16,
-        quote = 17
+        quote = 17,
+        preformatted = 18
     }
 
     public enum WordType
@@ -254,81 +266,13 @@ namespace Collector.Models.Article
         female = 0,
         male = 1
     }
-
-    public static class Rules
-    {
-        public static string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
-        public static string[] sentenceSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
-        public static string[] separatorExceptions = new string[] { "'", "\"" };
-
-        public static string[] scriptSeparators = new string[] { "{", "}", ";", "$", "=", "(", ")" };
-
-        public static string[] dateTriggers = new string[] {
-            "published","written","posted",
-            "january","february","march","april","may","june", "july","august","september","october","november","december" };
-
-        public static string[] headerTags = new string[] { "h1", "h2", "h3", "h4", "h5", "h6", "title", "strong" };
-
-        public static string[] badTags = new string[]  {
-            "applet", "area", "audio", "canvas", "dialog", "small", "form",
-            "embed", "footer", "iframe", "input", "label", "nav", "title",
-            "object", "option", "s", "script", "style", "textarea", "video" };
-
-        public static string[] badArticleTags = new string[]  {
-            "applet", "area", "audio", "canvas", "dialog", "small", "nav",
-            "embed", "footer", "iframe", "input", "label", "nav", "header", "head",
-            "object", "option", "s", "script", "style", "title", "textarea",
-            "video", "form", "figure", "figcaption","noscript" };
-
-        public static string[] badAttributes = new string[] { "id" };
-
-        public static string[] badClasses = new string[] {
-            "social", "advert", "menu", "comments", "keyword", "twitter", "replies", "reply",
-            "nav", "logo", "search", "form", "topic", "trending", "sidebar", "discussion",
-            "filter", "categor", "bread", "credit", "disqus", "callout", "toolbar", "masthead",
-            "graphic", "image", "photo", "addthis", "tool", "separat", "access",
-            "related", "-ad-", "ad-cont", "hidden", "tags", "contacts", "popular", "promo",
-            "semantic", "banner", "subscri", "button", "reddit", "login", "signup", "sticky",
-            "signin", "recommend", "promot", "reading", "share", "sharing", "facebook",
-            "-bio", "author-", "poweredby", "powered-by"
-        };
-
-        public static string[] badUrls = new string[] { "/ads/", "/ad/", "/click/", "/bait/", "refer" };
-
-        public static string[] badText = new string[] { "contents", "table of contents" };
-
-        public static string[] badWords = new string[] { "shit", "crap", "asshole", "shitty", "bitch", "slut", "whore", "fuck", "fucking", "fucker", "fucked", "fuckers", "fucks" };
-
-        public static string[] badKeywords = new string[] { "disqus", "advertisement", "follow on twitter" };
-
-        public static string[] badPhotoCredits = new string[] { "photo", "courtesy", "by", "copyright" };
-
-        public static string[] badMenu = new string[] { "previous", "next", "post", "posts", "entry", "entries", "article", "articles", "more", "back", "go", "view", "about", "home", "blog" };
-
-        public static string[] badTrailing = new string[] { "additional", "resources", "notes", "comment", "discuss", "post", "links", "share", "article" };
-
-        public static string[] badChars = new string[] { "|", ":", "{", "}", "[", "]" };
-
-        public static string[] domainSuffixes = new string[] { "com", "net", "org", "biz" };
-
-        public static string[] commonQueryKeys = new string[] { "ie", "utm_source", "utm_medium", "utm_campaign" };
-
-        public static string[] HtmlVerify = new string[] { "<div", "<html", "<a ", "<img ", "<p>" };
-
-        public static string[] suspiciousWords = new string[] { "copyright", "posts", "entry", "entries", "article", "articles", "home", "blog", "stories", "menu", "comments", "navigate", "trademark" };
-
-        public static string[] blockElements = new string[] {
-            "address", "article", "aside", "blockquote", "dd", "div", "dl", "dt",
-            "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3",
-            "h4", "h5", "h6", "header", "hr", "li", "main", "nav", "noscript", "ol",
-            "output", "p", "pre", "section", "table", "tfoot", "ul" };
-    }
     
     public class ArticlePart
     {
         public List<TextType> type = new List<TextType>();
         public string title = "";
         public string value = "";
+        public string classNames = "";
         public int fontSize = 1;
         public int indent = 0;
         public int quote = 0;

@@ -10,6 +10,7 @@ namespace Collector.Common.Platform
 {
     public static class Article
     {
+        #region "Get Article"
         public static string ContentPath(string url)
         {
             //get content path for url
@@ -75,12 +76,136 @@ namespace Collector.Common.Platform
             article.articleId = Query.Articles.Add(article);
             return article;
         }
+        #endregion
+
+        #region "Render"
+        public static string RenderRawHTML(AnalyzedArticle article, List<AnalyzedElement> bestIndexes, List<AnalyzedElement> badIndexes)
+        {
+            var htms = new StringBuilder();
+            var htmelem = "";
+            var tabs = "";
+            foreach (var el in article.elements)
+            {
+                tabs = "";
+                htmelem = "";
+                if (el.isClosing == true && el.isSelfClosing == false)
+                {
+                    //closing tag
+                    htmelem = "<" + el.tagName + ">";
+                }
+                else
+                {
+                    if (el.tagName == "#text")
+                    {
+                        htmelem = el.text;
+                    }
+                    else
+                    {
+                        htmelem = "<" + el.tagName;
+                        if (el.className.Count() > 0)
+                        {
+                            htmelem += " class=\"" + string.Join(" ", el.className) + "\"";
+                        }
+                        if (el.attribute != null)
+                        {
+                            if (el.attribute.Count > 0)
+                            {
+                                foreach (var attr in el.attribute)
+                                {
+                                    htmelem += " " + attr.Key + "=\"" + attr.Value + "\"";
+                                }
+                            }
+                        }
+
+                        if (el.isSelfClosing == true)
+                        {
+                            if (el.tagName == "!--")
+                            {
+                                htmelem += el.text + "-->";
+                            }
+                            else
+                            {
+                                htmelem += "/>";
+                            }
+
+                        }
+                        else
+                        {
+                            htmelem += ">" + el.text;
+                        }
+                    }
+
+
+                }
+
+                for (var x = 0; x < el.hierarchyIndexes.Length - 1; x++)
+                {
+                    tabs += "    ";
+                }
+
+                //get info about element
+                var best = bestIndexes.Find(a => a.index == el.index);
+                var bad = badIndexes.Find(a => a.index == el.index);
+                var rank = 1;
+                if(best == null) {
+                    best = new AnalyzedElement();
+                }
+                if(best.bestIndexes > 100)
+                {
+                    rank = 5;
+                }else if (best.bestIndexes > 50)
+                {
+                    rank = 4;
+                }
+                else if (best.bestIndexes > 25)
+                {
+                    rank = 3;
+                }
+                else if (best.bestIndexes > 10)
+                {
+                    rank = 2;
+                }
+                if(bad != null)
+                {
+                    htms.Append(
+                    "<div class=\"element bad" +
+                    "\" title=\"[" + el.index + "] flagged > " +
+                    (bad.badClasses > 0 ? "classes:" + bad.badClasses + "(" + string.Join(",", bad.badClassNames) + ")" : " ") +
+                    (bad.badTags > 0 ? "tags:" + bad.badTags + "(" + string.Join(",", bad.badTagNames) + ")" : " ") +
+                    (bad.badUrls > 0 ? "urls:" + bad.badUrls : " ") +
+                    (bad.badKeywords > 0 ? "keywords:" + bad.badKeywords : " ") +
+                    (bad.badMenu > 0 ? "menus:" + bad.badMenu : " ") +
+                    (bad.badLegal > 0 ? "legal:" + bad.badLegal : " ") +
+                    "\"" +
+                    ">");
+                }
+                else if(best.words == 0)
+                {
+                    htms.Append("<div class=\"element\" title=\"[" + el.index + "]\">");
+                }
+                else
+                {
+                    htms.Append(
+                    "<div class=\"element rank" + rank +
+                    "\" title=\"[" + el.index + "] " + 
+                    "best indexes:" + best.bestIndexes +
+                    ", words:" + best.words +
+                    "\"" +
+                    ">");
+                }
+                
+                htms.Append("<pre>" + tabs + htmelem.Replace("&", "&amp;").Replace("<", "&lt;") + "</pre>\n");
+                htms.Append("</div>");
+            }
+            return htms.ToString();
+        }
 
         public static string RenderArticle(AnalyzedArticle article)
         {
             var html = new StringBuilder();
             var parts = new List<ArticlePart>();
             DomElement elem;
+            DomElement parent;
             List<string> hierarchyTags;
             var lastHierarchy = new int[] { };
             int index;
@@ -92,12 +217,12 @@ namespace Collector.Common.Platform
             var hasQuote = false;
             var listItem = 0;
             var fontsize = 1;
+            var lastFontsize = 1;
             var baseFontSize = 16;
             var incFontSize = 2.0; //font size increment between header tags
             var maxFontSize = 20;
             var fontsizes = new List<KeyValuePair<int, int>>();
-            var isBold = false;
-            var isItalic = false;
+            var classNames = new List<string>();
             var relpath = ContentPath(article.url).ToLower();
             ArticlePart lastPart = new ArticlePart();
 
@@ -145,14 +270,14 @@ namespace Collector.Common.Platform
             {
                 index = article.body[x];
                 elem = article.elements[index];
+                parent = elem.Parent;
                 hierarchyTags = elem.HierarchyTags().ToList();
                 newline = false;
-                isBold = false;
-                isItalic = false;
                 fontsize = 1;
                 hasQuote = false;
+                classNames = new List<string>();
 
-                if(elem.tagName == "br") {
+                if (elem.tagName == "br") {
                     parts.Add(new ArticlePart() {
                         type = new List<TextType>() { TextType.lineBreak }
                     });
@@ -181,8 +306,20 @@ namespace Collector.Common.Platform
                 if (elem.style != null)
                 {
                     //determine font styling (bold & italic)
-                    if (elem.style.ContainsKey("font-weight")) { isBold = elem.style["font-weight"] == "bold"; }
-                    if (elem.style.ContainsKey("font-style")) { isItalic = elem.style["font-style"] == "italic"; }
+                    if (elem.style.ContainsKey("font-weight"))
+                    {
+                        if (elem.style["font-weight"] == "bold")
+                        {
+                            classNames.Add("bold");
+                        }
+                    }
+                    if (elem.style.ContainsKey("font-style"))
+                    {
+                        if (elem.style["font-style"] == "italic")
+                        {
+                            classNames.Add("italic");
+                        }
+                    }
 
                     //determine font size
                     if (elem.style.ContainsKey("font-size")) {
@@ -196,18 +333,23 @@ namespace Collector.Common.Platform
                     if(fontsize < 1) { fontsize = 1; }
                 }
                 part.fontSize = fontsize;
+                if(part.fontSize > 1)
+                {
+                    classNames.Add("font-" + part.fontSize);
+                }
 
-                //check last hierarchy for line break
+                //check element hierarchy
                 if (x > 0 && lastHierarchy.Length > 0)
                 {
-                    var y = 0;
+                    //check last hierarchy for line break
                     var past = false;
-                    for (y = 0; y < elem.hierarchyIndexes.Length; y++)
+                    for (var y = 0; y < elem.hierarchyIndexes.Length; y++)
                     {
                         if (y < lastHierarchy.Length)
                         {
                             if (elem.hierarchyIndexes[y] != lastHierarchy[y])
                             {
+                                //found hierarchy element that doesn't match
                                 past = true;
                             }
                         }
@@ -243,7 +385,7 @@ namespace Collector.Common.Platform
                     //find base elements that are exceptions to new lines
                     if (newline == true && indents.Count > 0)
                     {
-                        for (y = 0; y < elem.hierarchyIndexes.Length; y++)
+                        for (var y = 0; y < elem.hierarchyIndexes.Length; y++)
                         {
                             var baseElem = article.elements[elem.hierarchyIndexes[y]];
                             switch (baseElem.tagName)
@@ -261,7 +403,7 @@ namespace Collector.Common.Platform
                         indents = new List<int>();
                     }
 
-                    for (y = 0; y < elem.hierarchyIndexes.Length; y++)
+                    for (var y = 0; y < elem.hierarchyIndexes.Length; y++)
                     {
                         //check for specific tags within element hierarchy
                         var baseElem = article.elements[elem.hierarchyIndexes[y]];
@@ -296,6 +438,9 @@ namespace Collector.Common.Platform
                                 part.type.Add(TextType.header);
                                 part.fontSize = 5;
                                 break;
+                            case "pre":
+                                part.type.Add(TextType.preformatted);
+                                break;
                         }
 
                         switch (baseElem.tagName)
@@ -303,10 +448,7 @@ namespace Collector.Common.Platform
                             //check for list
                             case "ul": case "ol":
                                 var tmp = parts.Where(a => a.type.Contains(TextType.listItem)).ToList();
-                                if(tmp.Count == 44)
-                                {
 
-                                }
                                 if (!indents.Contains(baseElem.index))
                                 {
                                     indents.Add(baseElem.index);
@@ -357,7 +499,7 @@ namespace Collector.Common.Platform
                 {
                     var nline = new ArticlePart()
                     {
-                        type = new List<TextType>() { TextType.mainArticle },
+                        type = new List<TextType>() { TextType.text },
                         quote = inQuote,
                         indent = part.indent
                     };
@@ -365,31 +507,35 @@ namespace Collector.Common.Platform
                 }
 
                 //HTML encode content
-                if(part.type.Where(a => a == TextType.mainArticle || a == TextType.header || a == TextType.listItem || a == TextType.quote).Count() > 0)
+                if(part.type.Where(a => a == TextType.text || a == TextType.header || a == TextType.listItem || a == TextType.quote).Count() > 0)
                 {
                     part.value = part.value.Replace("&", "&amp;").Replace("<", "&lt;");
                 }
 
+                //compile class names for element
+                part.classNames = classNames.Count > 0 ? string.Join(" ", classNames) : "";
+
                 //finally, add part to render list
-                if(part.type.Count == 0 || part.type.Contains(TextType.listItem)) { part.type.Add(TextType.mainArticle); }
+                if(part.type.Count == 0 || part.type.Contains(TextType.listItem)) { part.type.Add(TextType.text); }
                 parts.Add(part);
                 lastHierarchy = elem.hierarchyIndexes;
             }
 
             //render HTML from article parts
             var paragraph = false;
+            var closedParagraph = false;
             indent = 0;
             inQuote = 0;
             hasQuote = false;
-
-            var listitems = parts.Where(a => a.type.Contains(TextType.listItem)).ToList();
-
+            
             foreach(var part in parts)
             {
+                closedParagraph = false;
+
                 //create paragraph tag (if neccessary)
                 if (paragraph == false && part.value != "" && indent == 0)
                 {
-                    if (part.type.Where(a => a == TextType.mainArticle || a == TextType.anchorLink).Count() > 0)
+                    if (part.type.Where(a => a == TextType.text || a == TextType.anchorLink).Count() > 0)
                     {
                         paragraph = true;
                         html.Append("<p>");
@@ -401,6 +547,7 @@ namespace Collector.Common.Platform
                     {
                         paragraph = false;
                         html.Append("</p>");
+                        closedParagraph = true;
                     }
                 }
 
@@ -457,7 +604,9 @@ namespace Collector.Common.Platform
                     {
                         html.Append("</li>");
                     }
-                    if (listItem != part.listItem) { html.Append("<li>"); }
+                    if (listItem != part.listItem) {
+                        html.Append("<li>");
+                    }
                     listItem = part.listItem;
                     indentOpen = true;
                     showValue = true;
@@ -482,7 +631,7 @@ namespace Collector.Common.Platform
                 {
                     //render anchor link
                     html.Append("<a href=\"" + part.value + "\" target=\"_blank\"" +
-                            (part.fontSize > 1 ? " class=\"font-" + part.fontSize + "\"" : "") +
+                            (part.classNames != "" ? " class=\"" + part.classNames + "\"" : "") +
                             ">" + part.title);
                     endTags += "</a>\n";
                     cancelValue = true;
@@ -496,7 +645,7 @@ namespace Collector.Common.Platform
                     showValue = true;
                 }
 
-                if (part.type.Where(a => a == TextType.mainArticle).Count() > 0)
+                if (part.type.Where(a => a == TextType.text).Count() > 0)
                 {
                     //render paragraph text
                     if (part.value == "" && paragraph == true)
@@ -504,33 +653,55 @@ namespace Collector.Common.Platform
                         //end of paragraph
                         paragraph = false;
                         html.Append("</p>");
+                        closedParagraph = true;
                     }
                     else if (part.value != "")
                     {
                         html.Append("<span" +
-                        (part.fontSize > 1 ? " class=\"font-" + part.fontSize + "\"" : "") +
+                        (part.classNames != "" ? " class=\"" + part.classNames + "\"" : "") +
                         ">");
                         endTags += "</span>\n";
                         showValue = true;
                     }
                 }
-                if (part.type.Where(a => a == TextType.lineBreak).Count() > 0)
+                if (closedParagraph == false && 
+                    (
+                        part.type.Where(a => a == TextType.lineBreak).Count() > 0 || 
+                        ( //check for change in font size between two text elements
+                            part.fontSize != lastFontsize && 
+                            lastPart.type.Contains(TextType.text) && 
+                            part.type.Contains(TextType.text)
+                        )
+                    )
+                )
                 {
-                    html.Append("<br/>");
+                    //add manual line break
+                    endTags += "<br/>";
                 }
                 if (part.type.Where(a => a == TextType.image).Count() > 0)
                 {
                     //render image
-                    html.Append("<img src=\"" + part.value + "\"/>");
+                    html.Append("<div class=\"image\"><img src=\"" + part.value + "\"/></div>");
                     cancelValue = true;
                 }
 
-                if(showValue == true && cancelValue == false) { html.Append(part.value); }
+                if (part.type.Where(a => a == TextType.preformatted).Count() > 0)
+                {
+                    //render quote
+                    html.Append("<pre>");
+                    endTags += "</pre>\n";
+                    showValue = true;
+                }
+
+                if (showValue == true && cancelValue == false) { html.Append(part.value); }
                 if(endTags != "") { html.Append(endTags); }
                 lastPart = part;
+                lastFontsize = part.fontSize;
             }
 
             return html.ToString();
         }
+
+        #endregion
     }
 }

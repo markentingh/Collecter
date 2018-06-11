@@ -140,7 +140,7 @@ namespace Utility.DOM
         public List<string> HierarchyTags()
         {
             var tags = new List<string>();
-            for (var x = 0; x < hierarchyIndexes.Length - 1; x++)
+            for (var x = 0; x < hierarchyIndexes.Length; x++)
             {
                 tags.Add(Parser.Elements[hierarchyIndexes[x]].tagName);
             }

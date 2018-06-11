@@ -22,6 +22,24 @@
 .raw-html > .box {
   overflow: auto !important;
 }
+.raw-html .rank1 {
+  background: rgba(0, 116, 9, 0.15);
+}
+.raw-html .rank2 {
+  background: rgba(0, 116, 9, 0.25);
+}
+.raw-html .rank3 {
+  background: rgba(0, 116, 9, 0.5);
+}
+.raw-html .rank4 {
+  background: rgba(0, 116, 9, 0.75);
+}
+.raw-html .rank5 {
+  background: #007409;
+}
+.raw-html .bad {
+  background: rgba(255, 0, 0, 0.2);
+}
 .article-text h1,
 .article-text h2,
 .article-text h3,
@@ -72,9 +90,13 @@
   padding-left: 30px;
   padding-bottom: 0px;
 }
+.article-text .image {
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  padding: 15px 0 10px 0;
+}
 .article-text img {
-  display: block;
-  padding-top: 15px;
   max-width: 100%;
 }
 .article-text blockquote {
@@ -82,5 +104,10 @@
   margin: 5px 0 15px 0px;
   padding: 7px 7px 7px 20px;
   line-height: 1.3 !important;
+  background: rgba(255, 255, 255, 0.05);
+}
+.article-text pre {
+  padding: 10px;
+  margin: 0 0 15px 0;
   background: rgba(255, 255, 255, 0.05);
 }

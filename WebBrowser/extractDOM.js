@@ -105,7 +105,22 @@
 
                 } else if (node.nodeType == 3) {
                     //#text node
-                    var val = node.nodeValue.replace('\n', '').replace('\r', '').trim();
+                    var val = node.nodeValue.trim();
+                    var nobreaks = false;
+
+                    //check for pre tag to negate removing line-breaks from #text node
+                    if (node.parentNode.tagName.toLowerCase() == 'pre') {
+                        nobreaks = true;
+                    } else if (node.parentNode.tagName.toLowerCase() == 'code') {
+                        if (node.parentNode.parentNode.tagName.toLowerCase() == 'pre') {
+                            nobreaks = true;
+                        }
+                    }
+                    if (nobreaks == false) {
+                        val = val.replace(/\n/g, '').replace(/\r/g, '');
+                    } else {
+                        val = val.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+                    }
                     if (val != '') {
                         //replace unknown characters in text
                         parent.v = clean(val);
@@ -119,7 +134,7 @@
 
     function clean(str) {
         return unescape(str
-        .replace(/\u00a0/g, " ")
+        .replace(/\u00a0/g, " ") //replace &nbsp; with a space
         .replace(/“/g, '"') //replace open quotes
         .replace(/”/g, '"') //replace close quotes
         .replace(/"/g, '"') //escape quotes (for C#)
