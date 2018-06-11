@@ -36,23 +36,23 @@
             "head", "meta", "link", "applet", "area", "style",
             "audio", "canvas", "dialog", "small", "embed", "iframe",
             "input", "label", "nav", "object", "option", "s", "script", 
-            "textarea", "video", "figure", "figcaption", "noscript"
+            "textarea", "video", "noscript"
         };
 
         //used to determine if a DOM element is used for advertisements or UI
         public static string[] badClasses = new string[] {
             "social", "advert", "menu", "keyword", "twitter", "replies", "reply",
-            "nav", "search", "trending", "sidebar", "sidecontent", "discussion", "footer",
+            "navi", "search", "trending", "sidebar", "sidecontent", "footer",
             "bread", "disqus", "callout", "toolbar", "masthead","addthis",
             "related", "-ad-", "ad-cont", "tags", "contacts", "popular", "promo",
             "banner", "subscri", "button", "reddit", "login", "signup",
             "signin", "recommend", "promot", "reading", "share", "sharing", "facebook",
-            "poweredby", "powered-by", "invisible", "logo"
+            "poweredby", "powered-by", "invisible", "logo", "newsletter"
         };
 
         //used to find URLs that may be used for advertisements or UI buttons
         public static string[] badUrls = new string[] {
-            "/ads/", "/ad/", "/click/", "/bait/", "refer", "javascript:"
+            "/ads/", "/ad/", "/click/", "/bait/", "javascript:"
         };
         
         //used to find vulgure language

@@ -289,12 +289,9 @@ namespace Collector.Common.Analyze
                         index.badMenu += Rules.badMenu.Where(a => txt.IndexOf(a) >= 0).Count();
                     }
                 }
-                if (words.Length < 10)
+                if (words.Length <= 30)
                 {
                     index.badKeywords += Rules.badKeywords.Where(a => txt.IndexOf(a) >= 0).Count();
-                }
-                if (words.Length < 20)
-                {
                     index.badKeywords += Rules.badTrailing.Where(a => txt.IndexOf(a) >= 0).Count() > 2 ? 1 : 0;
                 }
 
@@ -387,6 +384,7 @@ namespace Collector.Common.Analyze
 
                 //check all child tags for contamination
                 TraverseIndexes(article, parent, hierarchy);
+                var p = 0;
 
                 //add parent hierarchy to list
                 hierarchy = hierarchy.Concat(parent.hierarchyIndexes.ToList()).ToList();
@@ -395,6 +393,17 @@ namespace Collector.Common.Analyze
                     //check each element within the hierarchy
                     var el = article.elements[hierarchy[y]];
                     CheckTagForContamination(index, el, !parent.hierarchyIndexes.Contains(hierarchy[y]), text);
+
+                    switch (el.tagName)
+                    {
+                        case "p": p++; break;
+                    }
+                }
+
+                //make sure menus are important enough for this element
+                if(index.badMenu > 0)
+                {
+                    if(p > 1) { index.badMenu = 0; }
                 }
 
                 if(index.badClasses + index.badKeywords + index.badLegal + index.badMenu + 
@@ -411,7 +420,7 @@ namespace Collector.Common.Analyze
                 var index = allIndexes[x];
                 var children = new List<int>();
                 TraverseIndexes(article, article.elements[index.index], children);
-                var legalwords = allIndexes.Select(a => children.Contains(a.index) ? a.badLegal : 0).Sum();
+                var legalwords = allIndexes.Select(a => children.Contains(a.index) ? (a.badLegal > 1 ? a.badLegal : 0) : 0).Sum();
 
                 if (legalwords > 5)
                 {
@@ -507,13 +516,13 @@ namespace Collector.Common.Analyze
                 //check for bad elements
                 if (index.badClasses > 0)
                 {
-                    var z = ((double)index.badClasses / (double)index.tags);
+                    var z = ((double)index.badClasses / (double)index.words);
                     if (z > 0.15)
                     {
-                        index.badClassNames.Add(index.badClasses + " / " + index.tags + " = " + z.ToString("#.###"));
+                        index.badClassNames.Add(index.badClasses + " / " + index.words + " = " + z.ToString("#.###"));
                     }
                 }
-                if (index.isBad == true || (double)index.badClasses / (double)index.tags > 0.15 || index.badTags > 0 || index.badUrls > 0 ||
+                if (index.isBad == true || (double)index.badClasses / (double)index.words > 0.15 || index.badTags > 0 || index.badUrls > 0 ||
                    index.badMenu > 0 || index.badKeywords > 0)
                 {
                     //bad element
