@@ -1,82 +1,114 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using System.Reflection;
-using CefSharp;
-using CefSharp.OffScreen;
-using Newtonsoft.Json;
+using System.Linq;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+using DasMulli.Win32.ServiceUtils;
 
 namespace WebBrowser
 {
     class Program
     {
-        private static ChromiumWebBrowser browser;
-        private static string url = "https://www.c-sharpcorner.com/UploadFile/sreeelectrons/web-services-interview-questions/";
-        private static string html = "";
+        private const string RunAsServiceFlag = "-start";
+        private const string RegisterServiceFlag = "-register";
+        private const string UnregisterServiceFlag = "-unregister";
+
+        private const string ServiceName = "CollectWebs";
+        private const string ServiceDisplayName = "Collector Chromium Web Browser Service";
+        private const string ServiceDescription = "An offscreen Chromium web browser used to collect DOM information about rendered web pages";
 
         static void Main(string[] args)
         {
             //parse arguments
-            for(var x = 0; x < args.Length; x++)
+            if (args.Contains(RunAsServiceFlag))
             {
-                switch (args[x])
-                {
-                    case "-url":
-                        if(x - 2 < args.Length)
-                        {
-                            url = args[x + 1];
-                        }
-                        break;
-                }
+                RunAsService(args);
             }
-
-            //Create Browser Instance
-            var settings = new BrowserSettings()
+            else if (args.Contains(RegisterServiceFlag))
             {
-                ImageLoading = CefState.Disabled,
-                Plugins = CefState.Disabled,
-                WebGl = CefState.Disabled,
-                WindowlessFrameRate = 5
-            };
-            browser = new ChromiumWebBrowser(url, settings);
-
-            //Frame Load End Event
-            browser.FrameLoadEnd += delegate
-            {
-                Task task = Task.Run(() => {
-                    //object js = EvaluateScript("document.getElementsByTagName('html')[0].outerHTML;");
-                    var js = File.ReadAllText(Path + "extractDOM.js");
-                    object result = EvaluateScript(js);
-                    html = JsonConvert.SerializeObject(result, Formatting.None);
-                    //html = result.ToString();
-                });
-            };
-
-            var i = 0;
-            while(i++ < 60)
-            {
-                if(html != "") {
-                    Console.Write(html); break;
-                }
-                Thread.Sleep(1000);
+                RegisterService();
             }
-
-            //Dispose Browser
-            Cef.Shutdown();
+            else if (args.Contains(UnregisterServiceFlag))
+            {
+                UnregisterService();
+            }
+            else if(args.Contains("-help"))
+            {
+                DisplayHelp();
+            }
+            else
+            {
+                var winService = new WinService(new string[] { });
+                winService.Start(new string[] { }, null);
+                Console.WriteLine("Press any key to stop hosting...");
+                Console.ReadKey();
+                winService.Stop();
+            }
         }
 
-        private static object EvaluateScript(string script)
+        private static void RunAsService(string[] args)
         {
-            var task = browser.EvaluateScriptAsync(script);
-            task.Wait();
-            var response = task.Result;
-            return response.Success ? (response.Result ?? "") : response.Message;
+            var winService = new WinService(args.Where(a => a != RunAsServiceFlag).ToArray());
+            var serviceHost = new Win32ServiceHost(winService);
+            serviceHost.Run();
         }
 
-        private static string Path
+        private static void RegisterService()
         {
-            get { return Assembly.GetExecutingAssembly().Location.Replace("WebBrowser.exe", "");  }
+            // Environment.GetCommandLineArgs() includes the current DLL from a "dotnet my.dll --register-service" call, which is not passed to Main()
+            var remainingArgs = Environment.GetCommandLineArgs()
+                .Where(arg => arg != RegisterServiceFlag)
+                .Select(EscapeArgs).ToList();
+            remainingArgs.Add(RunAsServiceFlag);
+
+            var host = Process.GetCurrentProcess().MainModule.FileName;
+
+            if (!host.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))
+            {
+                // For self-contained apps, skip the dll path
+                remainingArgs = remainingArgs.Skip(1).ToList();
+            }
+
+            var fullServiceCommand = host + " " + string.Join(" ", remainingArgs);
+
+            // Do not use LocalSystem in production.. but this is good for demos as LocalSystem will have access to some random git-clone path
+            // Note that when the service is already registered and running, it will be reconfigured but not restarted
+            var serviceDefinition = new ServiceDefinitionBuilder(ServiceName)
+                .WithDisplayName(ServiceDisplayName)
+                .WithDescription(ServiceDescription)
+                .WithBinaryPath(fullServiceCommand)
+                .WithCredentials(Win32ServiceCredentials.LocalSystem)
+                .WithAutoStart(true)
+                .Build();
+
+            new Win32ServiceManager().CreateOrUpdateService(serviceDefinition, startImmediately: true);
+
+            Console.WriteLine($@"Successfully registered and started service ""{ServiceDisplayName}"" (""{ServiceDescription}"")");
+        }
+
+        private static void UnregisterService()
+        {
+            new Win32ServiceManager()
+                .DeleteService(ServiceName);
+
+            Console.WriteLine($@"Successfully unregistered service ""{ServiceDisplayName}"" (""{ServiceDescription}"")");
+        }
+
+        private static void DisplayHelp()
+        {
+            Console.WriteLine(ServiceDescription);
+            Console.WriteLine();
+            Console.WriteLine("This application is intened to be run as windows service. Use one of the following options:");
+            Console.WriteLine("  -register         Registers and starts this program as a windows service named \"" + ServiceDisplayName + "\"");
+            Console.WriteLine("                     All additional arguments will be passed to the service.");
+            Console.WriteLine("  -unregister       Removes the windows service creatd by --register.");
+        }
+
+        private static string EscapeArgs(string arg)
+        {
+            // http://stackoverflow.com/a/6040946/784387
+            arg = Regex.Replace(arg, @"(\\*)" + "\"", @"$1$1\" + "\"");
+            arg = "\"" + Regex.Replace(arg, @"(\\+)$", @"$1$1") + "\"";
+            return arg;
         }
     }
 }

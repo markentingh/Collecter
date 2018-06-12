@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using System.Net;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Collector.Common.Platform;
 using Collector.Common.Analyze;
 using Collector.Models.Article;
-using Utility.DOM;
 using Utility.Strings;
 
 namespace Collector.SignalR.Hubs
@@ -45,7 +44,7 @@ namespace Collector.SignalR.Hubs
                 {
                     //open cached content from disk
                     article = Html.DeserializeArticle(File.ReadAllText(filepath + filename));
-                    await Clients.Caller.SendAsync("update", 2, "Loaded cached content for URL: <a href=\"" + url + "\" target=\"_blank\">" + url + "</a>");
+                    await Clients.Caller.SendAsync("update", 1, "Loaded cached content for URL: <a href=\"" + url + "\" target=\"_blank\">" + url + "</a>");
                     download = false;
                     Article.FileSize(article);
                 }
@@ -59,8 +58,23 @@ namespace Collector.SignalR.Hubs
                 {
                     //download article from the internet
                     await Clients.Caller.SendAsync("update", 1, "Downloading...");
-                    var obj = Article.Download(url);
-                    article = Html.DeserializeArticle(obj);
+                    var result = Article.Download(url);
+                    if(result == "")
+                    {
+                        await Clients.Caller.SendAsync("update", 1, "Download timed out for URL: <a href=\"" + url + "\" target=\"_blank\">" + url + "</a>");
+                        return;
+                    }
+                    try
+                    {
+                        article = Html.DeserializeArticle(result);
+                    }
+                    catch (Exception)
+                    {
+                        await Clients.Caller.SendAsync("update", 1, "Error parsing DOM!");
+                        await Clients.Caller.SendAsync("update", 1, result.Replace("&", "&amp;").Replace("<", "&lt;").Replace("\n","<br/>"));
+                        return;
+                    }
+
 
                     //get filesize of article
                     Article.FileSize(article);
@@ -72,8 +86,8 @@ namespace Collector.SignalR.Hubs
                         return;
                     }
 
-                    File.WriteAllText(filepath + filename, obj);
-                    await Clients.Caller.SendAsync("update", 1, "Downloaded URL (" + article.fileSize + " KB" + "): <a href=\"" + article.url + "\" target=\"_blank\">" + article.url + "</a>");
+                    File.WriteAllText(filepath + filename, result);
+                    await Clients.Caller.SendAsync("update", 1, "Downloaded URL (" + article.fileSize + " KB" + "): <a href=\"" + url + "\" target=\"_blank\">" + url + "</a>");
                 }
 
                 //set article information

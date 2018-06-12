@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
+using System.Threading;
+using System.ServiceModel;
 using Utility.Strings;
 using Utility.DOM;
 using Collector.Models.Article;
+using WebBrowser.Wcf;
 
 namespace Collector.Common.Platform
 {
@@ -29,10 +33,23 @@ namespace Collector.Common.Platform
 
         public static string Download(string url)
         {
-            var path = Server.MapPath(Server.Instance.Cache["browserPath"].ToString());
+            var outpath = Server.MapPath("/Content/browser/");
+            var outfile = Generate.NewId(5) + ".json";
+            if (!Directory.Exists(outpath))
+            {
+                Directory.CreateDirectory(outpath);
+            }
 
-            //execute WebBrowser console app to get DOM results from offscreen Chrome browser
-            return Utility.Shell.Execute(path, "-url " + url, path.Replace("WebBrowser.exe",""), 60);
+            var binding = new BasicHttpBinding()
+            {
+                MaxReceivedMessageSize = 50 * 1024 * 1024 //50 MB
+            };
+            var endpoint = new EndpointAddress(new Uri("http://localhost:7077/Browser"));
+            var channelFactory = new ChannelFactory<IBrowser>(binding, endpoint);
+            var serviceClient = channelFactory.CreateChannel();
+            var result = serviceClient.Collect(url);
+            channelFactory.Close();
+            return result;
         }
 
         public static void FileSize(AnalyzedArticle article)

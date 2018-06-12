@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
+    <UserSecretsId>65e68160-f7dc-4f96-893a-ff54c14f657e</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -25,6 +26,9 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0" />
     <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
+    <PackageReference Include="System.ServiceModel.Http" Version="4.5.0" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.5.0" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>

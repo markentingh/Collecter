@@ -17,20 +17,29 @@ namespace Collector.Common.Analyze
         #region "Step #1: Get HTML Document"
         public static AnalyzedArticle DeserializeArticle(string dom)
         {
-            //deserialize object from string
-            var node = (Document)Serializer.ReadObject(dom, typeof(Document));
-            var html = new StringBuilder();
-            var hierarchy = new List<int>();
             var article = new AnalyzedArticle();
-            var parser = new Parser("");
+            try
+            {
+                //deserialize object from string
+                var node = (Document)Serializer.ReadObject(dom, typeof(Document));
+                var html = new StringBuilder();
+                var hierarchy = new List<int>();                
+                var parser = new Parser("");
 
-            //build DOM tree
-            var elems = new List<DomElement>();
-            var index = 0;
-            Traverse(node.dom, ref index, elems, hierarchy, node.a, parser);
-            parser.Elements = elems;
-            article.elements = elems;
-            article.rawHtml = FormatHtml(elems).ToString();
+                //build DOM tree
+                var elems = new List<DomElement>();
+                var index = 0;
+                Traverse(node.dom, ref index, elems, hierarchy, node.a, parser);
+                parser.Elements = elems;
+                article.elements = elems;
+                article.rawHtml = FormatHtml(elems).ToString();
+            }
+            catch (Exception)
+            {
+                article.rawHtml = dom;
+                throw new Exception();
+            }
+            
 
             return article;
         }
