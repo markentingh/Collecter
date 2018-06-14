@@ -10,3 +10,6 @@
 [submodule "Query/Core"]
 	path = Query/Core
 	url = https://github.com/datasilk/corequery
+[submodule "WebBrowser"]
+	path = WebBrowser
+	url = https://github.com/Datasilk/Charlotte
