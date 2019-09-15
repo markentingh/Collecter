@@ -192,6 +192,7 @@ namespace Collector.Common.Platform
                     (bad.badKeywords > 0 ? "keywords:" + bad.badKeywords : " ") +
                     (bad.badMenu > 0 ? "menus:" + bad.badMenu : " ") +
                     (bad.badLegal > 0 ? "legal:" + bad.badLegal : " ") +
+                    (bad.isBad ? "marked 'bad'" : " ") +
                     "\"" +
                     ">");
                 }
