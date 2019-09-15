@@ -1,13 +1,11 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Http;
 
-namespace Collector.Pages
+namespace Collector.Controllers
 {
-    public class Home : Page
+    public class Home : Controller
     {
-        public Home(HttpContext context) : base(context)
-        {
-        }
+        public Home(HttpContext context, Parameters parameters) : base(context, parameters) { }
 
         public override string Render(string[] path, string body = "", object metadata = null)
         {

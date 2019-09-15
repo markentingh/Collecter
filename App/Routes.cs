@@ -1,22 +1,21 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Datasilk;
 
-public class Routes : Datasilk.Routes
+public class Routes : Datasilk.Web.Routes
 {
-    public override Page FromPageRoutes(HttpContext context, string name)
+    public override Datasilk.Mvc.Controller FromControllerRoutes(HttpContext context, Parameters parameters, string name)
     {
 
         switch (name)
         {
-            case "login": return new Collector.Pages.Login(context);
-            case "subjects": return new Collector.Pages.Subjects(context);
-            case "articles": return new Collector.Pages.Articles(context);
-            case "article": return new Collector.Pages.Article(context);
+            case "login": case "": return new Collector.Controllers.Login(context, parameters);
+            case "subjects": return new Collector.Controllers.Subjects(context, parameters);
+            case "articles": return new Collector.Controllers.Articles(context, parameters);
+            case "article": return new Collector.Controllers.Article(context, parameters);
             default: return null;
         }
     }
 
-    public override Service FromServiceRoutes(HttpContext context, string name)
+    public override Datasilk.Web.Service FromServiceRoutes(HttpContext context, Parameters parameters, string name)
     {
         return null;
     }

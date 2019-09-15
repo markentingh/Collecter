@@ -2,10 +2,10 @@
 
 namespace Collector
 {
-    public class Page : Datasilk.Page
+    public class Controller : Datasilk.Mvc.Controller
     {
         //constructor
-        public Page(HttpContext context) : base(context)
+        public Controller(HttpContext context, Parameters parameters) : base(context, parameters)
         {
             title = "Collector";
             description = "Collect Knowledge";

@@ -6,9 +6,7 @@ namespace Collector.Services
     {
         public string homePath = "home"; //user home path used to redirect after user log in success
 
-        public User(HttpContext context) : base(context)
-        {
-        }
+        public User(HttpContext context, Parameters parameters) : base(context, parameters) { }
 
         public string Authenticate(string email, string password)
         {

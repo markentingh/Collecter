@@ -6,7 +6,7 @@ namespace Collector.Services
 {
     public class Articles : Service
     {
-        public Articles(HttpContext context) : base(context) {}
+        public Articles(HttpContext context, Parameters parameters) : base(context, parameters) { }
 
 
     }

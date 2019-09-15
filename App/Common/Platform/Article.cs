@@ -25,7 +25,7 @@ namespace Collector.Common.Platform
         {
             get
             {
-                var ver = Server.Instance.Version.Split('.');
+                var ver = Server.Version.Split('.');
                 return double.Parse(ver[0] + "." + string.Join("", ver.Skip(1)));
             }
         }

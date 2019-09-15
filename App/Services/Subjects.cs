@@ -5,9 +5,7 @@ namespace Collector.Services
 {
     public class Subjects : Service
     {
-        public Subjects(HttpContext context) : base(context)
-        {
-        }
+        public Subjects(HttpContext context, Parameters parameters) : base(context, parameters) { }
 
         public string AddSubjects(string subjects, string hierarchy)
         {

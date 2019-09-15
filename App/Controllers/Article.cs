@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Collector.Pages
+namespace Collector.Controllers
 {
     public class Article : Partials.Dashboard
     {
-        public Article(HttpContext context) : base(context) {}
+        public Article(HttpContext context, Parameters parameters) : base(context, parameters) { }
 
         public override string Render(string[] path, string body = "", object metadata = null)
         {
             if (!CheckSecurity()) { return AccessDenied(); }
 
             //load articles scaffold HTML
-            var scaffold = new Scaffold("/Views/Article/article.html", Server.Scaffold);
+            var scaffold = new Scaffold("/Views/Article/article.html");
 
-            scaffold.Data["content"] = Components.Accordion.Render(
+            scaffold["content"] = Components.Accordion.Render(
                 "Analyze Article: " + context.Request.Query["url"],
                 "analyze-article", 
                 Server.LoadFileFromCache("/Views/Article/analyze.html")

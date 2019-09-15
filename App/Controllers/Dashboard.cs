@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Collector.Partials
 {
-    public class Dashboard : Page
+    public class Dashboard : Controller
     {
         private struct menuItem
         {
@@ -15,7 +15,7 @@ namespace Collector.Partials
 
         private List<menuItem> menuItems = new List<menuItem>();
 
-        public Dashboard(HttpContext context) : base(context) { }
+        public Dashboard(HttpContext context, Parameters parameters) : base(context, parameters) { }
 
         public override string Render(string[] path, string body = "", object metadata = null)
         {
@@ -23,18 +23,18 @@ namespace Collector.Partials
             if (CheckSecurity() == false) { return AccessDenied(); }
 
             //setup scaffolding variables
-            Scaffold scaffold = new Scaffold("/Views/Dashboard/dashboard.html", Server.Scaffold);
+            Scaffold scaffold = new Scaffold("/Views/Dashboard/dashboard.html");
 
             //set title
-            scaffold.Data["title"] = "Collector";
+            scaffold["title"] = "Collector";
 
             //load body
-            scaffold.Data["content"] = body;
+            scaffold["content"] = body;
 
             //load custom menu
             if(menuItems.Count > 0)
             {
-                scaffold.Data["menu"] = "<ul class=\"tabs right\">" +
+                scaffold["menu"] = "<ul class=\"tabs right\">" +
                     string.Join("", 
                         menuItems.Select<menuItem, string>((menuItem item) =>
                         {
@@ -48,11 +48,11 @@ namespace Collector.Partials
             //show log in or log out link
             if(User.userId > 0)
             {
-                scaffold.Data["logout"] = "1";
+                scaffold["logout"] = "1";
             }
             else
             {
-                scaffold.Data["login"] = "1";
+                scaffold["login"] = "1";
             }
 
             //include dashboard resources

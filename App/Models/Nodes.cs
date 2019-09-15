@@ -11,10 +11,10 @@ namespace Collector.Models.Nodes
 
     public class Node
     {
-        public string t = "";
-        public int[] s = null;
-        public Dictionary<int, string> a;
-        public List<Node> c;
-        public string v;
+        public string t = ""; //tag name
+        public int[] s = null; //array of style values [display (0 = none, 1 = block, 2 = inline), font-size, bold, italic]
+        public Dictionary<int, string> a; //dictionary of element attributes
+        public List<Node> c; //list of child elements
+        public string v; //optional #text element value
     }
 }

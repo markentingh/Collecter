@@ -16,11 +16,11 @@ public class Startup : Datasilk.Startup
     public override void Configured(IApplicationBuilder app, IHostingEnvironment env, IConfigurationRoot config)
     {
         base.Configured(app, env, config);
-        Query.Sql.connectionString = server.sqlConnectionString;
+        Query.Sql.connectionString = Server.sqlConnectionString;
         var resetPass = Query.Users.HasPasswords();
-        server.hasAdmin = Query.Users.HasAdmin();
-        server.Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        server.Cache.Add("browserPath", config.GetSection("browser:path").Value);
+        Server.hasAdmin = Query.Users.HasAdmin();
+        Server.Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        Server.Cache.Add("browserPath", config.GetSection("browser:path").Value);
 
         //set up SignalR hubs
         app.UseSignalR(routes =>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Net;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Collector.Common.Platform;
@@ -17,7 +16,7 @@ namespace Collector.SignalR.Hubs
     {
         public async Task AnalyzeArticle(string url)
         {
-            await Clients.Caller.SendAsync("update", 1, "Collector v" + Server.Instance.Version);
+            await Clients.Caller.SendAsync("update", 1, "Collector v" + Server.Version);
 
             // Get Article HTML Content //////////////////////////////////////////////////////////////////////////////////////////////////
             try
