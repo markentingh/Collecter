@@ -95,7 +95,7 @@ namespace Collector.Common.Platform
         #endregion
 
         #region "Render"
-        public static string RenderRawHTML(AnalyzedArticle article, List<AnalyzedElement> bestIndexes, List<AnalyzedElement> badIndexes)
+        public static string RenderRawHTML(AnalyzedArticle article, List<AnalyzedElement> indexes)
         {
             var htms = new StringBuilder();
             var htmelem = "";
@@ -160,56 +160,76 @@ namespace Collector.Common.Platform
                 }
 
                 //get info about element
-                var best = bestIndexes.Find(a => a.index == el.index);
-                var bad = badIndexes.Find(a => a.index == el.index);
-                var rank = 1;
-                if(best == null) {
-                    best = new AnalyzedElement();
-                }
-                if(best.bestIndexes > 100)
+                var index = indexes.FirstOrDefault(a => a.index == el.index);
+                if(index != null)
                 {
-                    rank = 5;
-                }else if (best.bestIndexes > 50)
-                {
-                    rank = 4;
-                }
-                else if (best.bestIndexes > 25)
-                {
-                    rank = 3;
-                }
-                else if (best.bestIndexes > 10)
-                {
-                    rank = 2;
-                }
-                if(bad != null)
-                {
-                    htms.Append(
-                    "<div class=\"element bad" +
-                    "\" title=\"[" + el.index + "] flagged > " +
-                    (bad.badClasses > 0 ? "classes:" + bad.badClasses + "(" + string.Join(",", bad.badClassNames) + ")" : " ") +
-                    (bad.badTags > 0 ? "tags:" + bad.badTags + "(" + string.Join(",", bad.badTagNames) + ")" : " ") +
-                    (bad.badUrls > 0 ? "urls:" + bad.badUrls : " ") +
-                    (bad.badKeywords > 0 ? "keywords:" + bad.badKeywords : " ") +
-                    (bad.badMenu > 0 ? "menus:" + bad.badMenu : " ") +
-                    (bad.badLegal > 0 ? "legal:" + bad.badLegal : " ") +
-                    (bad.isBad ? "marked 'bad'" : " ") +
-                    "\"" +
-                    ">");
-                }
-                else if(best.words == 0)
-                {
-                    htms.Append("<div class=\"element\" title=\"[" + el.index + "]\">");
+                    var rank = 1;
+                    //if (index.bestIndexes > 100)
+                    //{
+                    //    rank = 5;
+                    //}else if (index.bestIndexes > 50)
+                    //{
+                    //    rank = 4;
+                    //}
+                    //else if (index.bestIndexes > 25)
+                    //{
+                    //    rank = 3;
+                    //}
+                    //else if (index.bestIndexes > 10)
+                    //{
+                    //    rank = 2;
+                    //}
+                    var info = "" +
+                        (index.HasFlag(ElementFlags.IsArticleTitle) ? ", article title" : "") +
+                        (index.HasFlag(ElementFlags.IsArticleAuthor) ? ", article author name" : "") +
+                        (index.HasFlag(ElementFlags.IsArticleDatePublished) ? ", article date published" : "") +
+                        (index.isContaminated ? ", marked 'contaminated'" : index.isBad ? ", marked 'bad'" : "") +
+                        (index.Counter(ElementFlagCounters.words) > 0 ? ", words:" + index.Counter(ElementFlagCounters.words) : "") +
+                        (index.badClasses > 0 ? ", bad classes:" + index.badClasses + "(" + string.Join(",", index.badClassNames) + ")" : "") +
+                        (index.HasFlag(ElementFlags.BadTag) ? ", bad tag" : "") +
+                        (index.HasFlag(ElementFlags.BadUrl) ? ", bad url" : "") +
+                        (index.HasFlag(ElementFlags.BadHeaderWord) ? ", bad header words" : "") +
+                        (index.Counter(ElementFlagCounters.badKeywords) > 0 ? ", bad keywords:" + index.Counter(ElementFlagCounters.badKeywords) : "") +
+                        (index.HasFlag(ElementFlags.MenuItem) ? ", menu item" : "") +
+                        (index.HasFlag(ElementFlags.BadHeaderMenu) ? ", bad header menu" : "") +
+                        (index.Counter(ElementFlagCounters.badLegalWords) > 0 ? ", legal words:" + index.Counter(ElementFlagCounters.badLegalWords) : "");
+                    if (index.isContaminated)
+                    {
+                        htms.Append(
+                        "<div class=\"element contaminated" +
+                        "\" title=\"[" + el.index + "]" +
+                        info +
+                        "\"" +
+                        ">");
+                    }
+                    else if (index.isBad)
+                    {
+                        htms.Append(
+                        "<div class=\"element bad" +
+                        "\" title=\"[" + el.index + "]" +
+                        info +
+                        "\"" +
+                        ">");
+                    }
+                    else if (index.Counter(ElementFlagCounters.words) == 0)
+                    {
+                        htms.Append("<div class=\"element\" title=\"[" + el.index + "] " + info + "\">");
+                    }
+                    else
+                    {
+                        htms.Append(
+                        "<div class=\"element rank" + rank +
+                        "\" title=\"[" + el.index + "] " +
+                        info +
+                        "\"" +
+                        ">");
+                    }
                 }
                 else
                 {
-                    htms.Append(
-                    "<div class=\"element rank" + rank +
-                    "\" title=\"[" + el.index + "] " + 
-                    "best indexes:" + best.bestIndexes +
-                    ", words:" + best.words +
-                    "\"" +
-                    ">");
+                    htms.Append("<div class=\"element\" title=\"[" + el.index + "]\">");
                 }
+                
                 
                 htms.Append("<pre>" + tabs + htmelem.Replace("&", "&amp;").Replace("<", "&lt;") + "</pre>\n");
                 htms.Append("</div>");
@@ -223,7 +243,6 @@ namespace Collector.Common.Platform
             var parts = new List<ArticlePart>();
             DomElement elem;
             DomElement parent;
-            List<string> hierarchyTags;
             var lastHierarchy = new int[] { };
             int index;
             var newline = false;
@@ -288,7 +307,6 @@ namespace Collector.Common.Platform
                 index = article.body[x];
                 elem = article.elements[index];
                 parent = elem.Parent;
-                hierarchyTags = elem.HierarchyTags().ToList();
                 newline = false;
                 fontsize = 1;
                 hasQuote = false;

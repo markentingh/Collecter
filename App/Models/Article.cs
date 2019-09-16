@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Utility.DOM;
 using Utility.Strings;
 
@@ -161,21 +162,91 @@ namespace Collector.Models.Article
 
     public class AnalyzedElement
     {
+        public DomElement Element;
         public int index;
-        public int tags;
-        public int words;
-        public int images;
-        public int bestIndexes;
-        public int badIndexes;
+        public int depth; //node hierarchy depth
+        public int wordsInHierarchy;
         public int badClasses;
-        public int badKeywords;
-        public int badTags;
-        public int badUrls;
-        public int badMenu;
-        public int badLegal;
         public bool isBad = false;
+        public bool isContaminated = false; //if contaminated, ignore contaminated element & all child elements when querying parent elements
+        public List<ElementFlags> flags = new List<ElementFlags>();
+        public Dictionary<ElementFlagCounters, int> counters = new Dictionary<ElementFlagCounters, int>();
         public List<string> badClassNames = new List<string>();
-        public List<string> badTagNames = new List<string>();
+        public List<AnalyzedElement> hierarchy = new List<AnalyzedElement>();
+
+        public void AddFlag(ElementFlags flag)
+        {
+            if (!flags.Contains(flag)) { flags.Add(flag); }
+        }
+
+        public void UpdateCounter(ElementFlagCounters counter, int count)
+        {
+            if (!counters.ContainsKey(counter))
+            {
+                counters.Add(counter, count);
+            }
+            else
+            {
+                counters[counter] += count;
+            }
+        }
+
+        public bool HasFlag(ElementFlags flag)
+        {
+            return flags.Contains(flag);
+        }
+
+        public int Counter(ElementFlagCounters counter)
+        {
+            if (counters.ContainsKey(counter))
+            {
+                return counters[counter];
+            }
+            return 0;
+        }
+
+        public void CopyTo(AnalyzedElement element)
+        {
+            element.Element = Element;
+            element.index = index;
+            element.depth = depth;
+            element.wordsInHierarchy = wordsInHierarchy;
+            element.badClasses = badClasses;
+            element.isBad = isBad;
+            element.isContaminated = isContaminated;
+            element.flags = flags.ToArray().ToList();
+            foreach(var item in counters)
+            {
+                element.counters.Add(item.Key, item.Value);
+            }
+            element.badClassNames = badClassNames.ToArray().ToList();
+            element.hierarchy = hierarchy.ToArray().ToList();
+        }
+    }
+
+    public enum ElementFlags
+    {
+        BadTag = 0,
+        BadUrl = 1,
+        MenuItem = 2,
+        BadHeaderWord = 3,
+        BadLinkWord = 4,
+        IsImage = 5,
+        IsMenuList = 6,
+        IsMenuHeader = 7,
+        IsLegalContent = 8,
+        IsArticleTitle = 9,
+        IsArticleAuthor = 10,
+        IsArticleDatePublished = 11,
+        BadHeaderMenu = 12
+    }
+
+    public enum ElementFlagCounters
+    {
+        words = 0,
+        childTextElements = 1,
+        badKeywords = 2,
+        badLegalWords = 3
     }
 
     public class PossibleTextType

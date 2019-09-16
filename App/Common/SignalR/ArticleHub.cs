@@ -100,15 +100,14 @@ namespace Collector.SignalR.Hubs
 
                 //Html.GetWordsFromDOM(article, textElements);
                 await Clients.Caller.SendAsync("update", 1, "Analyzing DOM...");
-                var bestIndexes = new List<AnalyzedElement>();
-                var badIndexes = new List<AnalyzedElement>();
-                Html.GetBestElementIndexes(article, bestIndexes, badIndexes);
-                Html.GetArticleElements(article, bestIndexes, badIndexes);
+                var elements = new List<AnalyzedElement>();
+                Html.GetBestElementIndexes(article, elements);
+                Html.GetArticleElements(article, elements);
                 await Clients.Caller.SendAsync("update", 1, "Collected article contents from DOM");
 
 
                 //send accordion with raw HTML to client
-                var rawhtml = Article.RenderRawHTML(article, bestIndexes, badIndexes);
+                var rawhtml = Article.RenderRawHTML(article, elements);
                 var html = Components.Accordion.Render("Raw HTML", "raw-html", rawhtml, false);
                 await Clients.Caller.SendAsync("append", html);
                 await Clients.Caller.SendAsync("update", 1, "Generated Raw HTML for dissecting DOM importance");
