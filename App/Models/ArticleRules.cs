@@ -53,7 +53,8 @@
             "signin", "recommend", "promot", "reading", "share", "sharing", "facebook",
             "poweredby", "powered-by", "invisible", "newsletter", "meta", "related",
             "nav", "navi", "menu", "sidebar", "toolbar", "sidecontent", "tab", 
-            "embed", "hide", "hidden"
+            "embed", "hide", "hidden", "carousel", "overlay", "progress", "comment",
+            "guestbook", "loading", "free-trial", "rating", "message"
         };
 
         //used to protect DOM elements that may be a part of the article
@@ -69,7 +70,7 @@
 
         //used to find anchor links with flagged words they may be UI links
         public static string[] badLinkWords = new string[] {
-            "more", "about", "back", "previous", "next", "link"
+            "more", "about", "back", "previous", "next", "link", "follow"
         };
 
         //used to find vulgure language
@@ -86,7 +87,7 @@
             "support html5", "support", "member", "this site", "exclusive", "podcast", "newsletter"
         };
 
-        //used to determine if parent DOM element should be flagged
+        //used to determine if parent DOM element should be flagged for contamination
         public static string[] badKeywordsForParentElement = new string[]
         {
             "further discussion"

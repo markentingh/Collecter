@@ -442,12 +442,16 @@ namespace Collector.Common.Analyze
                     }
 
                     //check element for bad class names
-                    if (element.className != null)
+                    if (element.className != null && element.className.Count > 0)
                     {
-                        var bad = Rules.badClasses.Where(badclass => 
-                            element.className.Where(classes => 
-                                classes.IndexOf(badclass) == 0 && !Rules.ignoreClasses.Any(a => classes.IndexOf(a) == 0)
-                            ).Count() > 0).ToList();
+                        var bad = GetWordsInText(string.Join(' ', element.className), Rules.badClasses).ToList();
+                        if (bad.Count > 0)
+                        {
+                            bad = bad.Where(badclass =>
+                                element.className.Where(classes =>
+                                     classes.IndexOf(badclass) >= 0 && !Rules.ignoreClasses.Any(a => classes.IndexOf(a) >= 0)
+                                ).Count() > 0).ToList();
+                        }
                         index.badClasses = bad.Count;
                         if(index.badClasses > 0)
                         {
@@ -879,10 +883,15 @@ namespace Collector.Common.Analyze
 
         public static int CountWordsInText(string text, string[] words)
         {
-            return words.Where(word => text.IndexOf(word) == 0 || (
-                text.IndexOf(word) > 0 && 
+            return GetWordsInText(text, words).Length;
+        }
+
+        public static string[] GetWordsInText(string text, string[] words)
+        {
+            return words.Where(word => text.IndexOf(word) == 0 || ( //first character in text,
+                text.IndexOf(word) > 0 &&                           //or beginning of word
                 text.Substring(text.IndexOf(word) - 1, 1).ToCharArray()[0].CheckChar(true, true) == false
-            )).Count();
+            )).ToArray();
         }
 
 
