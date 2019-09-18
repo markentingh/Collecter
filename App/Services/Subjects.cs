@@ -30,7 +30,7 @@ namespace Collector.Services
 
                 return Inject(Common.Platform.Subjects.RenderList(parentId, false, hier.Length > 0));
             }
-            catch (ServiceErrorException ex)
+            catch (LogicException ex)
             {
                 return Error(ex.Message);
             }

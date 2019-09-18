@@ -1,0 +1,23 @@
+﻿<form method="post" class="form-addfeed" style="display:none;">
+    <div class="row field">
+        Copy & Paste your RSS feed URL here
+    </div>
+    <div class="row input">
+        <input type="text" id="txtfeed" />
+    </div>
+    <div class="row pad-top">
+        <div class="col pad-right"><submit class="button apply" id="btnsavefeed">Add RSS Feed</submit></div>
+        <div class="col"><a class="button cancel" id="btncanceladdfeed">Cancel</a></div>
+    </div>
+</form>
+
+<div class="feeds-list">
+    <div class="inner">
+        {{content}}
+        {{no-feeds}}
+        <div class="row pad-lg text-center">
+            No RSS feeds exist in the database yet.
+        </div>
+        {{/no-feeds}}
+    </div>
+</div>

@@ -1,0 +1,44 @@
+﻿<form method="post" class="form-addsubjects" style="display:none;">
+    <div class="row field">
+        Add a comma-delimited list of Subjects to the database
+    </div>
+    <div class="row input">
+        <input type="text" id="txtsubjects" />
+    </div>
+    <div class="row field">
+        Provide a hierarchy of Subjects to add your new Subjects under <span class="faded">(or leave blank)</span>
+    </div>
+    <div class="row input">
+        <input type="text" id="txthierarchy" placeholder="Science>Biology>Neurology" />
+    </div>
+    <div class="row pad-top">
+        <div class="col pad-right"><submit class="button apply" id="btnsavesubjects">Create Subjects</submit></div>
+        <div class="col"><a class="button cancel" id="btncanceladdsubject">Cancel</a></div>
+    </div>
+</form>
+
+<div class="form-movesubject" style="display:none;">
+    <div class="row">
+        <input type="hidden" id="txtmovesubjectid" style="width:40px;" />
+        <div class="row field">Move <span class="movesubjectname"></span> to New Subject Hierarchy</div>
+        <div class="row">
+            <div class="col input" style="width:calc(100% - 210px);">
+                <input type="text" id="txtmovetohierarchy" style="width:100%;" placeholder="Science > Biology > Neurology" />
+            </div>
+            <div class="col input"><div class="button apply" id="btnmovesubject">Move Subject</div></div>
+            <div class="col input"><div class="button cancel" id="btncancelmovesubject">Cancel</div></div>
+        </div>
+        
+    </div>
+</div>
+
+<div class="subjects-list">
+    <div class="inner">
+        {{content}}
+        {{no-subjects}}
+        <div class="row pad-lg text-center">
+            No subjects exist in the database yet.
+        </div>
+        {{/no-subjects}}
+    </div>
+</div>
