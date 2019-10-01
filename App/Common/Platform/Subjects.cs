@@ -51,7 +51,7 @@ namespace Collector.Common.Platform
             {
                 var details = Query.Subjects.GetSubjectById(parentId);
                 if (details == null) {
-                    throw new ServiceErrorException("Parent subject does not exist");
+                    throw new LogicException(LogicErrorCode.Unknown, "Parent subject does not exist");
                 }
 
                 //set up subject

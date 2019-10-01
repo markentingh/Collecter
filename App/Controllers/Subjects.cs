@@ -25,7 +25,7 @@ namespace Collector.Controllers
                 {
                     scripts.Append("<script language=\"javascript\">" + inject.javascript + "</script>");
                 }
-            }catch(ServiceErrorException)
+            }catch(LogicException)
             {
                 scaffold["content"] = "";
                 scaffold["no-subjects"] = "1";

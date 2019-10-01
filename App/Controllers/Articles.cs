@@ -22,7 +22,7 @@ namespace Collector.Controllers
                 scaffold["expanded"] = "expanded";
                 scaffold["content"] = Common.Platform.Articles.RenderList();
             }
-            catch (ServiceErrorException)
+            catch (LogicException)
             {
                 scaffold["content"] = "";
                 scaffold["no-articles"] = "1";
