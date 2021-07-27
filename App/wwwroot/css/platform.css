@@ -1280,7 +1280,7 @@ a.no-link:active {
 }
 .box .size-sm textarea {
   padding: 2px 4px;
-  line-height: 1.0;
+  line-height: 1;
   font-size: 12px;
 }
 .box .size-sm input[type="checkbox"] {
@@ -5329,11 +5329,11 @@ body > .bg {
   background-color: #acdae4;
   color: #0066a9;
 }
-.accordion > .title.expanded {
+.accordion.expanded > .title {
   background-color: #75bad4;
   color: #004476;
 }
-.accordion > .title.expanded:hover {
+.accordion.expanded > .title:hover {
   background-color: #00b1ca;
 }
 .accordion > .title.hide {
@@ -5361,7 +5361,7 @@ body > .bg {
   background-color: #fff;
   color: #111;
 }
-.accordion > .box.expanded {
+.accordion.expanded > .box {
   padding: 20px;
   max-height: 800px;
   overflow: hidden;

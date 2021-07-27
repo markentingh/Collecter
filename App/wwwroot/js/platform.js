@@ -1792,7 +1792,14 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Global "Super" object contains all neccessary functionality used on this web page //////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-S = {};
+if (!window.S) {
+    window['S'] = function (selector) {
+        //use jQuery-like $ library as a backup if we're not using S
+        return $(selector);
+    }
+}
+S.root = ''; //where to load assets from (e.g. '/datasilk/js/')
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 $(window).on('resize', function () { S.window.changed = true; });
@@ -1801,94 +1808,351 @@ $(window).on('scroll', function () { S.window.changed = true; });
 
 
 S.accordion = {
-    load: function () {
-        $('.accordion > .title').off('click').on('click', S.accordion.toggle);
+    load: function (options) {
+        let opts = {
+            container: '.accordion',
+            target: '.accordion > .title',
+            ontoggle: null,
+            opened: false,
+        };
+
+        if (options && options.container) { opts.container = options.container; }
+        if (options && options.target) { opts.target = options.target; }
+        if (options && options.ontoggle) { opts.ontoggle = options.ontoggle; }
+        if (options && options.opened) { opts.opened = options.opened; }
+
+        function open(e) {
+            if (typeof opts.ontoggle == 'function') {
+                opts.ontoggle(e, $(e.target).hasClass('expanded'), opts);
+            } else {
+                S.accordion.toggle(e, opts);
+            }
+        }
+
+        $(opts.target).off('click').on('click', open);
+
+        if (opts.opened == true) {
+            $(opts.target).each((i, e) => {
+                open({ target: $(e)[0] });
+            });
+        }
+
     },
 
-    toggle: function () {
-        $(this).toggleClass('expanded');
-        var box = $(this).parent().find('.box, .menu');
-        box.toggleClass('expanded');
-        if (box.hasClass('expanded')) {
-            $('html, body').animate({
-                scrollTop: $(this).offset().top
-            }, 700);
-        }
+    toggle: function (e, options) {
+        $(e.target).parents(options.container).first().toggleClass('expanded');
+        $(e.target).parents(options.target).first().toggleClass('expanded');
     }
 };
 
 S.accordion.load();
-S.ajax = {
-    //class used to make simple web service posts to the server
-    queue: [],
+if (!S.ajax) {
+    S.ajax = {};
+}
 
-    post: function (url, data, callback, error, json, opts) {
-        var options = {
-            method: "POST",
-            data: JSON.stringify(data),
-            url: '/api/' + url,
-            contentType: "text/plain; charset=utf-8",
-            dataType:'html',
-            success: function (d) {
-                var txt = '';
-                if (typeof d.responseText != 'undefined') { txt = d.responseText; } else { txt = d;}
-                S.ajax.runQueue(); 
-                if(typeof callback == 'function'){callback(txt);}
-            },
-            error: function (xhr, status, err) {
-                if (typeof error == 'function') { error(xhr, status, err); }
-                S.ajax.runQueue();
-            }
+//class used to make simple web service posts to the server
+S.ajax.queue = [];
+
+S.ajax.post = function (url, data, callback, error, json, opts) {
+    var options = {
+        method: "POST",
+        data: JSON.stringify(data),
+        url: '/api/' + url,
+        contentType: "text/plain; charset=utf-8",
+        dataType: 'html',
+        success: function (d) {
+            var txt = '';
+            if (typeof d.responseText != 'undefined') { txt = d.responseText; } else { txt = d; }
+            S.ajax.runQueue();
+            if (typeof callback == 'function') { callback(txt); }
+        },
+        error: function (xhr, status, err) {
+            if (typeof error == 'function') { error(xhr, status, err); }
+            S.ajax.runQueue();
         }
-        if (opts) {
-            //user-specified options
-            if (opts.contentType) { options.contentType = opts.contentType; }
-            if (opts.method) { options.method = opts.method; }
-            if (opts.url) { options.url = opts.url; }
+    }
+    if (opts) {
+        //user-specified options
+        if (opts.contentType) { options.contentType = opts.contentType; }
+        if (opts.method) { options.method = opts.method; }
+        if (opts.url) { options.url = opts.url; }
+    }
+    if (json == true) { options.dataType = 'json'; }
+    S.ajax.queue.push(options);
+    if (S.ajax.queue.length == 1) {
+        $.ajax(options);
+    }
+};
+
+S.ajax.inject = function (response) {
+    var elem = $(response.selector);
+    if (elem.length > 0 && response.html != '') {
+        switch (response.type) {
+            case 0: //replace
+                elem.html(response.html);
+                break;
+            case 1: //append
+                elem.append(response.html);
+                break;
+            case 2: //before
+                elem.before(response.html);
+                break;
+            case 3: //after
+                elem.after(response.html);
+                break;
+            case 4: //prepend
+                elem.prepend(response.html);
+                break;
         }
-        if (json == true) { options.dataType = 'json'; }
-        S.ajax.queue.push(options);
-        if (S.ajax.queue.length == 1) {
-            $.ajax(options);
+    }
+
+    //add any CSS to the page
+    if (response.css && response.css != '') {
+        S.util.css.add(response.cssid, response.css);
+    }
+
+    //finally, execute callback javascript
+    if (response.javascript && response.javascript != '') {
+        var js = new Function(response.javascript);
+        js();
+    }
+};
+
+S.ajax.runQueue = function () {
+    S.ajax.queue.shift();
+    if (S.ajax.queue.length > 0) {
+        $.ajax(S.ajax.queue[0]);
+    }
+};
+S.drag = {
+    items: [], timer: null, timerStart: null,
+
+    item: {
+        index: null,
+        elem: null,
+        win: { w: 0, h: 0, scrollx: 0, scrolly: 0 },
+        pos: { x: 0, y: 0, w: 0, h: 0 },
+        start: { x: 0, y: 0 },
+        cursor: { x: 0, y: 0 },
+        options: null,
+        hasOnDrag: false
+    },
+
+    add: function (elem, dragElem, onStart, onDrag, onStop, onClick, options) {
+        /* options = { 
+         * boundTop:0 , boundRight:0 , boundLeft:0 , boundRight:0, 
+         * useElemPos:false, callee:S.drag, offsetX: 0, offsetY: 0,
+         * hideArea: false, hideAreaOffset: 0 , delay:200, speed: 1000 / 30
+         * } */
+        this.items.push({ elem: elem, dragElem: dragElem, onStart: onStart, onDrag: onDrag, onStop: onStop, onClick: onClick, options: options });
+        var x = this.items.length - 1;
+        $(elem).on('mousedown', function (e) { S.drag.events.start.call(S.drag, x, e) });
+
+        if (options.touch === true) {
+            c.on('touchstart', (e) => S.drag.events.touchstart(x, e, { ...opts, istouch: true }));
+            c.on('touchmove', (e) => S.drag.events.touchmove(x, e, { ...opts, istouch: true }));
+            c.on('touchend', (e) => S.drag.events.touchend(x, e, { ...opts, istouch: true }));
         }
     },
 
-    inject: function (element, data) {
-        var elem = $(element);
-        if (elem.length > 0 && data.d.html != '') {
-            switch (data.d.inject) {
-                case 0: //replace
-                    elem.html(data.d.html);
-                    break;
-                case 1: //append
-                    elem.append(data.d.html);
-                    break;
-                case 2: //before
-                    elem.before(data.d.html);
-                    break;
-                case 3: //after
-                    elem.after(data.d.html);
-                    break;
-            }
-        }
-
-        //add any CSS to the page
-        if (data.d.css && data.d.css != '') {
-            S.util.css.add(data.d.cssid, data.d.css);
-        }
-
-        //finally, execute callback javascript
-        if (data.d.javascript && data.d.javascript != '') {
-            var js = new Function(data.d.javascript);
-            js();
-        }
+    has: function (elem) {
+        this.items.forEach(function (item) {
+            if (item.elem == elem) { return true; }
+        });
+        return false;
     },
 
-    runQueue: function () {
-        S.ajax.queue.shift();
-        if (S.ajax.queue.length > 0) {
-            $.ajax(S.ajax.queue[0]);
-        }
+    alteredDOM: function () {
+        //manually call this function if the DOM was altered and 
+        //changed the position of the drag element's parent element
+        S.drag.item.parent.y = S.drag.item.element.parent().offset().top;
+    },
+
+    events: {
+        start: function (index, e) {
+            var self = this;
+            var item = this.items[index];
+            var delay = 200;
+            if (item.options) {
+                if (item.options.delay != null) {
+                    delay = item.options.delay;
+                }
+            }
+            this.item = { index: index };
+            this.timer = null;
+            this.timerStart = setTimeout(function () {
+                //allow a delay for user click before starting drag animation
+                var el = $(item.elem);
+                var elem = $(item.dragElem);
+                var elpos = el.offset();
+                var pos = elem.position();
+                var parentPos = elem.parent().offset();
+                var win = $(window);
+                var speed = 1000 / 30;
+                var hideArea = false;
+                var hideAreaOffset = 0;
+                if (item.options) {
+                    if (item.options.useElemPos == true) {
+                        pos = { left: elpos.left - pos.left, top: elpos.top - pos.top };
+                    }
+                    if (item.options.speed != null) {
+                        speed = item.options.speed;
+                    }
+                    //if (item.options.offsetX) {
+                    //    pos.left += item.options.offsetX;
+                    //}
+                    //if (item.options.offsetY) {
+                    //    pos.top += item.options.offsetY;
+                    //}
+                    hideArea = item.options.hideArea || false;
+                    hideAreaOffset = item.options.hideAreaOffset || 0;
+                    if (hideArea == true) {
+                        //hide the relative area that the DOM element being dragged previously occupied
+                        //by subtracting the element's height from the element's margin, which will
+                        //cover the element's tracks & force siblings below (in the DOM) to be pushed upwards
+                        elem.css({ marginBottom: -1 * (elem.height() + hideAreaOffset) });
+                    }
+                }
+
+                self.item = {
+                    index: index,
+                    elem: item.dragElem,
+                    element: elem,
+                    win: {
+                        w: win.width(),
+                        h: win.height()
+                    },
+                    start: {
+                        x: e.clientX + document.body.scrollLeft,
+                        y: e.clientY + document.body.scrollTop
+                    },
+                    cursor: {
+                        x: e.clientX + document.body.scrollLeft,
+                        y: e.clientY + document.body.scrollTop
+                    },
+                    pos: {
+                        x: pos.left,
+                        y: pos.top,
+                        w: elem.width(),
+                        h: elem.height()
+                    },
+                    offset: {
+                        x: item.options.offsetX || 0,
+                        y: item.options.offsetY || 0
+                    },
+                    parent: {
+                        y: parentPos.top,
+                        y1: parentPos.top
+                    },
+                    options: item.options,
+                    hasOnDrag: typeof item.onDrag == 'function',
+                    hideArea: hideArea,
+                    hideAreaOffset: hideAreaOffset
+                }
+
+                if (typeof item.onStart == 'function') {
+                    item.onStart.call(item.options ? (item.options.callee ? item.options.callee : this) : this, item);
+                }
+
+                //set up document-level drag events
+                $(window).on('mousemove', S.drag.events.doc.move);
+                
+                S.drag.events.drag.call(S.drag);
+                clearInterval(this.timer);
+                self.timer = setInterval(function () { S.drag.events.drag.call(S.drag); }, speed);
+            }, delay);
+
+            //set up document-level click event
+            $(window).on('mouseup', S.drag.events.doc.up);
+
+            //don't let drag event select text on the page
+            if (e.stopPropagation) e.stopPropagation();
+            if (e.preventDefault) e.preventDefault();
+            e.cancelBubble = true;
+            e.returnValue = false;
+            return false;
+        },
+
+        doc: {
+            move: function (e) { S.drag.events.mouse.call(S.drag, e); },
+            up: function (e) { S.drag.events.stop.call(S.drag) }
+        },
+
+        mouse: function (e) {
+            this.item.cursor.x = e.clientX + document.body.scrollLeft;
+            this.item.cursor.y = e.clientY + document.body.scrollTop;
+            this.item.parent.y = this.item.element.parent().offset().top;
+        },
+
+        drag: function () {
+            var item = this.item;
+            if (item.hasOnDrag == true) { if (this.items[item.index].onDrag.call(item.options ? (item.options.callee ? item.options.callee : this) : this, item) == false) { return; } }
+            var x = (item.pos.x + item.offset.x + (item.cursor.x - item.start.x));
+            var y = (item.pos.y + item.offset.y + (item.cursor.y - item.start.y) - (item.parent.y - item.parent.y1));
+            if (item.options) {
+                if (item.options.boundTop != null) {
+                    if (item.options.boundTop > y) { y = item.options.boundTop; }
+                }
+                if (item.options.boundRight != null) {
+                    if (item.win.w - item.options.boundRight < x + item.pos.w) { x = item.win.w - item.options.boundRight - item.pos.w; }
+                }
+                if (item.options.boundBottom != null) {
+                    if (item.win.h - item.options.boundBottom < y + item.pos.h) { y = item.win.h - item.options.boundBottom - item.pos.h; }
+                }
+                if (item.options.boundLeft != null) {
+                    if (item.options.boundLeft > x) { x = item.options.boundLeft; }
+                }
+            }
+            item.elem[0].style.left = x + 'px';
+            item.elem[0].style.top = y + 'px';
+        },
+
+        stop: function (index) {
+            var item = S.drag.items[S.drag.item.index];
+            $(window).off('mouseup', S.drag.events.doc.up);
+            if (this.timer == null) {
+                //user click
+                clearTimeout(this.timerStart);
+                this.timerStart = null;
+                if (typeof item.onClick == 'function') {
+                    item.onClick.call(item.options ? (item.options.callee ? item.options.callee : this) : this, item);
+                }
+                return;
+            }
+            clearInterval(this.timer);
+            this.timer == null;
+            $(window).off('mousemove', S.drag.events.doc.move);
+            if (S.drag.item.hideArea == true) {
+                S.drag.item.elem.css({ marginBottom: 0 });
+            }
+            if (typeof item.onStop == 'function') {
+                item.onStop.call(item.options ? (item.options.callee ? item.options.callee : this) : this, item);
+            }
+        },
+
+        touchstart: function (index, e, options) {
+            S.drag.events.start(index, e.touches[0]);
+            if (typeof options.touchStart == 'function') {
+                options.touchStart(index, e, options);
+            }
+        },
+
+        touchmove: function (index, e, options) {
+            var touch = e.touches[0];
+            var sel = S.scrollbar.selected;
+            S.scrollbar.selected.currentY = sel.cursorY + ((sel.cursorY - touch.clientY) * sel.diff);
+            if (typeof options.touchMove == 'function') {
+                options.touchMove(index, e, options);
+            }
+        },
+
+        touchend: function (index, e, options) {
+            S.scrollbar.selected.scrolling = false;
+            S.scrollbar.selected.container.removeClass('scrolling');
+            if (typeof options.touchEnd == 'function') {
+                options.touchEnd(index, e, options);
+            }
+        },
     }
 };
 S.loader = function (options) {
@@ -1916,12 +2180,12 @@ S.message = {
             el.removeClass(types);
         }
         el.find('span').html(msg);
-        if (fadein !== false) {
+        if (fadein === true) {
             el.css({ opacity: 0, overflow:'hidden' }).show();
             var h = el.height();
             el.css({ height: 0, marginTop: 10, marginBottom: 10, paddingTop:0, paddingBottom:0 });
-            el.animate({ opacity: 1, height: h + 7 + 7, marginTop: 10, marginBottom: 10, paddingTop: 7, paddingBottom: 7 },
-                { duration: 333 }); //, easing: 'easeInSine' });
+            el.animate({ opacity: 1, height: h, marginTop: 10, marginBottom: 10, paddingTop: 7, paddingBottom: 7 },
+                { duration: 333, easing: 'easeInSine' });
         } else {
             el.css({ opacity: 1, height:'auto' }).show();
         }
@@ -1934,6 +2198,7 @@ S.message = {
                             el.hide();
                         }
                     });
+                    setTimeout(() => { el.hide(); }, 400);
                 } else { el.hide(); }
             }, hideDelay);
         }
@@ -1943,8 +2208,94 @@ S.message = {
         generic:'An error has occurred. Please contact support.'
     }
 }
+//Element.matches && Element.matchesSelector polyfill
+this.Element && function (e) { e.matchesSelector = e.matchesSelector || e.mozMatchesSelector || e.msMatchesSelector || e.oMatchesSelector || e.webkitMatchesSelector || function (e) { var t = this, n = (t.parentNode || t.document).querySelectorAll(e), r = -1; while (n[++r] && n[r] != t); return !!n[r] } }(Element.prototype)
+
+//Array.prototype.findIndex polyfill
+if (!Array.prototype.findIndex) {
+    Object.defineProperty(Array.prototype, 'findIndex', {
+        value: function (predicate) {
+            // 1. Let O be ? ToObject(this value).
+            if (this == null) {
+                throw new TypeError('"this" is null or not defined');
+            }
+
+            var o = Object(this);
+
+            // 2. Let len be ? ToLength(? Get(O, "length")).
+            var len = o.length >>> 0;
+
+            // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+            if (typeof predicate !== 'function') {
+                throw new TypeError('predicate must be a function');
+            }
+
+            // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+            var thisArg = arguments[1];
+
+            // 5. Let k be 0.
+            var k = 0;
+
+            // 6. Repeat, while k < len
+            while (k < len) {
+                // a. Let Pk be ! ToString(k).
+                // b. Let kValue be ? Get(O, Pk).
+                // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+                // d. If testResult is true, return k.
+                var kValue = o[k];
+                if (predicate.call(thisArg, kValue, k, o)) {
+                    return k;
+                }
+                // e. Increase k by 1.
+                k++;
+            }
+
+            // 7. Return -1.
+            return -1;
+        }
+    });
+}
+
+
+// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+// http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
+
+// requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
+
+// MIT license
+
+(function() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
+                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+ 
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+ 
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
 S.popup = {
-    elem: null, options: null,
+    elem: null,
+    options: [],
+    global: { //global options used for all popup modals unless overridden by specific popup instance options
+        stickyTop: -1, //keeps popup modal at a specified top position unless the popup height requires the modal to be pushed up further
+        offsetTop: 0,
+        offsetHeight: 0
+    },
 
     show: function (title, html, options) {
         if (options == null) { options = {}; }
@@ -1952,63 +2303,107 @@ S.popup = {
             width: options.width != null ? options.width : 300,
             maxWidth: options.maxWidth != null ? options.maxWidth : null,
             padding: options.padding != null ? options.padding : 0,
-            offsetHeight: options.offsetHeight != null ? options.offsetHeight : 0,
-            offsetTop: options.offsetTop != null ? options.offsetTop : 0,
+            offsetHeight: options.offsetHeight != null ? options.offsetHeight : S.popup.global.offsetHeight,
+            offsetTop: options.offsetTop != null ? options.offsetTop : S.popup.global.offsetTop,
+            stickyTop: options.stickyTop != null ? options.stickyTop : S.popup.global.stickyTop,
+            stickyHeight: options.stickyHeight != null ? options.stickyHeight : S.popup.global.stickyHeight,
             position: options.position != null ? options.position : 'center',
             close: options.close != null ? options.close : true,
-            className: options.className != null ? options.className : ''
+            backButton: options.backButton != null ? options.backButton : false, 
+            className: options.className != null ? options.className : '',
+            onResize: options.onResize != null ? options.onResize : null,
+            onClose: options.onClose != null ? options.onClose : null
         };
-        this.options = opts;
 
-        var win = S.window.pos();
-        var div = document.createElement('div');
+        let div = document.createElement('div');
         var forpopup = $('body > .for-popup');
-        var popup = $(div);
-        div.className = 'popup box ' + opts.className;
-
-        popup.css({ width: opts.width });
-        if (opts.maxWidth != null) { popup.css({ maxWidth: opts.maxWidth }); }
-        popup.addClass(opts.position);
-        if (opts.offsetHeight > 0) {
-            popup.css({ Marginbottom: opts.offsetHeight });
-        }
-        if (opts.offsetTop.toString().indexOf('%') > 0) {
-            popup.css({ top: opts.offsetTop });
-        } else if (Number(opts.offsetTop) == opts.offsetTop) {
-            if (opts.offsetTop > 0) {
-                popup.css({ top: win.scrolly + ((win.h - 300) / 3) + opts.offsetTop });
-            }
-        }
-        if (opts.padding > 0) {
-            forpopup.css({ padding: opts.padding });
-        }
-
-        var scaffold = new S.scaffold($('#template_popup').html(), {
-            title: title,
-            body: html
-        });
-        popup.html(scaffold.render());
-        this.elem = popup;
-
-        $('body > .for-popup .popup').remove();
+        let popup = $(div);
+        div.className = 'popup box show ' + opts.className;
+        this.options.push({ elem: div, options: opts });
         forpopup.removeClass('hide').append(div);
 
-        //set up events
-        $(window).on('resize', S.popup.resize);
-        $(window).on('scroll', S.popup.resize);
+        var view = new S.view($('#template_popup').html(), {
+            title: title,
+            body: html
+        }, "#", "#");
+        popup.html(view.render());
+        this.elem = popup;
 
-        if (opts.close == true) {
-            $('.popup .btn-close a').on('click', function () {
-                S.popup.hide();
+        //resize & reposition popup modal
+        popup.css({ width: opts.width });
+        if (opts.maxWidth != null) { popup.css({ maxWidth: opts.maxWidth }); }
+        popup.addClass('pos-' + opts.position);
+
+        //set up events
+        if (forpopup.children().length == 1) {
+            $(window).on('resize', S.popup.resize);
+            $(window).on('scroll', S.popup.resize);
+        } else {
+            opts.backButton = true;
+        }
+        forpopup.off('mousedown', S.popup.bg).on('mousedown', S.popup.bg);
+
+        if (opts.close == true || opts.backButton == true) {
+            popup.find('.btn-close a').on('click', function () {
+                S.popup.hide(popup);
             });
+            if (opts.backButton == true) {
+                popup.find('.btn-close use').attr('xlink:href', '#icon-back');
+            } else {
+                popup.find('.btn-close use').attr('xlink:href', '#icon-close');
+            }
+        } else {
+            popup.find('.btn-close').hide();
         }
 
+        popup.hide = () => {
+            //used when temporarily hiding popup to show another popup
+            popup.addClass('hide').removeClass('show');
+            setTimeout(() => {
+                if ($('.popup.show').length == 0) {
+                    S.popup.hide();
+                }
+            }, 100);
+        };
+        popup.show = () => {
+            //used when showing this popup after hiding another popup
+            popup.removeClass('hide').addClass('show');
+        };
+
         S.popup.resize();
+        setTimeout(S.popup.resize, 1);
+        return popup;
     },
 
-    hide: function () {
+    hide: function (popup) {
         //remove events
-        $('body > .for-popup').addClass('hide');
+        var popups = $('body > .for-popup');
+        if (popup && popup.target) {
+            //remove parent popup
+            popup = $(popup.target).parents('.popup').first();
+        } else if (popup) {
+            //remove single popup
+            var opts = S.popup.options;
+            for (var x = 0; x < opts.length; x++) {
+                if (opts[x].elem == popup[0]) {
+                    if (opts[x].options.onClose) { opts[x].options.onClose(); }
+                    S.popup.options.splice(x, 1);
+                    break;
+                }
+            }
+            //remove single popup
+            popup.remove();
+        } else {
+            //remove all popups
+            var c = popups.children();
+            for (var x = 0; x < c.length; x++) {
+                $(c[x]).remove();
+            }
+            S.popup.options = [];
+        }
+        if (popups.children().length == 0) {
+            $('body > .for-popup').addClass('hide');
+        }
         $(window).off('resize', S.popup.resize);
         $(window).off('scroll', S.popup.resize);
     },
@@ -2019,41 +2414,71 @@ S.popup = {
 
     resize: function () {
         var win = S.window.pos();
-        var pos = S.popup.elem.position();
-        pos.height = S.popup.elem.height();
-        S.popup.elem.css({ maxHeight: win.height - (S.popup.options.padding * 2), top: S.popup.options.offsetTop.toString().indexOf('%') > 0 ? S.popup.options.offsetTop : win.scrolly + ((win.h - pos.height) / 3) + S.popup.options.offsetTop });
+        var elems = $('body > .for-popup > div');
+        for (var x = 0; x < elems.length; x++) {
+            var popup = $(elems[x]);
+            var pos = popup.position();
+            pos.height = popup.height();
+            var opts = S.popup.options[x].options;
+            var stickyTop_px = opts.stickyTop != null ?
+                (opts.stickyTop.toString().indexOf('%') > 0 ? ((100 / win.h) * parseInt(opts.stickyTop.toString().replace('%', ''))) :
+                    parseInt(opts.stickyTop.toString().replace('px', ''))) : 0;
+            popup.css({'max-height': (win.h - (opts.padding * 2) - stickyTop_px - opts.offsetHeight) + 'px'});
+            pos.height = popup.height();
+
+            if (opts.offsetTop.toString().indexOf('%') > 0) {
+                //use percentage for top position
+                popup.css({ top: opts.offsetTop.toString() });
+            } else {
+                var y = opts.stickyTop;
+                if (opts.stickyTop >= 0) {
+                    popup.css({ top: opts.stickyTop });
+                } else {
+                    popup.css({ top: win.scrolly + ((win.h - pos.height) / 3) + opts.offsetTop });
+                }
+            }
+            if (typeof opts.onResize == 'function') {
+                opts.onResize();
+            }
+        }
     }
 }
-S.scaffold = function (html, vars, tagStart, tagEnd) {
-    //tagStart & tagEnd is optional, defines the symbols (#)
-    //to use when searching for scaffold variable placeholders
+/*
+example: var view = new S.view('<div>{{hello}}</div>', {hello:'world'});
+         view.render();
+*/
+S.viewTags = { startChar: '{{', endChar: '}}' }; //overridable property
+
+S.view = function (html, vars, tagStartChar, tagEndChar) {
+    //tagStartChar & tagEndChar is optional, defines the symbols (#)
+    //to use when searching for view variable placeholders
     this.html = html;
     this.vars = vars;
-    if (tagStart) {
-        this.tagStart = tagStart;
-    } else { this.tagStart = "#"; }
-    if (tagEnd) {
-        this.tagEnd = tagEnd;
-    } else { this.tagEnd = "#"; }
+    if (tagStartChar) {
+        this.tagStartChar = tagStartChar;
+    } else { this.tagStartChar = S.viewTags.startChar; }
+    if (tagEndChar) {
+        this.tagEndChar = tagEndChar;
+    } else { this.tagEndChar = S.viewTags.endChar; }
 }
 
-S.scaffold.prototype.render = function () {
+S.view.prototype.render = function () {
     var a = 0, b = 0, c = 0, d = 0;
-    var tagslen = this.tagStart.length + this.tagEnd.length;
-    var endlen = this.tagEnd.length;
+    var tagslen = this.tagStartChar.length + this.tagEndChar.length;
+    var endlen = this.tagEndChar.length;
     var htm = this.html;
     var ischanged = true;
     for (var key in this.vars) {
         ischanged = true;
         while (ischanged) {
             ischanged = false;
-            //check for scaffold closing first
-            a = htm.indexOf(this.tagStart + '/' + key + this.tagEnd);
+            //check for view closing first
+            a = htm.indexOf(this.tagStartChar + '/' + key + this.tagEndChar);
             if (a >= 0) {
-                //found a group of html to show or hide based on scaffold element boolean value
+                //found a group of html to show or hide based on view element boolean value
                 b = a + tagslen + key.length + 1;
-                c = htm.indexOf(this.tagStart + key);
-                d = htm.indexOf(this.tagEnd, c + 1);
+                c = htm.indexOf(this.tagStartChar + key);
+                d = htm.indexOf(this.tagEndChar, c + 1);
                 if (c >= 0 && d > c) {
                     if (this.vars[key] === false) {
                         //hide group of html
@@ -2067,10 +2492,10 @@ S.scaffold.prototype.render = function () {
                     continue;
                 }
             }
-            //check for scaffold element to replace with a value
+            //check for view element to replace with a value
             if (ischanged == false) {
-                if (htm.indexOf(this.tagStart + key + this.tagEnd) >= 0) {
-                    htm = htm.replace(this.tagStart + key + this.tagEnd, this.vars[key]);
+                if (htm.indexOf(this.tagStartChar + key + this.tagEndChar) >= 0) {
+                    htm = htm.replace(this.tagStartChar + key + this.tagEndChar, this.vars[key]);
                     ischanged = true;
                 }
             }
@@ -2078,40 +2503,353 @@ S.scaffold.prototype.render = function () {
     }
     return htm;
 }
+S.scrollbar = {
+    config: { skip: 15 },
+    selected: { },
+    items: [],
+
+    add: function (container, options) {
+        //options = {
+        //  footer (int || function): space between bottom of container & window edge,
+        //  touch (bool) //allows touch scrolling
+        //  touchStart: callback function(TouchEvent, options)
+        //  touchEnd: callback function(TouchEvent, options)
+        //}
+        //add custom scrollbar to container
+        var mutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+        var resizeObserver = window.ResizeObserver || window.WebKitResizeObserver;
+        let opts = options != null ? options : {};
+        let c = $(container);
+        c.addClass('scrollable');
+
+        if (c.find('.scroller').length == 0) {
+            //generate scrollbar
+            c.prepend('<div class="scroller"><div class="scrollbar"></div></div>');
+        }
+
+        //add events
+        c.find('.scrollbar').on('mousedown', (e) => S.scrollbar.start(e, opts));
+        c.find('.scroller').on('mousedown', (e) => S.scrollbar.bar.start(e, opts));
+        c.on('wheel', (e) => S.scrollbar.wheel(e, opts));
+
+        if (opts.touch === true) {
+            c.on('touchstart', (e) => S.scrollbar.touchstart(e, { ...opts, istouch: true }));
+            c.on('touchmove', (e) => S.scrollbar.touchmove(e, { ...opts, istouch: true }));
+            c.on('touchend', (e) => S.scrollbar.touchend(e, { ...opts, istouch: true }));
+        } 
+
+        
+        for (let x = 0; x < c.length; x++) {
+            let cn = $(c[x]);
+            //add scrollbar to items list
+            S.scrollbar.items.push({ container: $(cn), options: opts, percent: 0 });
+
+            //resize each container
+            S.scrollbar.resize($(cn), opts);
+
+            //add event listener for DOM changes within the container
+            let movable = $(cn).find('.movable');
+            let callback_resize = () => S.scrollbar.resize($(cn), opts);
+            if (mutationObserver) {
+                // define a new observer
+                var obs = new mutationObserver(function (mutations, observer) {
+                    if (mutations.length == 1) {
+                        if ($(mutations[0].target).parent().hasClass('scrollable')) { return; }
+                    }
+                    callback_resize();
+                })
+                // have the observer observe foo for changes in children
+                obs.observe(movable[0], { attributes: true, childList: true, subtree: true });
+            }
+
+            else if (window.addEventListener) {
+                movable[0].addEventListener('DOMNodeInserted', callback_resize, false);
+                movable[0].addEventListener('DOMNodeRemoved', callback_resize, false);
+            }
+
+            //add event listener for container element node resize
+            if (resizeObserver) {
+                var obs = new resizeObserver(function (elements) {
+                    callback_resize();
+                })
+                // have the observer observe foo for changes in children
+                obs.observe(cn[0]);
+            }
+        }
+    },
+
+    target: function (e) {
+        var target = $(e);
+        if (target.hasClass('.scrollable')) { return target; }
+        let targets = $(e).parents('.scrollable');
+        if (targets.length > 0) {
+            return targets[0];
+        }
+    },
+
+    get: function (target) {
+        const win = S.window.pos();
+        const container = $(target);
+        const scrollbar = container.find('.scrollbar');
+        const movable = container.find('.movable');
+        const scroller = container.find('.scroller');
+        const pos = container[0].getBoundingClientRect();
+        let foot = 0;
+
+        //get scrollbar item from cache
+        let index = S.scrollbar.items.map(a => a.container).findIndex(a => a.filter((i, b) => container[0] == b).length > 0);
+        let item = S.scrollbar.items[index];
+
+        if (item.options.footer != null) {
+            if (typeof item.options.footer == 'function') {
+                foot = item.options.footer(container);
+            } else {
+                foot = item.options.footer;
+            }
+        } else {
+            foot = win.h - pos.top - pos.height;
+        }
+        const height = win.h - pos.top - foot;
+
+        //show/hide list scrollbar
+        let h = movable.height();
+        let barHeight = ((height - 7) / h) * height;
+        return {
+            scrollbar: scrollbar,
+            height: height,
+            foot: foot,
+            barHeight: barHeight,
+            container: container,
+            movable: movable,
+            contentH: h,
+            offsetY: scroller.offset().top,
+            barY: scrollbar.offset().top,
+            options: item.options,
+            index: index,
+            diff: (1 / height) * ((height / h) * (height - 7))
+        };
+
+    },
+
+    start: function (e, options) {
+        if (!options.istouch === true) {
+            e.cancelBubble = true;
+            e.stopPropagation();
+            e.preventDefault();
+        }
+
+        //get target container
+        let target = S.scrollbar.target(e.target);
+
+        //update class for container
+        const container = $(target);
+        S.scrollbar.selected.container = null;
+        if (!container.hasClass('scroll')) { return;}
+        container.addClass('scrolling');
+
+        //update selected properties
+        S.scrollbar.selected = S.scrollbar.get(target);
+        S.scrollbar.selected.cursorY = e.clientY;
+        S.scrollbar.selected.currentY = e.clientY;
+        S.scrollbar.selected.scrolling = true;
+
+        if (!options.istouch === true) {
+            //bind events
+            $(window).on('mousemove', S.scrollbar.moving);
+            $(window).on('mouseup', S.scrollbar.stop);
+        }
+
+        //animate scrollbar
+        S.scrollbar.animate.call(S.scrollbar);
+    },
+
+    touchstart: function (e, options) {
+        S.scrollbar.start(e.touches[0], options);
+        if (S.scrollbar.selected.container == null) { return; }
+        if (typeof options.touchStart == 'function') {
+            options.touchStart(e, options);
+        }
+    },
+
+    touchmove: function (e, options) {
+        var touch = e.touches[0];
+        var sel = S.scrollbar.selected;
+        S.scrollbar.selected.currentY = sel.cursorY + ((sel.cursorY - touch.clientY) * sel.diff);
+    },
+
+    touchend: function (e, options) {
+        if (S.scrollbar.selected.container == null) { return;}
+        S.scrollbar.selected.scrolling = false;
+        S.scrollbar.selected.container.removeClass('scrolling');
+        if (typeof options.touchEnd == 'function') {
+            options.touchEnd(e, options);
+        }
+    },
+
+    moving: function (e) {
+        //called when user moves mouse
+        S.scrollbar.selected.currentY = e.clientY;
+    },
+
+    animate: function () {
+        //steady animation of scrolling movement
+        const item = S.scrollbar.selected;
+        const curr = item.currentY - item.cursorY - (item.offsetY - item.barY);
+        let perc = (100 / (item.height - 7 - item.barHeight)) * curr;
+        if (perc < 0) { perc = 0; }
+        if (perc > 100) { perc = 100; }
+        S.scrollbar.to(item, perc);
+        requestAnimationFrame(() => {
+            if (S.scrollbar.selected.scrolling == true) {
+                S.scrollbar.animate.call(S.scrollbar);
+            }
+        });
+    },
+
+    stop: function () {
+        S.scrollbar.selected.scrolling = false;
+        $(window).off('mousemove', S.scrollbar.moving);
+        $(window).off('mouseup', S.scrollbar.stop);
+        S.scrollbar.selected.container.removeClass('scrolling');
+    },
+
+    to: function (item, percent) {
+        percent = parseInt(percent);
+        let perc = S.math.clamp(percent, 0, 100);
+        S.scrollbar.items[item.index].percent = percent;
+        item.scrollbar.css({ top: parseInt(((item.height - 7 - item.barHeight) / 100) * perc) });
+        item.movable.css({ top: -1 * parseInt((((item.contentH - item.height) / 100) * perc)) });
+    },
+
+    move: function (px) {
+        const item = S.scrollbar.selected;
+        const movable = item.movable;
+        let pos = movable.position();
+        let perc = (100 / (item.contentH - item.height - 7)) * (-pos.top + px);
+        S.scrollbar.to(item, perc);
+    },
+
+    bar: {
+        timer: null,
+        start: function(e, options) {
+            if ($(e.target).hasClass('scrollbar')) { return false; }
+            S.scrollbar.selected = S.scrollbar.get(S.scrollbar.target(e.target));
+            const item = S.scrollbar.selected;
+            const scrollbar = item.scrollbar;
+            const pos = scrollbar.offset();
+            const y = e.clientY;
+            let top = false;
+            if (y < pos.top) { top = true; }
+            S.scrollbar.bar.move(top);
+
+            //listen for mouse up
+            $(window).on('mouseup', S.scrollbar.bar.end);
+
+            //move bar in intervals if mouse is held down long enough
+            setTimeout(() => {
+                S.scrollbar.bar.timer = setInterval(() => S.scrollbar.bar.move(top), 50);
+            }, 300);
+        },
+
+        move: function (top) {
+            if (top === true) {
+                //above scrollbar
+                S.scrollbar.move(-S.scrollbar.config.skip * 8);
+            } else {
+                //below scrollbar
+                S.scrollbar.move(S.scrollbar.config.skip * 8);
+            }
+        },
+
+        end: function () {
+            clearInterval(S.scrollbar.bar.timer);
+            $(window).off('mouseup', S.scrollbar.bar.end);
+        }
+    },
+
+    wheel: function (e, options) {
+        let delta = 0;
+        if (!e) e = window.event;
+        // normalize delta
+        if (e.wheelDelta) {
+            // IE and Opera
+            delta = e.wheelDelta / 60;
+        } else if (e.detail) {
+            // W3C
+            delta = -e.detail / 2;
+        }
+        const target = S.scrollbar.target(e.target);
+        if ($(target).hasClass('scroll')) {
+            S.scrollbar.selected = S.scrollbar.get(target);
+            S.scrollbar.move(-delta * S.scrollbar.config.skip);
+        }
+    },
+
+    resize: function (container, options) {
+        //resize list height
+        for (let x = 0; x < container.length; x++) {
+            const c = $(container[x]);
+            const movable = c.find('.movable');
+            let h = movable.height();
+            if (h == 0) { continue; }
+            const pos = c[0].getBoundingClientRect();
+            const height = pos.height;
+            const item = S.scrollbar.get(c, options);
+            if (h > height + 1) {
+                //show scrollbar
+                c.addClass('scroll');
+                //update scrollbar height
+                c.find('.scroller').css({ height: height - 7 });
+                c.find('.scrollbar').css({ height: parseInt(((height - 7) / h) * height) });
+            } else {
+                //hide scrollbar
+                c.removeClass('scroll');
+            }
+            S.scrollbar.to(item, S.scrollbar.items[item.index].percent);
+        };
+    },
+
+    update: function (container) {
+        const c = $(container);
+        let item = S.scrollbar.items.filter(a => a.container.filter((i, b) => c[0] == b).length > 0);
+        if (item.length == 0) { return; }
+        S.scrollbar.resize(item[0].container, item[0].options);
+    }
+};
 S.svg = {
     load: function (url) {
         S.ajax.post('', {}, function (d) {
-            $('.svgicons').html(d);
+            $('.svgicons').append(d);
         }, null, false, { url: url, method: 'GET', contentType: 'image/svg' });
     }
 };
 
 S.util = {
     js: {
-        load: function (file, id, callback, error) {
+        load: function (file, id, callback, error, doc) {
             //add javascript file to DOM
-            if (document.getElementById(id)) { if (callback) { callback(); } return false; }
-            var body = document.body;
-            var script = document.createElement('script');
+            if (!doc) { doc = document;}
+            if (doc.getElementById(id)) { if (callback) { callback(); } return false; }
+            var script = doc.createElement('script');
             script.type = 'text/javascript';
             script.src = file;
             script.id = id;
             script.onload = callback;
             script.onerror = error;
-            body.appendChild(script);
+            doc.body.appendChild(script);
         }
     },
     css: {
-        load: function (file, id) {
+        load: function (file, id, doc) {
             //download CSS file and load onto the page
-            if (document.getElementById(id)) { return false; }
-            var head = document.getElementsByTagName('head')[0];
-            var link = document.createElement('link');
+            if (!doc) { doc = document; }
+            if (doc.getElementById(id)) { return false; }
+            var link = doc.createElement('link');
             link.rel = 'stylesheet';
             link.type = 'text/css';
             link.href = file;
             link.id = id;
-            head.appendChild(link);
+            doc.head.appendChild(link);
         },
 
         add: function (id, css) {
@@ -2123,13 +2861,20 @@ S.util = {
     str: {
         isNumeric: function (str) {
             return !isNaN(parseFloat(str)) && isFinite(str);
+        },
+        Capitalize: function (str) {
+            var list = str.split(' ');
+            for (var x = 0; x < list.length; x++) {
+                list[x] = list[x].charAt(0).toUpperCase() + list[x].slice(1);
+            }
+            return list.join(' ');
         }
     },
 
     element: {
         getClassId: function (elem, prefix) {
             if (elem.length > 0) { elem = elem[0]; }
-            if (elem.className.length <= 0) { return null;}
+            if (elem.className.length <= 0) { return null; }
             if (prefix == null) { prefix = 'id-'; }
             var id = elem.className.split(' ').filter(function (c) { return c.indexOf(prefix) == 0; });
             if (id.length > 0) {
@@ -2160,6 +2905,9 @@ S.math = {
         } else {
             return false;
         }
+    },
+    clamp: function (num, min, max) {
+        return num <= min ? min : num >= max ? max : num;
     }
 };
 
@@ -2189,6 +2937,71 @@ S.iframe = function (selector) {
 
 
 
+S.util.color = {
+    rgbToHex: function (color) {
+        function toHex(num) {
+            return ('0' + parseInt(num).toString(16)).slice(-2);
+        }
+        var hex = '';
+        if (color.indexOf('rgb') >= 0) {
+            var c = color.replace('rgb', '').replace('a', '').replace('(', '').replace(')', '').replace(/\s/g, '').split(',');
+            hex = "#" + toHex(c[0]) + toHex(c[1]) + toHex(c[2]);
+        } else { hex = color; }
+        return hex;
+    },
+
+    argbToInt: function (a, r, g, b) {
+        return (a << 24) + (r << 16) + (g << 8) + (b);
+    }
+};
+S.util.text = {
+    html: {
+        decode: function (str) {
+            var parser = new DOMParser;
+            var dom = parser.parseFromString('<!doctype html><body>' + str, 'text/html');
+            return dom.body.textContent;
+        }
+    }
+};
+S.validate = {
+    alphaNumeric: function (str, allowedChars) {
+        if (str != null && str != '') {
+            if (str.match(/^[a-zA-Z0-9]+$/)) { return true; }
+            if (allowedChars) {
+                if (Array.isArray(allowedChars)) {
+                    var a = '';
+                    for(var y = 0; y < str.length;y++){
+                        a = str[y];
+                        if (!a.match(/^[a-zA-Z0-9]+$/)) {
+                            //check for allowed chars
+                            var valid = false;
+                            for (var x = 0; x < allowedChars.length; x++) {
+                                if (a == allowedChars[x]) { valid = true; break; }
+                            }
+                            if (!valid) { return false; }
+                        }
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    },
+
+    text: function (str, excludedChars) {
+        if (str != null && str != '') {
+            if (excludedChars) {
+                if (Array.isArray(excludedChars)) {
+                    excludedChars.forEach(function (a) {
+                        if (str.indexOf(a) >= 0) { return false;}
+                    });
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+}
 S.window = {
     w: 0, h: 0, scrollx: 0, scrolly: 0, z: 0, changed: true,
 

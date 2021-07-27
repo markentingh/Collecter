@@ -40,6 +40,12 @@
 .raw-html .bad {
   background: rgba(255, 0, 0, 0.2);
 }
+.raw-html pre {
+  white-space: break-spaces;
+}
+.raw-html .element:hover {
+  outline: 1px solid rgba(117, 186, 212, 0.5);
+}
 .article-text h1,
 .article-text h2,
 .article-text h3,

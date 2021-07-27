@@ -110,8 +110,9 @@ namespace Collector.SignalR.Hubs
 
                 //send accordion with raw HTML to client
                 var rawhtml = Article.RenderRawHTML(article, bestIndexes, badIndexes);
-                var html = Components.Accordion.Render("Raw HTML", "raw-html", rawhtml, false);
+                var html = Components.Accordion.Render("Raw HTML", "raw-html", "<div class=\"empty-top\"></div><div class=\"empty-bottom\"></div>", false);
                 await Clients.Caller.SendAsync("append", html);
+                await Clients.Caller.SendAsync("rawhtml", rawhtml);
                 await Clients.Caller.SendAsync("update", 1, "Generated Raw HTML for dissecting DOM importance");
 
 

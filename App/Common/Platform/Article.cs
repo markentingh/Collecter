@@ -95,13 +95,15 @@ namespace Collector.Common.Platform
         #endregion
 
         #region "Render"
-        public static string RenderRawHTML(AnalyzedArticle article, List<AnalyzedElement> bestIndexes, List<AnalyzedElement> badIndexes)
+        public static List<string> RenderRawHTML(AnalyzedArticle article, List<AnalyzedElement> bestIndexes, List<AnalyzedElement> badIndexes)
         {
-            var htms = new StringBuilder();
+            var htms = new List<string>();
+            var line = new StringBuilder(); ;
             var htmelem = "";
             var tabs = "";
             foreach (var el in article.elements)
             {
+                line.Clear();
                 tabs = "";
                 htmelem = "";
                 if (el.isClosing == true && el.isSelfClosing == false)
@@ -183,7 +185,7 @@ namespace Collector.Common.Platform
                 }
                 if(bad != null)
                 {
-                    htms.Append(
+                    line.Append(
                     "<div class=\"element bad" +
                     "\" title=\"[" + el.index + "] flagged > " +
                     (bad.badClasses > 0 ? "classes:" + bad.badClasses + "(" + string.Join(",", bad.badClassNames) + ")" : " ") +
@@ -197,11 +199,11 @@ namespace Collector.Common.Platform
                 }
                 else if(best.words == 0)
                 {
-                    htms.Append("<div class=\"element\" title=\"[" + el.index + "]\">");
+                    line.Append("<div class=\"element\" title=\"[" + el.index + "]\">");
                 }
                 else
                 {
-                    htms.Append(
+                    line.Append(
                     "<div class=\"element rank" + rank +
                     "\" title=\"[" + el.index + "] " + 
                     "best indexes:" + best.bestIndexes +
@@ -209,11 +211,12 @@ namespace Collector.Common.Platform
                     "\"" +
                     ">");
                 }
-                
-                htms.Append("<pre>" + tabs + htmelem.Replace("&", "&amp;").Replace("<", "&lt;") + "</pre>\n");
-                htms.Append("</div>");
+
+                line.Append("<pre>" + tabs + htmelem.Replace("&", "&amp;").Replace("<", "&lt;") + "</pre>\n");
+                line.Append("</div>");
+                htms.Add(line.ToString());
             }
-            return htms.ToString();
+            return htms;
         }
 
         public static string RenderArticle(AnalyzedArticle article)

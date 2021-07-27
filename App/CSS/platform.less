@@ -25,14 +25,14 @@ body > .bg{background-color:rgba(0,0,0,0.5); position:absolute; top:0; right:0; 
 .accordion{padding-bottom:30px;
     & > .title{padding:11px 15px; background-color:#dbdbdb; border-bottom:1px solid #cfcfcf; border-left: 4px solid #75bad4; font-size:17px; font-weight:bold; line-height:1; cursor:pointer; overflow:hidden; transition: max-height 0.3s, padding 0.3s;}
     & > .title:hover{background-color:#acdae4; color:#0066a9; }
-    & > .title.expanded{background-color:#75bad4; color:#004476;}
-    & > .title.expanded:hover{background-color:#00b1ca;}
+    &.expanded > .title{background-color:#75bad4; color:#004476;}
+    &.expanded > .title:hover{background-color:#00b1ca;}
     & > .title.hide{max-height:0; border-bottom-width:0; padding:0 15px;}
     & > .box{background-color:#222; color:#aaa; max-height:0px; transition: max-height 0.3s, padding 0.3s; box-sizing:border-box; overflow:hidden;
         h1, h2, h3, h4, h5, h6{color:#aaa;}
     }
     & > .white{background-color:#fff; color:#111;}
-    & > .box.expanded{padding:20px; max-height:800px; overflow:hidden; overflow-y:auto;}
+    &.expanded > .box{padding:20px; max-height:800px; overflow:hidden; overflow-y:auto;}
     & > .box > .content{white-space:nowrap;}
     & > .box a:link{color:#d83a8d;}
     & > .box a:visited{color:#d83a8d;}
