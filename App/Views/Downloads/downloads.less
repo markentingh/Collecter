@@ -1,0 +1,48 @@
+﻿.form-addsubjects input[type=text]{width:100%;}
+
+.form-addsubjects,
+.form-movesubject{padding-bottom:20px;}
+
+.subjects-list{overflow:hidden;}
+.subjects{padding-top:20px;
+    & > .title{overflow-y:hidden; height:18px;}
+    .box-list{overflow:hidden;}
+    .selection{max-height:0; overflow:hidden;
+        .label{float:left; font-size: 22px; color:#00d5b5; padding-top:8px; width:~"calc(100% - 320px)";}
+        .option{float:right; padding-left:15px;}
+        .goback{cursor:pointer;}
+        .goback:hover{text-decoration:underline}
+    }
+    &.selected{
+        .box:hover{background-color:#4A2649;
+            .option{opacity:1;}
+            .hover-only{display:block;}
+        }
+        .box{
+            .option{opacity:0.25;}
+        }
+    }
+    .option-box{display:none; position:relative; padding:10px 0; background-color:#222; padding:25px; margin-top:20px;}
+    .opiton-box .arrow{ position:absolute; right:30px; top:-15px;}
+}
+
+.subject {float:left; width:25%; text-align:left; padding:15px 25px; font-size:22px; box-sizing:border-box;
+    a:link { color: #ddd !important;  text-decoration:none;}
+    a:visited { color: #ddd !important; }
+    a:hover { color: #ddd !important; text-decoration:underline;}
+    a:active { color: #ddd !important; text-decoration:underline;}
+}
+
+.word{display:inline-block; position:relative; width:~"calc(20% - 50px)"; padding:7px; border:2px solid #015b5b; background-color:#1f1f1f; margin:10px; overflow:hidden; cursor:pointer;
+      &.common{background-color:#271313; border-color:#63100d;}
+      &.database{background-color:#270919; border-color:#870149;}
+      &.symbols{background-color:#271a13; border-color:#813b00;}
+      &.subject{background-color:#042437; border-color:#12b7c2;}
+      &.important{background-color:#003331; border-color:#01a3a3;}
+      &.important.database{background-color:#480729; border-color:#c60d6f;}
+      &.number{background-color:#0f2617; border-color:#055e23;}
+      &.year{background-color:#0a3118; border-color:#009f37;}
+      &.expanded{background-color:#015b5b;}
+      .count{overflow:hidden; display:none; position:absolute; right:0; white-space:nowrap; padding:0 10px 0 0; color:#0aff00;}
+      &:hover .count{display:block;}
+}

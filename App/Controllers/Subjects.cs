@@ -1,34 +1,30 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Collector.Pages
+﻿namespace Collector.Controllers
 {
     public class Subjects : Partials.Dashboard
     {
-        public Subjects(HttpContext context) : base(context) { }
-
-        public override string Render(string[] path, string body = "", object metadata = null)
+        public override string Render(string body = "")
         {
             if (!CheckSecurity()) { return AccessDenied(); }
 
             //add custom menu to dashboard
             AddMenuItem("btnaddsubjects", "Add Subjects", "");
 
-            //load subjects scaffold HTML
-            var scaffold = new Scaffold("/Views/Subjects/subjects.html", Server.Scaffold);
+            //load subjects view HTML
+            var view = new View("/Views/Subjects/subjects.html");
 
             //load subjects list
             try
             {
                 var inject = Common.Platform.Subjects.RenderList();
-                scaffold.Data["content"] = inject.html;
+                view["content"] = inject.html;
                 if(inject.javascript != "")
                 {
-                    scripts.Append("<script language=\"javascript\">" + inject.javascript + "</script>");
+                    Scripts.Append("<script language=\"javascript\">" + inject.javascript + "</script>");
                 }
-            }catch(ServiceErrorException)
+            }catch(LogicException)
             {
-                scaffold.Data["content"] = "";
-                scaffold.Data["no-subjects"] = "1";
+                view["content"] = "";
+                view["no-subjects"] = "1";
             }
 
             //add CSS & JS files
@@ -36,7 +32,7 @@ namespace Collector.Pages
             AddScript("/js/views/subjects/subjects.js");
             
             //finally, render page
-            return base.Render(path, scaffold.Render(), metadata);
+            return base.Render(view.Render());
         }
     }
 }

@@ -1,44 +1,33 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Collector.Pages
+﻿namespace Collector.Controllers
 {
-    public class Login: Page
+    public class Login: Controller
     {
-        public Login(HttpContext context) : base(context) { }
-
-        public override string Render(string[] path, string body = "", object metadata = null)
+        public override string Render(string body = "")
         {
-            if(User.userId > 0)
+            if(User.UserId > 0)
             {
                 //redirect to dashboard
-                return base.Render(path, Redirect("/articles/"));
+                return base.Render(Redirect("/articles/"));
             }
 
             //check for database reset
-            var scaffold = new Scaffold("/Views/Login/login.html", Server.Scaffold);
+            var view = new View("/Views/Login/login.html");
 
-            if(Server.environment == Server.Environment.development && Server.hasAdmin == false)
+            if(App.Environment == Environment.development && Server.HasAdmin == false)
             {
                 //load new administrator form
-                scaffold = new Scaffold("/Views/Login/new-admin.html", Server.Scaffold);
-                scaffold.Data["title"] = "Create an administrator account";
-                scripts.Append("<script src=\"/js/views/login/new-admin.js\"></script>");
-            }
-            else if (Server.environment == Server.Environment.development && User.resetPass == true)
-            {
-                //load new password form (for admin only)
-                scaffold = new Scaffold("/Views/Login/new-pass.html", Server.Scaffold);
-                scaffold.Data["title"] = "Create an administrator password";
-                scripts.Append("<script src=\"/js/views/login/new-pass.js\"></script>");
+                view = new View("/Views/Login/new-admin.html");
+                view["title"] = "Create an administrator account";
+                Scripts.Append("<script src=\"/js/views/login/new-admin.js\"></script>");
             }
             else
             {
                 //load login form (default)
-                scripts.Append("<script src=\"/js/views/login/login.js\"></script>");
+                Scripts.Append("<script src=\"/js/views/login/login.js\"></script>");
             }
 
             //load login page
-            return base.Render(path, scaffold.Render());
+            return base.Render(view.Render());
         }
     }
 }

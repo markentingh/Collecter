@@ -2,10 +2,13 @@
 {
     public static class Rules
     {
-        //rules array name prefix/suffix meanings:
-        //ignore = used to ignore certain keywords
-        //bad = used to score DOM elements negetively
+        //-------------------------------------------------------------
+        //rule name prefix/suffix meanings:
         //good = used to score DOM elements positively
+        //bad = used to score DOM elements negetively
+        //reallybad = used to score DOM elements extremely negetive
+        //ignore = used to exclude certain keywords from scoring
+        //-------------------------------------------------------------
 
         //various separators used when splitting a string into an array
         public static string[] wordSeparators = new string[] { "(", ")", ".", ",", "?", "/", "\\", "|", "!", "\"", "'", ";", ":", "[", "]", "{", "}", "”", "“", "—", "_", "~", "…" };
@@ -23,12 +26,14 @@
         //used to identify various DOM elements that are used as titles
         public static string[] headerTags = new string[] { "h1", "h2", "h3", "h4", "h5", "h6" };
 
-        //used to identify DOM elements that should be ignored in queries
-        public static string[] ignoreTags = new string[] { "body" };
+        //used to identify header tags that may be part of the UI instead of the article
+        public static string[] badHeaderWords = new string[] {
+            "comments", "related articles", "related posts"
+        };
 
         //used to identify DOM elements that should be skipped when analyzing the document
         public static string[] skipTags = new string[] {
-            "html", "head", "body", "meta", "title", "link", "script", "style"
+            "html", "body", "meta", "title", "link", "script", "style"
         };
 
         //used to identify DOM elements that should not be included in the article
@@ -36,25 +41,38 @@
             "head", "meta", "link", "applet", "area", "style",
             "audio", "canvas", "dialog", "small", "embed", "iframe",
             "input", "label", "nav", "object", "option", "s", "script", 
-            "textarea", "video", "noscript"
+            "textarea", "video", "noscript", "footer"
         };
 
         //used to determine if a DOM element is used for advertisements or UI
         public static string[] badClasses = new string[] {
             "social", "advert", "menu", "keyword", "twitter", "replies", "reply",
-            "navi", "search", "trending", "sidebar", "sidecontent", "footer",
-            "bread", "disqus", "callout", "toolbar", "masthead","addthis",
-            "related", "-ad-", "ad-cont", "tags", "contacts", "popular", "promo",
-            "banner", "subscri", "button", "reddit", "login", "signup",
+            "search", "trending", "footer", "logo", "disqus", "popular", "contacts",
+            "bread", "callout", "masthead", "addthis", "-ad-", "ad-cont", "tags",
+            "banner", "subscri", "button", "reddit", "login", "signup", "promo",
             "signin", "recommend", "promot", "reading", "share", "sharing", "facebook",
-            "poweredby", "powered-by", "invisible", "logo", "newsletter"
+            "poweredby", "powered-by", "invisible", "newsletter", "meta", "related",
+            "nav", "navi", "menu", "sidebar", "toolbar", "sidecontent", "tab", 
+            "embed", "hide", "hidden", "carousel", "overlay", "progress", "comment",
+            "guestbook", "loading", "free-trial", "rating", "message"
+        };
+
+        //used to protect DOM elements that may be a part of the article
+        public static string[] ignoreClasses = new string[]
+        {
+            "table"
         };
 
         //used to find URLs that may be used for advertisements or UI buttons
         public static string[] badUrls = new string[] {
             "/ads/", "/ad/", "/click/", "/bait/", "javascript:"
         };
-        
+
+        //used to find anchor links with flagged words they may be UI links
+        public static string[] badLinkWords = new string[] {
+            "more", "about", "back", "previous", "next", "link", "follow"
+        };
+
         //used to find vulgure language
         public static string[] badWords = new string[] {
             "shit", "crap", "asshole", "shitty", "bitch", "slut", "whore",
@@ -66,21 +84,41 @@
             "disqus", "advertisement", "follow on twitter", "check out our", "announcement",
             "users", "sign up", "log in", "sign in", "reset pass", "subscribe", "learn more",
             "more stories", "click for", "update required", "update your browser", "supports html5",
-            "support html5"
+            "support html5", "support", "member", "this site", "exclusive", "podcast", "newsletter"
         };
+
+        //used to determine if parent DOM element should be flagged for contamination
+        public static string[] badKeywordsForParentElement = new string[]
+        {
+            "further discussion"
+        };
+
+        //used to determine if a single word should be flagged
+        public static string[] badSingleWords = new string[] {
+            "comments", "about", "articles", "members", "membership", "login", "log in", "signup", "sign up", 
+            "signin", "sign in", "topics", "subscribe"
+        };
+
 
         //used to determine if a small group of words ( < 5) is actually a menu item
         public static string[] badMenu = new string[] {
             "previous", "next", "post", "posts", "entry", "entries", "article", "articles",
-            "more", "back", "go", "view", "about", "home", "blog", "rules", "resources", "skip",
-            "create", "account", "sign in", "sign up", "log in", "login", "signup", "content",
-            "jump", "contents", "comment", "comments", "prev"
+            "more", "back", "view", "about", "home", "blog", "rules", "resources", "skip",
+            "create", "account", "signin", "sign in", "login", "log in", "signup", "sign up", "content",
+            "jump", "contents", "comment", "comments", "prev", "members", "articles", "membership",
+            "topics", "subscribe"
         };
 
         //used to check DOM hierarchy tag names of potential menu items
         public static string[] menuTags = new string[]
         {
-            "li", "a", "h1", "h2", "h3", "h4", "h5", "h6"
+            "ul", "li"
+        };
+
+        //used to check DOM hierarchy tag names of potential text blocks
+        public static string[] textTags = new string[]
+        {
+            "span", "p", "h1", "h2", "h3", "h4", "h5", "h6", "em"
         };
 
         //used to determine if a sentence (or group of sentences) is part of a legal document
@@ -98,11 +136,13 @@
             "share", "article"
         };
 
+        //check DOM element role attribute for bad role names
         public static string[] badRoles = new string[] { "application" };
 
         //used to check for malicious characters within a string
         public static string[] badChars = new string[] { "|", ":", "{", "}", "[", "]" };
 
+        //domain suffixes
         public static string[] domainSuffixes = new string[] { "com", "net", "org", "biz" };
 
         //used to remove common query key/value pairs from URLs

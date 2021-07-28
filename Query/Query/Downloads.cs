@@ -12,45 +12,22 @@ namespace Query
 
         public static void UpdateQueueItem(int queueId, QueueStatus status)
         {
-            Sql.ExecuteNonQuery("Download_Update",
-                new Dictionary<string, object>()
-                {
-                    {"qid", queueId },
-                    {"status", (int)status }
-                }
-            );
+            Sql.ExecuteNonQuery("Download_Update", new { queueId , status = (int)status });
         }
 
         public static void AddToDownloadDistribution(int serverId)
         {
-            Sql.ExecuteNonQuery("DownloadDistribution_Add",
-                new Dictionary<string, object>()
-                {
-                    {"serverId", serverId }
-                }
-            );
+            Sql.ExecuteNonQuery("DownloadDistribution_Add", new { serverId });
         }
 
         public static List<Models.DownloadQueue> GetDistributionList(int serverId)
         {
-            return Sql.Populate<Models.DownloadQueue>(
-                "DownloadDistributions_GetList",
-                new Dictionary<string, object>()
-                {
-                    {"serverId", serverId }
-                }
-            );
+            return Sql.Populate<Models.DownloadQueue>("DownloadDistributions_GetList", new { serverId });
         }
 
         public static bool AddQueueItem(string url, int feedId = 0)
         {
-            return Sql.ExecuteScalar<int>("DownloadQueue_Add",
-                new Dictionary<string, object>()
-                {
-                    {"url", url },
-                    {"feedId", feedId }
-                }
-            ) == 1;
+            return Sql.ExecuteScalar<int>("DownloadQueue_Add", new { url, feedId }) == 1;
         }
 
         public static int CheckQueue()
@@ -73,34 +50,17 @@ namespace Query
 
         public static int AddServer(ServerType type, string title, string settings = "")
         {
-            return Sql.ExecuteScalar<int>("DownloadServer_Add",
-                new Dictionary<string, object>()
-                {
-                    {"type", (int)type },
-                    {"title", title },
-                    {"settings", settings }
-                }
-            );
+            return Sql.ExecuteScalar<int>("DownloadServer_Add", new { type = (int)type, title, settings });
         }
 
         public static bool ServerExists(string settings)
         {
-            return Sql.ExecuteScalar<int>("DownloadServer_Exists",
-                new Dictionary<string, object>()
-                {
-                    {"settings", settings }
-                }
-            ) == 1;
+            return Sql.ExecuteScalar<int>("DownloadServer_Exists", new { settings }) == 1;
         }
 
         public static bool GetServerId(string settings)
         {
-            return Sql.ExecuteScalar<int>("DownloadServer_GetId",
-                new Dictionary<string, object>()
-                {
-                    {"settings", settings }
-                }
-            ) == 1;
+            return Sql.ExecuteScalar<int>("DownloadServer_GetId", new { settings }) == 1;
         }
 
         public static List<Models.DownloadServer> GetServerList()

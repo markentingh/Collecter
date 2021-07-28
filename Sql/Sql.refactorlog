@@ -287,4 +287,18 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="topicId" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="383f3ff4-453c-42ac-8f86-d9e51d17398b" ChangeDateTime="09/18/2019 00:07:04">
+    <Property Name="ElementName" Value="[dbo].[VarDates].[name]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[VarDates]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="articleId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="d5453f34-1547-4602-bd11-5785596bef60" ChangeDateTime="09/18/2019 04:53:32">
+    <Property Name="ElementName" Value="[dbo].[SubjectWords].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[SubjectWords]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="wordId" />
+  </Operation>
 </Operations>

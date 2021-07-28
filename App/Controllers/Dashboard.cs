@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
 
 namespace Collector.Partials
 {
-    public class Dashboard : Page
+    public class Dashboard : Controller
     {
         private struct menuItem
         {
@@ -15,26 +14,24 @@ namespace Collector.Partials
 
         private List<menuItem> menuItems = new List<menuItem>();
 
-        public Dashboard(HttpContext context) : base(context) { }
-
-        public override string Render(string[] path, string body = "", object metadata = null)
+        public override string Render(string body = "")
         {
             //check security first
             if (CheckSecurity() == false) { return AccessDenied(); }
 
-            //setup scaffolding variables
-            Scaffold scaffold = new Scaffold("/Views/Dashboard/dashboard.html", Server.Scaffold);
+            //setup viewing variables
+            View view = new View("/Views/Dashboard/dashboard.html");
 
             //set title
-            scaffold.Data["title"] = "Collector";
+            view["title"] = "Collector";
 
             //load body
-            scaffold.Data["content"] = body;
+            view["content"] = body;
 
             //load custom menu
             if(menuItems.Count > 0)
             {
-                scaffold.Data["menu"] = "<ul class=\"tabs right\">" +
+                view["menu"] = "<ul class=\"tabs right\">" +
                     string.Join("", 
                         menuItems.Select<menuItem, string>((menuItem item) =>
                         {
@@ -46,13 +43,13 @@ namespace Collector.Partials
             }
 
             //show log in or log out link
-            if(User.userId > 0)
+            if(User.UserId > 0)
             {
-                scaffold.Data["logout"] = "1";
+                view["logout"] = "1";
             }
             else
             {
-                scaffold.Data["login"] = "1";
+                view["login"] = "1";
             }
 
             //include dashboard resources
@@ -60,7 +57,7 @@ namespace Collector.Partials
             AddCSS("/css/views/dashboard/dashboard.css");
 
             //finally, render page
-            return base.Render(path, scaffold.Render(), metadata);
+            return base.Render(view.Render());
         }
 
         public void AddMenuItem(string id, string title, string url)

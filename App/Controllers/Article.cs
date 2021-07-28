@@ -1,22 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Collector.Pages
+﻿namespace Collector.Controllers
 {
     public class Article : Partials.Dashboard
     {
-        public Article(HttpContext context) : base(context) {}
 
-        public override string Render(string[] path, string body = "", object metadata = null)
+        public override string Render(string body = "")
         {
             if (!CheckSecurity()) { return AccessDenied(); }
 
-            //load articles scaffold HTML
-            var scaffold = new Scaffold("/Views/Article/article.html", Server.Scaffold);
+            //load articles view HTML
+            var view = new View("/Views/Article/article.html");
 
-            scaffold.Data["content"] = Components.Accordion.Render(
-                "Analyze Article: " + context.Request.Query["url"],
+            view["content"] = Components.Accordion.Render(
+                "Analyze Article: " + Context.Request.Query["url"],
                 "analyze-article", 
-                Server.LoadFileFromCache("/Views/Article/analyze.html")
+                Cache.LoadFile("/Views/Article/analyze.html")
             );
 
             //add CSS & JS files
@@ -25,7 +22,7 @@ namespace Collector.Pages
             AddScript("/js/views/article/article.js");
 
             //finally, render page
-            return base.Render(path, scaffold.Render(), metadata);
+            return base.Render(view.Render());
         }
     }
 }

@@ -97,10 +97,11 @@
     <Folder Include="dbo\Tables\Articles" />
     <Folder Include="dbo\Tables\Downloads" />
     <Folder Include="dbo\Tables\Feeds" />
-    <Folder Include="dbo\Tables\Vars" />
     <Folder Include="dbo\Tables\Statistics" />
     <Folder Include="dbo\Stored Procedures\Users" />
     <Folder Include="dbo\Stored Procedures\Utility" />
+    <Folder Include="dbo\Tables\Vars" />
+    <Folder Include="dbo\Tables\Words" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Functions\SplitArray.sql" />
@@ -183,7 +184,6 @@
     <Build Include="dbo\Tables\Downloads\DownloadServers.sql" />
     <Build Include="dbo\Tables\Feeds\Feeds.sql" />
     <Build Include="dbo\Tables\Feeds\FeedsCheckedLog.sql" />
-    <Build Include="dbo\Tables\Vars\VarDates.sql" />
     <Build Include="dbo\Tables\Statistics\StatisticsProjectResearchers.sql" />
     <Build Include="dbo\Tables\Statistics\StatisticsProjects.sql" />
     <Build Include="dbo\Tables\Statistics\StatisticsResearchers.sql" />
@@ -191,7 +191,6 @@
     <Build Include="dbo\Tables\Dictionary.sql" />
     <Build Include="dbo\Tables\Subjects.sql" />
     <Build Include="dbo\Tables\Users.sql" />
-    <Build Include="dbo\Tables\Words.sql" />
     <Build Include="dbo\Stored Procedures\Users\User_Authenticate.sql" />
     <Build Include="dbo\Stored Procedures\Users\User_Create.sql" />
     <Build Include="dbo\Stored Procedures\Users\User_GetEmail.sql" />
@@ -205,6 +204,9 @@
     <Build Include="dbo\Stored Procedures\Users\User_CreateAuthToken.sql" />
     <Build Include="dbo\Tables\User_AuthTokens.sql" />
     <Build Include="dbo\Stored Procedures\Utility\GetCustomId.sql" />
+    <Build Include="dbo\Tables\Vars\VarDates.sql" />
+    <Build Include="dbo\Tables\Words\Words.sql" />
+    <Build Include="dbo\Tables\Words\SubjectWords.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

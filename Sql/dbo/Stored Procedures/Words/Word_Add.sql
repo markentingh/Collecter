@@ -4,15 +4,18 @@
 	@grammartype int = 0,
 	@score int = 1
 AS
-	IF(SELECT COUNT(*) FROM Words WHERE word=@word AND grammartype=@grammartype) > 0 BEGIN
-		/* word exists */
-		DECLARE @subjects nvarchar(50)
-		SELECT @subjects=subjects FROM words WHERE word=@word AND grammartype=@grammartype
-		SET @subjects = @subjects + ', ' + CONVERT(nvarchar(50), @subjectId)
-		UPDATE Words SET subjects=@subjects WHERE word=@word AND grammartype=@grammartype
+	DECLARE @wordId int
+	IF(SELECT COUNT(*) FROM Words WHERE word=@word AND grammartype=@grammartype) = 0 BEGIN
+		/* word doesn't exists */
+		SET @wordId = NEXT VALUE FOR SequenceWords
+		INSERT INTO Words (wordId, word, grammartype, score) 
+		VALUES (@wordId, @word, @grammartype, @score)
 	END ELSE BEGIN
-		/* create word */
-		INSERT INTO Words (wordId, word, subjects, grammartype, score) 
-		VALUES (NEXT VALUE FOR SequenceWords, @word, CONVERT(nvarchar(50), @subjectId), @grammartype, @score)
+		SELECT @wordId = wordId FROM Words WHERE word=@word
 	END
-RETURN 0
+
+	IF @wordId IS NOT NULL BEGIN
+		INSERT INTO SubjectWords (wordId, subjectId) VALUES (@wordId, @subjectId)
+	END
+	
+	SELECT @wordId

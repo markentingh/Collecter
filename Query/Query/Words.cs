@@ -16,25 +16,12 @@ namespace Query
 
         public static void Add(string word, int subjectId, GrammarType grammarType, int score = 1)
         {
-            Sql.ExecuteNonQuery("Word_Add",
-                new Dictionary<string, object>()
-                {
-                    {"word", word },
-                    {"subjectId", subjectId },
-                    {"grammartype", (int)grammarType },
-                    {"score", score }
-                }
-            );
+            Sql.ExecuteNonQuery("Word_Add", new { word, subjectId, grammartype = (int)grammarType, score });
         }
 
         public static List<Models.Word> GetList(string words)
         {
-            return Sql.Populate<Models.Word>("Words_GetList",
-                new Dictionary<string, object>()
-                {
-                    {"words", words }
-                }
-            );
+            return Sql.Populate<Models.Word>("Words_GetList", new { words });
         }
     }
 }

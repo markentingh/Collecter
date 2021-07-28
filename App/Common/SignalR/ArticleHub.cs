@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Net;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Collector.Common.Platform;
@@ -17,7 +16,7 @@ namespace Collector.SignalR.Hubs
     {
         public async Task AnalyzeArticle(string url)
         {
-            await Clients.Caller.SendAsync("update", 1, "Collector v" + Server.Instance.Version);
+            await Clients.Caller.SendAsync("update", 1, "Collector v" + Server.Version);
 
             // Get Article HTML Content //////////////////////////////////////////////////////////////////////////////////////////////////
             try
@@ -37,7 +36,7 @@ namespace Collector.SignalR.Hubs
                     articleInfo = Article.Add(url);
                 }
                 var relpath = Article.ContentPath(url);
-                var filepath = Server.MapPath(relpath);
+                var filepath = App.MapPath(relpath);
                 var filename = articleInfo.articleId + ".html";
                 
                 if (File.Exists(filepath + filename))
@@ -101,15 +100,14 @@ namespace Collector.SignalR.Hubs
 
                 //Html.GetWordsFromDOM(article, textElements);
                 await Clients.Caller.SendAsync("update", 1, "Analyzing DOM...");
-                var bestIndexes = new List<AnalyzedElement>();
-                var badIndexes = new List<AnalyzedElement>();
-                Html.GetBestElementIndexes(article, bestIndexes, badIndexes);
-                Html.GetArticleElements(article, bestIndexes, badIndexes);
+                var elements = new List<AnalyzedElement>();
+                Html.GetBestElementIndexes(article, elements);
+                Html.GetArticleElements(article, elements);
                 await Clients.Caller.SendAsync("update", 1, "Collected article contents from DOM");
 
 
                 //send accordion with raw HTML to client
-                var rawhtml = Article.RenderRawHTML(article, bestIndexes, badIndexes);
+                var rawhtml = Article.RenderRawHTML(article, elements);
                 var html = Components.Accordion.Render("Raw HTML", "raw-html", "<div class=\"empty-top\"></div><div class=\"empty-bottom\"></div>", false);
                 await Clients.Caller.SendAsync("append", html);
                 await Clients.Caller.SendAsync("rawhtml", rawhtml);
@@ -134,9 +132,9 @@ namespace Collector.SignalR.Hubs
                         var imgpath = "/wwwroot/" + relpath.ToLower() + article.id + "/";
 
                         //check if img folder exists
-                        if (!Directory.Exists(Server.MapPath(imgpath)))
+                        if (!Directory.Exists(App.MapPath(imgpath)))
                         {
-                            Directory.CreateDirectory(Server.MapPath(imgpath));
+                            Directory.CreateDirectory(App.MapPath(imgpath));
                         }
 
                         var cachedCount = 0;
@@ -145,7 +143,7 @@ namespace Collector.SignalR.Hubs
                         {
                             //download each image
                             var img = article.images[x];
-                            var path = Server.MapPath(imgpath + img.index + "." + img.extension);
+                            var path = App.MapPath(imgpath + img.index + "." + img.extension);
                             if (!File.Exists(path))
                             {
                                 try

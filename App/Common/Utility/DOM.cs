@@ -97,16 +97,22 @@ namespace Utility.DOM
             {
                 if (_nextSibling >= 0) { return Parser.Elements[_nextSibling]; }
                 var hierarchy = string.Join(">", hierarchyIndexes);
-                var elem = Parser.Elements[index + 1];
+                DomElement elem; ;
                 var childhier = "";
-                do
+                var x = index;
+                while(x < Parser.Elements.Count - 1)
                 {
+                    x++;
+                    elem = Parser.Elements[x];
                     childhier = string.Join(">", elem.hierarchyIndexes);
-                    if (childhier == hierarchy)
+                    if (childhier == hierarchy && elem.isClosing == false)
                     {
                         return elem;
+                    }else if(childhier.IndexOf(hierarchy) < 0)
+                    {
+                        return null;
                     }
-                } while (childhier.IndexOf(hierarchy) == 0);
+                }
                 return null;
             }
         }
@@ -135,6 +141,16 @@ namespace Utility.DOM
         public bool HasTagInHierarchy(string tag)
         {
             return HierarchyTagIndex(tag) >= 0;
+        }
+
+        public List<DomElement> Hierarchy()
+        {
+            var elems = new List<DomElement>();
+            for (var x = 0; x < hierarchyIndexes.Length; x++)
+            {
+                elems.Add(Parser.Elements[hierarchyIndexes[x]]);
+            }
+            return elems;
         }
 
         public List<string> HierarchyTags()

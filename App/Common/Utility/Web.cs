@@ -2,9 +2,9 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Utility
+namespace Utility.Web
 {
-    public static class Web
+    public static class Download
     {
         public static async Task DownloadAsync(string url, string outputFile)
         {

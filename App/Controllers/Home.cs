@@ -1,19 +1,14 @@
 ﻿using System.Text;
-using Microsoft.AspNetCore.Http;
 
-namespace Collector.Pages
+namespace Collector.Controllers
 {
-    public class Home : Page
+    public class Home : Controller
     {
-        public Home(HttpContext context) : base(context)
-        {
-        }
-
-        public override string Render(string[] path, string body = "", object metadata = null)
+        public override string Render(string body = "")
         {
             var html = new StringBuilder();
             html.Append(Redirect("/login"));
-            return base.Render(path, html.ToString(), metadata);
+            return base.Render(html.ToString());
         }
     }
 }

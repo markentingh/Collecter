@@ -1,14 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Linq;
+﻿using System.Linq;
 
 namespace Collector.Services
 {
     public class Subjects : Service
     {
-        public Subjects(HttpContext context) : base(context)
-        {
-        }
-
         public string AddSubjects(string subjects, string hierarchy)
         {
             if (!CheckSecurity()) { return AccessDenied(); }
@@ -29,10 +24,9 @@ namespace Collector.Services
                     parentId = subject.subjectId;
                 }
 
-
                 return Inject(Common.Platform.Subjects.RenderList(parentId, false, hier.Length > 0));
             }
-            catch (ServiceErrorException ex)
+            catch (LogicException ex)
             {
                 return Error(ex.Message);
             }

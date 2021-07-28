@@ -1,7 +1,6 @@
 {
-  "assembly": "Collector",
-  "environment": "development",
-  "port": "7000",
+  "hostUri": "https://localhost:7070",
+  "version":"0.3",
   "sql": {
     "active": "SqlServerTrusted",
     "SqlServerTrusted": "server=.\\SQL2017; database=Collector; Trusted_Connection=true"
@@ -11,6 +10,6 @@
     "bcrypt_work_factor": "10"
   },
   "browser": {
-    "path":  "../WebBrowser/bin/x64/Debug/WebBrowser.exe"
+    "path": "../WebBrowser/bin/x64/Debug/WebBrowser.exe"
   }
 }

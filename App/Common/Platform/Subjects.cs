@@ -11,14 +11,12 @@ namespace Collector.Common.Platform
         {
             var parentId = 0;
             var breadcrumb = "";
-            var parentTitle = "";
-            var parentBreadcrumb = "";
             if (hierarchy.Length > 0)
             {
                 var parentHier = hierarchy.ToList();
-                parentTitle = hierarchy[hierarchy.Length - 1];
+                var parentTitle = hierarchy[hierarchy.Length - 1];
                 parentHier.RemoveAt(parentHier.Count - 1);
-                parentBreadcrumb = string.Join(">", parentHier);
+                var parentBreadcrumb = string.Join(">", parentHier);
                 breadcrumb = string.Join(">", hierarchy);
                 var subject = Query.Subjects.GetSubjectByTitle(parentTitle, parentBreadcrumb);
                 parentId = subject.subjectId;
@@ -38,29 +36,28 @@ namespace Collector.Common.Platform
         }
 
         #region "Render"
-        public static Datasilk.Response RenderList(int parentId = 0, bool getHierarchy = false, bool isFirst = false)
+        public static Datasilk.Core.Web.Response RenderList(int parentId = 0, bool getHierarchy = false, bool isFirst = false)
         {
-            var server = Server.Instance;
-            var inject = new Datasilk.Response() { };
+            var inject = new Datasilk.Core.Web.Response() { };
 
             var html = new StringBuilder();
-            var list = new Scaffold("/Views/Subjects/subject.html", Server.Scaffold);
-            var item = new Scaffold("/Views/Subjects/list-item.html", Server.Scaffold);
+            var list = new View("/Views/Subjects/subject.html");
+            var item = new View("/Views/Subjects/list-item.html");
             var subjects = Query.Subjects.GetList("", parentId);
             var indexes = new string[] { };
             if (parentId > 0)
             {
                 var details = Query.Subjects.GetSubjectById(parentId);
                 if (details == null) {
-                    throw new ServiceErrorException("Parent subject does not exist");
+                    throw new LogicException(LogicErrorCode.Unknown, "Parent subject does not exist");
                 }
 
                 //set up subject
                 var crumb = details.breadcrumb.Replace(">", " &gt; ");
                 if (details.parentId == 0) { crumb = details.title; } else { crumb += " &gt; " + details.title; }
                 indexes = details.hierarchy.Split('>');
-                list.Data["parentId"] = details.subjectId.ToString();
-                list.Data["breadcrumbs"] = crumb;
+                list["parentId"] = details.subjectId.ToString();
+                list["breadcrumbs"] = crumb;
 
                 if (indexes.Length >= 1 && getHierarchy == true)
                 {
@@ -83,7 +80,7 @@ namespace Collector.Common.Platform
             }
             else
             {
-                list.Data["parentId"] = "0";
+                list["parentId"] = "0";
             }
 
 
@@ -92,14 +89,14 @@ namespace Collector.Common.Platform
             {
                 var breadcrumbs = subject.breadcrumb;
                 if (breadcrumbs == "") { breadcrumbs = subject.title; }
-                item.Data["subjectId"] = subject.subjectId.ToString();
-                item.Data["parentId"] = subject.parentId.ToString();
-                item.Data["breadcrumbs"] = subject.breadcrumb.Replace(">", "&gt;") + (subject.breadcrumb != "" ? "&gt;" : "") + subject.title;
-                item.Data["title"] = subject.title.Capitalize();
+                item["subjectId"] = subject.subjectId.ToString();
+                item["parentId"] = subject.parentId.ToString();
+                item["breadcrumbs"] = subject.breadcrumb.Replace(">", "&gt;") + (subject.breadcrumb != "" ? "&gt;" : "") + subject.title;
+                item["title"] = subject.title.Capitalize();
                 html.Append(item.Render() + "\n");
             });
 
-            list.Data["subjects-list"] = html.ToString();
+            list["subjects-list"] = html.ToString();
 
             inject.html = list.Render();
             return inject;

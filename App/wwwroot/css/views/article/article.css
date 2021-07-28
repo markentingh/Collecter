@@ -40,6 +40,9 @@
 .raw-html .bad {
   background: rgba(255, 0, 0, 0.2);
 }
+.raw-html .contaminated {
+  background: rgba(255, 208, 0, 0.2);
+}
 .raw-html pre {
   white-space: break-spaces;
 }
