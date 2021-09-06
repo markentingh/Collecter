@@ -5,7 +5,7 @@ using Utility.Strings;
 
 namespace Utility
 {
-    public class Syndication
+    public static class Syndication
     {
         //used to download & parse RSS & Atom feeds
         public struct SyndicatedFeed
@@ -40,7 +40,7 @@ namespace Utility
             public int height;
         }
 
-        public SyndicatedFeed Read(string html)
+        public static SyndicatedFeed Read(string html)
         {
             var feed = new SyndicatedFeed();
             var items = new List<SyndicatedItem>();

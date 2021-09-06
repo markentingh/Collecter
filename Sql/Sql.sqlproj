@@ -100,8 +100,8 @@
     <Folder Include="dbo\Tables\Statistics" />
     <Folder Include="dbo\Stored Procedures\Users" />
     <Folder Include="dbo\Stored Procedures\Utility" />
-    <Folder Include="dbo\Tables\Vars" />
     <Folder Include="dbo\Tables\Words" />
+    <Folder Include="dbo\Stored Procedures\Blacklist" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Functions\SplitArray.sql" />
@@ -124,7 +124,7 @@
     <Build Include="dbo\Sequences\SequenceArticleBugs.sql" />
     <Build Include="dbo\Sequences\SequenceArticles.sql" />
     <Build Include="dbo\Sequences\SequenceDownloadQueue.sql" />
-    <Build Include="dbo\Sequences\SequenceDownloadServers.sql" />
+    <Build Include="dbo\Sequences\SequenceDownloadDomains.sql" />
     <Build Include="dbo\Sequences\SequenceFeeds.sql" />
     <Build Include="dbo\Sequences\SequenceStatisticsProjects.sql" />
     <Build Include="dbo\Sequences\SequenceStatisticsResults.sql" />
@@ -152,15 +152,9 @@
     <Build Include="dbo\Stored Procedures\Articles\ArticleWord_Add.sql" />
     <Build Include="dbo\Stored Procedures\Articles\ArticleWords_Remove.sql" />
     <Build Include="dbo\Stored Procedures\Downloads\Download_Update.sql" />
-    <Build Include="dbo\Stored Procedures\Downloads\DownloadDistribution_Add.sql" />
-    <Build Include="dbo\Stored Procedures\Downloads\DownloadDistributions_GetList.sql" />
     <Build Include="dbo\Stored Procedures\Downloads\DownloadQueue_Add.sql" />
     <Build Include="dbo\Stored Procedures\Downloads\DownloadQueue_Check.sql" />
     <Build Include="dbo\Stored Procedures\Downloads\Downloads_GetCount.sql" />
-    <Build Include="dbo\Stored Procedures\Downloads\DownloadServer_Add.sql" />
-    <Build Include="dbo\Stored Procedures\Downloads\DownloadServer_Exists.sql" />
-    <Build Include="dbo\Stored Procedures\Downloads\DownloadServer_GetId.sql" />
-    <Build Include="dbo\Stored Procedures\Downloads\DownloadServers_GetList.sql" />
     <Build Include="dbo\Stored Procedures\Feeds\Feed_Add.sql" />
     <Build Include="dbo\Stored Procedures\Feeds\Feed_AddCheckedLog.sql" />
     <Build Include="dbo\Stored Procedures\Feeds\Feed_Checked.sql" />
@@ -181,7 +175,6 @@
     <Build Include="dbo\Tables\Articles\ArticleSubjects.sql" />
     <Build Include="dbo\Tables\Articles\ArticleWords.sql" />
     <Build Include="dbo\Tables\Downloads\DownloadQueue.sql" />
-    <Build Include="dbo\Tables\Downloads\DownloadServers.sql" />
     <Build Include="dbo\Tables\Feeds\Feeds.sql" />
     <Build Include="dbo\Tables\Feeds\FeedsCheckedLog.sql" />
     <Build Include="dbo\Tables\Statistics\StatisticsProjectResearchers.sql" />
@@ -204,9 +197,16 @@
     <Build Include="dbo\Stored Procedures\Users\User_CreateAuthToken.sql" />
     <Build Include="dbo\Tables\User_AuthTokens.sql" />
     <Build Include="dbo\Stored Procedures\Utility\GetCustomId.sql" />
-    <Build Include="dbo\Tables\Vars\VarDates.sql" />
     <Build Include="dbo\Tables\Words\Words.sql" />
     <Build Include="dbo\Tables\Words\SubjectWords.sql" />
+    <Build Include="dbo\Tables\Feeds\FeedCategories.sql" />
+    <Build Include="dbo\Stored Procedures\Feeds\Feeds_Category_Add.sql" />
+    <Build Include="dbo\Sequences\SequenceFeedCategories.sql" />
+    <Build Include="dbo\Stored Procedures\Feeds\Feeds_Categories_GetList.sql" />
+    <Build Include="dbo\Tables\Downloads\DownloadDomains.sql" />
+    <Build Include="dbo\Stored Procedures\Feeds\Feeds_Check.sql" />
+    <Build Include="dbo\Tables\Blacklist_Domains.sql" />
+    <Build Include="dbo\Stored Procedures\Blacklist\Blacklist_Domains_GetList.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Sql.refactorlog" />

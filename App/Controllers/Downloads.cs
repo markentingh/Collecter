@@ -6,13 +6,16 @@
         {
             if (!CheckSecurity()) { return AccessDenied(); }
 
-            //load downloads view HTML
+            //load articles view HTML
             var view = new View("/Views/Downloads/downloads.html");
 
+            view["content"] = Components.Accordion.Render("Downloads", "", Cache.LoadFile("/Views/Downloads/console.html")
+            );
 
             //add CSS & JS files
-            AddCSS("/css/views/search/downloads.css");
-            AddScript("/js/views/search/downloads.js");
+            AddCSS("/css/views/downloads/downloads.css");
+            AddScript("/js/utility/signalr/signalr.js");
+            AddScript("/js/views/downloads/downloads.js");
 
             //finally, render page
             return base.Render(view.Render());

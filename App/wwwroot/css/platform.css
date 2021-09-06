@@ -1280,7 +1280,7 @@ a.no-link:active {
 }
 .box .size-sm textarea {
   padding: 2px 4px;
-  line-height: 1.0;
+  line-height: 1;
   font-size: 12px;
 }
 .box .size-sm input[type="checkbox"] {
@@ -5367,8 +5367,12 @@ body > .bg {
   overflow: hidden;
   overflow-y: auto;
 }
-.accordion > .box > .content {
+.accordion > .box > .contents {
   white-space: nowrap;
+  color: #eee;
+}
+.accordion > .box > .contents span {
+  color: #eee;
 }
 .accordion > .box a:link {
   color: #d83a8d;
@@ -5381,6 +5385,10 @@ body > .bg {
 }
 .accordion > .box a:active {
   color: #ff49a9;
+}
+.accordion > .box .row:hover {
+  background-color: #333;
+  cursor: default;
 }
 .accordion > .box .button {
   background-color: #9a9a9a !important;

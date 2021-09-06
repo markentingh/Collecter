@@ -1,9 +1,30 @@
-﻿<form method="post" class="form-addfeed" style="display:none;">
+﻿<form method="post" class="row form-addfeed pad-bottom-lg" style="display:none;">
     <div class="row field">
         Copy & Paste your RSS feed URL here
     </div>
     <div class="row input">
         <input type="text" id="txtfeed" />
+    </div>
+    <div class="row field">
+        <span>Title</span>
+    </div>
+    <div class="row input">
+        <input type="text" id="txtfeedtitle" />
+    </div>
+    <div class="row field">
+        <span>Category</span>
+    </div>
+    <div class="row input">
+        <div class="row categories">
+            <div class="col"><select id="feedcategory">{{category-options}}</select></div>
+            <div class="col right"><a class="button apply" id="btnaddcategory">New Categroy</a></div>
+        </div>
+        <div class="row new-category hide">
+            <div class="col input"><input type="text" id="newcategorytitle" placeholder="New Category Title" /></div>
+            <div class="col right"><a class="button apply" id="btncreatecategory">Create Categroy</a></div>
+        </div>
+        
+
     </div>
     <div class="row pad-top">
         <div class="col pad-right"><submit class="button apply" id="btnsavefeed">Add RSS Feed</submit></div>

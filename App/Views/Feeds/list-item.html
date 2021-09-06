@@ -1,3 +1,11 @@
-﻿<div class="subject" id="subject{{subjectId}}">
-    <a href="javascript:" onclick="S.subjects.select.show('{{subjectId}}', '{{parentId}}', '{{breadcrumbs}}', 333); return false">{{title}}</a>
+﻿<div class="row hover feed pad-top pad-bottom">
+    <div class="col title">
+        <span>{{title}}</span>
+    </div>
+    <div class="col right">
+        <span>Last checked: {{last-checked}}</span>
+    </div>
+    <div class="col right pad-right">
+        <a href="{{url}}" target="_blank">{{url}}</a>
+    </div>
 </div>

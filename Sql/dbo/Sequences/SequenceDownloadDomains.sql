@@ -1,4 +1,4 @@
-﻿CREATE SEQUENCE [dbo].[SequenceDownloadServers]
+﻿CREATE SEQUENCE [dbo].[SequenceDownloadDomains]
 		AS BIGINT
 		START WITH 1
 		INCREMENT BY 1

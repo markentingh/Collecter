@@ -301,4 +301,25 @@
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="wordId" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="7f70384c-eea5-4ef6-9062-2d922bbbf4ac" ChangeDateTime="09/05/2021 04:48:31">
+    <Property Name="ElementName" Value="[dbo].[FeedCategories].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[FeedCategories]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="categoryId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="ea32114c-7ada-4542-aca2-c7687a2cb88a" ChangeDateTime="09/05/2021 19:10:31">
+    <Property Name="ElementName" Value="[dbo].[DownloadDomains].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[DownloadDomains]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="domainId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="fb1df4d8-3525-420b-b6d0-bf8af0aa3a7b" ChangeDateTime="09/06/2021 02:27:59">
+    <Property Name="ElementName" Value="[dbo].[Blacklist_Domains].[Id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Blacklist_Domains]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="domain" />
+  </Operation>
 </Operations>

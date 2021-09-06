@@ -2207,8 +2207,10 @@ S.loader = function (options) {
         '</svg></div>';
 }
 S.message = {
+    defaultElement: '.popup.show .message',
     show: function(element, type, msg, fadein, hideDelay, fadeout) {
         var types = 'error warning alert';
+        if (!element) { element = S.message.defaultElement };
         var el = $(element);
         if (type != '' && type != null) {
             el.removeClass(types).addClass(type);

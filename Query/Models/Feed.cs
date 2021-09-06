@@ -10,6 +10,8 @@ namespace Query.Models
         public int? checkIntervals { get; set; }
         public DateTime? lastChecked { get; set; }
         public string filter { get; set; }
+        public string category { get; set; }
+        public int categoryId { get; set; }
     }
 
     public class FeedWithLog: Feed
@@ -18,5 +20,9 @@ namespace Query.Models
         public DateTime? logdatechecked { get; set; }
     }
 
-
+    public class FeedCategory
+    {
+        public int categoryId { get; set; }
+        public string title { get; set; }
+    }
 }

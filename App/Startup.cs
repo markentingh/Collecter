@@ -20,7 +20,6 @@ namespace Collector
     public class Startup
     {
         private static IConfigurationRoot config;
-        private List<Assembly> assemblies = new List<Assembly> { Assembly.GetCallingAssembly() };
 
         public virtual void ConfigureServices(IServiceCollection services)
         {
@@ -131,17 +130,19 @@ namespace Collector
             Server.HasAdmin = Query.Users.HasAdmin();
 
 
-            Server.Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            Server.Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Cache.Add("browserPath", config.GetSection("browser:path").Value);
+
+            //get global lists
+            Models.Blacklist.Domains = Query.Blacklists.Domains();
 
             //set up SignalR hubs
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<ArticleHub>("/articlehub");
+                endpoints.MapHub<DownloadHub>("/downloadhub");
             });
-
-
 
             //run Datasilk application
             app.UseDatasilkMvc(new MvcOptions()

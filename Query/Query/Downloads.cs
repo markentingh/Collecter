@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 
 namespace Query
 {
@@ -7,65 +7,29 @@ namespace Query
         public enum QueueStatus
         {
             queued = 0,
-
+            pulled = 1, //when pulled from the queue to download
+            downloaded = 2
         }
 
-        public static void UpdateQueueItem(int queueId, QueueStatus status)
+        public static void UpdateQueueItem(int qId, QueueStatus status = QueueStatus.downloaded)
         {
-            Sql.ExecuteNonQuery("Download_Update", new { queueId , status = (int)status });
+            Sql.ExecuteNonQuery("Download_Update", new { qId , status = (int)status });
         }
 
-        public static void AddToDownloadDistribution(int serverId)
+        public static int AddQueueItems(string urls, string domain, int feedId = 0)
         {
-            Sql.ExecuteNonQuery("DownloadDistribution_Add", new { serverId });
+            return Sql.ExecuteScalar<int>("DownloadQueue_Add", new { urls, domain, feedId });
         }
 
-        public static List<Models.DownloadQueue> GetDistributionList(int serverId)
+        public static Models.DownloadQueue CheckQueue(int domaindelay = 5)
         {
-            return Sql.Populate<Models.DownloadQueue>("DownloadDistributions_GetList", new { serverId });
-        }
-
-        public static bool AddQueueItem(string url, int feedId = 0)
-        {
-            return Sql.ExecuteScalar<int>("DownloadQueue_Add", new { url, feedId }) == 1;
-        }
-
-        public static int CheckQueue()
-        {
-            return Sql.ExecuteScalar<int>("DownloadQueue_Check");
+            var list = Sql.Populate<Models.DownloadQueue>("DownloadQueue_Check", new { domaindelay });
+            return list.FirstOrDefault();
         }
 
         public static int Count()
         {
             return Sql.ExecuteScalar<int>("Downloads_GetCount");
-        }
-
-        public enum ServerType
-        {
-            Windows = 1,
-            Linux = 2,
-            RaspberryPi = 3,
-            Docker = 4
-        }
-
-        public static int AddServer(ServerType type, string title, string settings = "")
-        {
-            return Sql.ExecuteScalar<int>("DownloadServer_Add", new { type = (int)type, title, settings });
-        }
-
-        public static bool ServerExists(string settings)
-        {
-            return Sql.ExecuteScalar<int>("DownloadServer_Exists", new { settings }) == 1;
-        }
-
-        public static bool GetServerId(string settings)
-        {
-            return Sql.ExecuteScalar<int>("DownloadServer_GetId", new { settings }) == 1;
-        }
-
-        public static List<Models.DownloadServer> GetServerList()
-        {
-            return Sql.Populate<Models.DownloadServer>("DownloadServers_GetList");
         }
     }
 }
