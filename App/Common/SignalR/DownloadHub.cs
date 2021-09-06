@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using System.Net;
 using Microsoft.AspNetCore.SignalR;
@@ -38,6 +39,8 @@ namespace Collector.SignalR.Hubs
                     await Clients.Caller.SendAsync("checked");
                     return;
                 }
+                //save article
+                Article.Add(queue.url);
 
                 //get URLs from all anchor links on page
                 var urls = new Dictionary<string, List<string>>();
@@ -52,7 +55,7 @@ namespace Collector.SignalR.Hubs
                     if (Models.Blacklist.Domains.Any(a => domain.IndexOf(a) == 0)) { continue; }
                     if (!urls.ContainsKey(domain))
                     {
-                        urls.Add(domain, new List<string>());
+                        urls.Add(domain, new List<string>());   
                     }
                     urls[domain].Add(uri);
                 }
@@ -61,7 +64,9 @@ namespace Collector.SignalR.Hubs
                     var count = Query.Downloads.AddQueueItems(string.Join(",", urls[domain].ToArray()), domain, queue.feedId);
                     if(count > 0)
                     {
-                        await Clients.Caller.SendAsync("update", "Found " + count + " new link(s) for domain " + domain);
+                        await Clients.Caller.SendAsync("update", 
+                            "<span>Found " + count + " new link(s) for domain " + domain + "</span>" +
+                            " <div class=\"col right\"><a href=\"javascript:\" onclick=\"S.downloads.blacklist.add('" + domain + "')\"><small>blacklist domain</small></div>");
                     }
                     
                 }
@@ -109,6 +114,26 @@ namespace Collector.SignalR.Hubs
                 Query.Feeds.UpdateLastChecked(feed.feedId);
             }
             await Clients.Caller.SendAsync("update", "Checked feeds.");
+        }
+
+        public async Task Blacklist(string domain)
+        {
+            Query.Blacklists.Domains.Add(domain);
+            try
+            {
+                //delete physical content for domain on disk
+                Directory.Delete(App.MapPath("/Content/" + domain.Substring(0, 2) + "/" + domain), true);
+            }
+            catch (Exception)
+            {
+                await Clients.Caller.SendAsync("update", "Could not delete folder " + "/Content/" + domain.Substring(0, 2) + "/" + domain);
+            }
+            //add domain to black list object
+            if (!Models.Blacklist.Domains.Contains(domain))
+            {
+                Models.Blacklist.Domains.Add(domain);
+            }
+            await Clients.Caller.SendAsync("update", "Blacklisted domain " + domain + " and removed all related articles");
         }
     }
 }

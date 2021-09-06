@@ -28,13 +28,13 @@ S.downloads = {
         div.className = 'cli-line';
         div.innerHTML = '> ' + msg;
         $('.downloads .console').append(div);
-        box.scrollTop = box.scrollHeight;
+        //box.scrollTop = box.scrollHeight;
     },
 
     checked: function () {
         //check again in 10 seconds
         S.downloads.update('...');
-        setTimeout(S.downloads.check, 10 * 1000);
+        setTimeout(S.downloads.check, 1 * 1000);
     },
 
     checkFeeds: function () {
@@ -45,6 +45,12 @@ S.downloads = {
     error: function (err) {
         S.downloads.update('An error occurred when communicating with the SignalR hub');
         console.log(err);
+    },
+
+    blacklist: {
+        add: function (domain) {
+            S.downloads.hub.invoke('Blacklist', domain);
+        }
     }
 
 };

@@ -134,7 +134,7 @@ namespace Collector
             Cache.Add("browserPath", config.GetSection("browser:path").Value);
 
             //get global lists
-            Models.Blacklist.Domains = Query.Blacklists.Domains();
+            Models.Blacklist.Domains = Query.Blacklists.Domains.GetList();
 
             //set up SignalR hubs
             app.UseRouting();
